@@ -28,9 +28,47 @@ export default function AdminPage() {
   const [teamGroupFilter, setTeamGroupFilter] = useState<string>('A');
   const [confirmResetOpen, setConfirmResetOpen] = useState(false);
   const [resetSuccessMessage, setResetSuccessMessage] = useState<string | null>(null);
+  const [syncingAi, setSyncingAi] = useState(false);
+  const [syncMessage, setSyncMessage] = useState<string | null>(null);
 
   const activeProfile = profiles.find(p => p.id === currentProfileId);
   const isAdmin = activeProfile?.is_admin || isDemoMode; 
+
+  const handleSyncResultsWithGemini = async () => {
+    setSyncingAi(true);
+    setSyncMessage(null);
+    try {
+      const res = await fetch('/api/sync-gemini', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ matches }),
+      });
+      const data = await res.json();
+      if (data.results && Array.isArray(data.results)) {
+        let count = 0;
+        for (const item of data.results) {
+          if (item.status) {
+            await updateMatchScore(item.id, item.home_score, item.away_score, item.status);
+            count++;
+          }
+        }
+        setSyncMessage(`Sincronización completa: ${count} partidos actualizados.`);
+        confetti({
+          particleCount: 55,
+          spread: 45,
+          origin: { y: 0.8 },
+          colors: ['#c5a880', '#b59469', '#1c1917']
+        });
+      } else {
+        setSyncMessage('Gemini no devolvió resultados legibles.');
+      }
+    } catch (err) {
+      setSyncMessage('Error al sincronizar con Gemini.');
+    } finally {
+      setSyncingAi(false);
+      setTimeout(() => setSyncMessage(null), 5000);
+    }
+  };
 
   const handleEditMatch = (match: Match) => {
     setEditingMatchId(match.id);
@@ -137,8 +175,23 @@ export default function AdminPage() {
       {/* MATCHES EDITOR TAB */}
       {activeTab === 'matches' && (
         <div className="space-y-4">
+          {syncMessage && (
+            <div className="bg-emerald-50 border border-emerald-250 text-emerald-800 text-[10px] font-bold uppercase tracking-wider px-4 py-2.5 rounded-xl shadow-sm text-center">
+              {syncMessage}
+            </div>
+          )}
+
           <div className="flex justify-between items-center px-1">
-            <h3 className="text-xs font-extrabold uppercase tracking-widest text-stone-400">Actualizar Fixture</h3>
+            <div className="flex items-center gap-3">
+              <h3 className="text-xs font-extrabold uppercase tracking-widest text-stone-400">Actualizar Fixture</h3>
+              <button
+                onClick={handleSyncResultsWithGemini}
+                disabled={syncingAi}
+                className="px-2 py-1 bg-white border border-cream-300 text-[8px] font-extrabold uppercase tracking-widest text-stone-700 hover:bg-cream-100 rounded-lg shadow-2xs transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {syncingAi ? 'Sincronizando...' : 'Sincronizar Fixture con IA'}
+              </button>
+            </div>
             <span className="text-[9px] font-bold text-stone-500 bg-cream-200 px-2 py-0.5 rounded">{matches.length} partidos</span>
           </div>
 

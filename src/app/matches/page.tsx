@@ -10,6 +10,8 @@ export default function MatchesPage() {
   const [activeFilter, setActiveFilter] = useState<'ALL' | 'upcoming' | 'live' | 'finished'>('ALL');
   const [predictingMatchId, setPredictingMatchId] = useState<number | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [aiInsight, setAiInsight] = useState<string | null>(null);
+  const [loadingAi, setLoadingAi] = useState<boolean>(false);
   
   // Forms states for prediction inputs
   const [predHome, setPredHome] = useState<string>('');
@@ -19,6 +21,7 @@ export default function MatchesPage() {
 
   const handlePredictClick = (matchId: number) => {
     setValidationError(null);
+    setAiInsight(null);
     if (predictingMatchId === matchId) {
       setPredictingMatchId(null);
     } else {
@@ -31,6 +34,28 @@ export default function MatchesPage() {
         setPredAway('');
       }
       setPredictingMatchId(matchId);
+    }
+  };
+
+  const handleGetAiInsight = async (match: any) => {
+    setLoadingAi(true);
+    setAiInsight(null);
+    try {
+      const res = await fetch('/api/gemini', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ matchText: `${match.home_team_id} vs ${match.away_team_id} (Fase: ${match.phase})` }),
+      });
+      const data = await res.json();
+      if (data.result) {
+        setAiInsight(data.result);
+      } else {
+        setAiInsight('No se pudo obtener el análisis.');
+      }
+    } catch (err) {
+      setAiInsight('Error conectando con la IA.');
+    } finally {
+      setLoadingAi(false);
     }
   };
 
@@ -247,12 +272,27 @@ export default function MatchesPage() {
 
                           <button
                             onClick={() => handleSavePrediction(match.id)}
-                            className="h-10 px-4 mt-4 bg-stone-900 hover:bg-stone-850 text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-sm transition-all flex items-center gap-1.5"
+                            className="h-10 px-4 mt-4 bg-stone-900 hover:bg-stone-850 text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-sm transition-all flex items-center gap-1.5 shrink-0"
                           >
                             <Check className="w-4 h-4" />
                             <span>Guardar</span>
                           </button>
+
+                          <button
+                            onClick={() => handleGetAiInsight(match)}
+                            disabled={loadingAi}
+                            className="h-10 px-3.5 mt-4 bg-white border border-cream-300 hover:bg-cream-100 text-stone-700 rounded-xl font-bold text-xs uppercase tracking-widest shadow-xs transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <span>{loadingAi ? 'Analizando...' : 'IA Predicción'}</span>
+                          </button>
                         </div>
+
+                        {aiInsight && (
+                          <div className="w-full mt-3 bg-white border border-cream-300 rounded-xl p-3.5 text-[10px] text-stone-650 leading-relaxed text-left shadow-2xs">
+                            <span className="font-extrabold uppercase text-[7px] text-gold-650 block mb-1">Gemini AI Insight:</span>
+                            {aiInsight}
+                          </div>
+                        )}
                       </div>
                     </motion.div>
                   )}
