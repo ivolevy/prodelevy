@@ -1,0 +1,37 @@
+{
+  "name": "Prode Mundial 2026",
+  "short_name": "Prode 2026",
+  "description": "El torneo familiar más importante del planeta.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020205",
+  "theme_color": "#080c18",
+  "orientation": "portrait-primary",
+  "categories": ["sports", "games"],
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192x192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
