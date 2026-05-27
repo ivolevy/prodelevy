@@ -4,8 +4,8 @@
   "description": "El torneo familiar más importante del planeta.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#020205",
-  "theme_color": "#080c18",
+  "background_color": "#fcfbfa",
+  "theme_color": "#fcfbfa",
   "orientation": "portrait-primary",
   "categories": ["sports", "games"],
   "icons": [
