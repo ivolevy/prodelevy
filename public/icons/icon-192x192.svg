@@ -3,6 +3,14 @@
   <rect width="192" height="192" rx="40" fill="#fcfbfa"/>
   <!-- Gold Border -->
   <rect x="8" y="8" width="176" height="176" rx="32" fill="none" stroke="#c5a880" stroke-width="4"/>
-  <!-- Monogram P in Charcoal -->
-  <text x="50%" y="58%" font-family="system-ui, -apple-system, sans-serif" font-size="96" font-weight="900" fill="#1c1917" text-anchor="middle" dominant-baseline="middle">P</text>
+  <!-- World Cup Trophy Silhouette in Gold -->
+  <path d="M76,145 L116,145 C119,145 120,143 120,140 L120,135 C120,132 118,131 115,131 L77,131 C74,131 72,132 72,135 L72,140 C72,143 73,145 76,145 Z" fill="#c5a880"/>
+  <path d="M78,131 L114,131 C117,131 118,129 118,127 L115,119 C114,116 112,115 108,115 L84,115 C80,115 78,116 77,119 L74,127 C74,129 75,131 78,131 Z" fill="#c5a880"/>
+  <!-- Stem & Stylized Uplifted Arms -->
+  <path d="M84,115 C86,105 82,90 74,80 C70,75 66,73 66,66 C66,58 75,54 81,61 C85,65 89,75 92,85 L100,85 C103,75 107,65 111,61 C117,54 126,58 126,66 C126,73 122,75 118,80 C110,90 106,105 108,115 Z" fill="#c5a880"/>
+  <!-- The Globe at the top -->
+  <circle cx="96" cy="58" r="18" fill="#c5a880"/>
+  <!-- Small gap to simulate the two bands at the base -->
+  <line x1="72" y1="138" x2="120" y2="138" stroke="#fcfbfa" stroke-width="1.5"/>
+  <line x1="74" y1="123" x2="118" y2="123" stroke="#fcfbfa" stroke-width="1.5"/>
 </svg>
