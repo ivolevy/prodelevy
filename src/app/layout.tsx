@@ -13,6 +13,10 @@ export const metadata: Metadata = {
   title: "Prode Mundial 2026",
   description: "El torneo familiar más importante del planeta.",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/favicon.svg",
+    apple: "/icons/icon-192x192.svg",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
