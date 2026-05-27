@@ -184,13 +184,10 @@ export default function AdminPage() {
           <div className="flex justify-between items-center px-1">
             <div className="flex items-center gap-3">
               <h3 className="text-xs font-extrabold uppercase tracking-widest text-stone-400">Actualizar Fixture</h3>
-              <button
-                onClick={handleSyncResultsWithGemini}
-                disabled={syncingAi}
-                className="px-2 py-1 bg-white border border-cream-300 text-[8px] font-extrabold uppercase tracking-widest text-stone-700 hover:bg-cream-100 rounded-lg shadow-2xs transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {syncingAi ? 'Sincronizando...' : 'Sincronizar Fixture con IA'}
-              </button>
+              <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-gold-500/10 text-[8px] font-extrabold uppercase tracking-widest text-gold-700 rounded-lg border border-gold-300/20">
+                <span className="w-1.5 h-1.5 rounded-full bg-gold-500 animate-pulse" />
+                Sincronización Automática Activa
+              </span>
             </div>
             <span className="text-[9px] font-bold text-stone-500 bg-cream-200 px-2 py-0.5 rounded">{matches.length} partidos</span>
           </div>

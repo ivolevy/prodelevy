@@ -1,9 +1,10 @@
 'use client';
 
 import { useStore } from '@/lib/store';
+import { Profile } from '@/lib/types';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, Sparkles, CheckCircle2, Lock, Users } from 'lucide-react';
+import { Trophy, Sparkles, CheckCircle2, Users } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 // Soccer strength index (probabilities)
@@ -175,15 +176,12 @@ export default function DraftPage() {
     );
   }
 
-  const getDraftedOwner = (teamId: string) => {
-    const match = selections.find(s => s.profile_id !== currentProfileId && (s.team1_id === teamId || s.team2_id === teamId));
-    if (!match) return null;
-    return profiles.find(p => p.id === match.profile_id);
+  const getOtherDraftedOwners = (teamId: string) => {
+    const matches = selections.filter(s => s.profile_id !== currentProfileId && (s.team1_id === teamId || s.team2_id === teamId));
+    return matches.map(m => profiles.find(p => p.id === m.profile_id)).filter(Boolean) as Profile[];
   };
 
   const handleSelect = (teamId: string) => {
-    if (getDraftedOwner(teamId)) return;
-
     if (selected.includes(teamId)) {
       setSelected(selected.filter(id => id !== teamId));
     } else {
@@ -217,7 +215,7 @@ export default function DraftPage() {
     ? teams
     : teams.filter(t => t.group_letter === activeGroupFilter);
 
-  const availableCount = teams.filter(t => !getDraftedOwner(t.id)).length;
+  const availableCount = teams.length;
 
   return (
     <div className="space-y-6 text-stone-900 max-w-5xl mx-auto pt-2">
@@ -289,22 +287,18 @@ export default function DraftPage() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {filteredTeams.map(team => {
           const isSelectedByMe = selected.includes(team.id);
-          const owner = getDraftedOwner(team.id);
-          const isLocked = !!owner;
+          const others = getOtherDraftedOwners(team.id);
           const rating = getTeamRating(team.id);
 
           return (
             <motion.button
               key={team.id}
-              whileTap={{ scale: isLocked ? 1 : 0.98 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => handleSelect(team.id)}
-              disabled={isLocked}
               className={`glass-card p-4 border text-left flex flex-col justify-between h-28 relative overflow-hidden transition-all shadow-sm ${
                 isSelectedByMe
                   ? 'border-gold-500 bg-gold-100/10'
-                  : isLocked
-                    ? 'border-cream-300 bg-cream-200/50 opacity-40 cursor-not-allowed'
-                    : 'border-cream-300 hover:border-cream-400 bg-white'
+                  : 'border-cream-300 hover:border-cream-400 bg-white'
               }`}
             >
               {/* Top Row */}
@@ -316,12 +310,6 @@ export default function DraftPage() {
                 </div>
                 {isSelectedByMe && (
                   <CheckCircle2 className="w-5 h-5 text-gold-500 fill-white" />
-                )}
-                {isLocked && (
-                  <div className="flex items-center gap-0.5 text-[7px] font-bold bg-cream-200 text-stone-500 px-1 py-0.5 rounded border border-cream-300">
-                    <Lock className="w-2.5 h-2.5" />
-                    <span>Locked</span>
-                  </div>
                 )}
               </div>
 
@@ -335,12 +323,18 @@ export default function DraftPage() {
 
               {/* Bottom Row */}
               <div className="mt-1 w-full flex justify-between items-end border-t border-cream-200/50 pt-1">
-                {isLocked ? (
-                  <div className="text-[8px] font-bold text-stone-500 flex items-center gap-1.5">
-                    <span className="w-4 h-4 rounded-full bg-cream-350 flex items-center justify-center text-[7px] font-bold text-stone-600">
-                      {owner ? owner.display_name.substring(0, 2).toUpperCase() : 'US'}
+                {others.length > 0 ? (
+                  <div className="text-[8px] font-bold text-stone-500 flex items-center gap-1.5 w-full justify-between">
+                    <div className="flex -space-x-1">
+                      {others.map(oth => (
+                        <span key={oth.id} className="w-3.5 h-3.5 rounded-full bg-cream-300 flex items-center justify-center text-[6px] font-bold text-stone-600 border border-white">
+                          {oth.display_name.substring(0, 2).toUpperCase()}
+                        </span>
+                      ))}
+                    </div>
+                    <span className="text-[6.5px] uppercase tracking-wider text-stone-400 truncate max-w-[65px]">
+                      {others.map(o => o.display_name).join(', ')}
                     </span>
-                    <span>De: {owner?.display_name}</span>
                   </div>
                 ) : (
                   <div className="w-full flex justify-between items-center text-[7px] font-bold uppercase tracking-wider">
@@ -351,14 +345,12 @@ export default function DraftPage() {
               </div>
 
               {/* Visual Rating Fill */}
-              {!isLocked && (
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-cream-200">
-                  <div 
-                    className="h-full bg-gold-500" 
-                    style={{ width: `${rating.pct}%` }}
-                  />
-                </div>
-              )}
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-cream-200">
+                <div 
+                  className="h-full bg-gold-500" 
+                  style={{ width: `${rating.pct}%` }}
+                />
+              </div>
             </motion.button>
           );
         })}
