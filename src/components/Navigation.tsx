@@ -47,11 +47,11 @@ export default function Navigation() {
   };
 
   return (
-    <header className="fixed bottom-0 left-0 w-full h-16 rounded-none border-t border-b-0 border-x-0 border-cream-300 bg-stone-100/95 backdrop-blur-md px-6 flex items-center justify-between z-50 shadow-lg md:bottom-auto md:top-4 md:left-1/2 md:-translate-x-1/2 md:w-[94%] md:max-w-2xl md:h-14 md:rounded-full md:border md:border-cream-300 md:bg-white/90 md:px-5 md:shadow-sm">
+    <header className="fixed bottom-0 left-0 w-full h-16 rounded-t-3xl rounded-b-none border-t border-b-0 border-x-0 border-stone-800 bg-stone-900/95 backdrop-blur-md px-6 flex items-center justify-between z-50 shadow-lg md:bottom-auto md:top-4 md:left-1/2 md:-translate-x-1/2 md:w-[94%] md:max-w-2xl md:h-14 md:rounded-full md:border md:border-cream-300 md:bg-white/90 md:px-5 md:shadow-sm">
       
       {/* Left: Brand logo as plain elegant text */}
-      <Link href="/" className="font-sans text-[10px] tracking-widest font-black text-stone-900 uppercase">
-        PRODE<span className="text-gold-600 font-normal">2026</span>
+      <Link href="/" className="font-sans text-[10px] tracking-widest font-black text-white md:text-stone-900 uppercase">
+        PRODE<span className="text-gold-400 md:text-gold-600 font-normal">2026</span>
       </Link>
 
       {/* Center: Minimal Text Navigation Links (Desktop only) */}
@@ -87,22 +87,22 @@ export default function Navigation() {
               setIsAdding(false);
               setErrorMsg(null);
             }}
-            className="w-8 h-8 rounded-full border border-cream-300 bg-white flex items-center justify-center text-[10px] font-black text-stone-700 hover:bg-cream-100 transition-all focus:outline-none"
+            className="w-8 h-8 rounded-full border border-stone-800 bg-stone-800 text-[10px] font-black text-gold-400 hover:bg-stone-750 md:border-cream-300 md:bg-white md:text-stone-700 md:hover:bg-cream-100 transition-all focus:outline-none flex items-center justify-center"
           >
             <span>{getInitials(activeProfile?.display_name || 'US')}</span>
           </button>
 
           {dropdownOpen && (
-            <div className="absolute right-0 bottom-full mb-3 md:bottom-auto md:mb-0 md:top-full md:mt-3 w-56 rounded-xl bg-white border border-cream-300 shadow-lg p-1.5 z-50 text-stone-900 animate-in fade-in slide-in-from-bottom-1 md:slide-in-from-top-1 duration-150">
+            <div className="absolute right-0 bottom-full mb-3 md:bottom-auto md:mb-0 md:top-full md:mt-3 w-56 rounded-xl bg-stone-900 border border-stone-800 text-stone-300 md:bg-white md:border-cream-300 md:text-stone-900 shadow-lg p-1.5 z-50 animate-in fade-in slide-in-from-bottom-1 md:slide-in-from-top-1 duration-150">
               <p className="text-[8px] text-stone-400 font-bold px-2.5 py-1 uppercase tracking-wider">Participante</p>
-              <div className="h-px bg-cream-200 my-1" />
+              <div className="h-px bg-stone-800 md:bg-cream-200 my-1" />
               <div className="max-h-60 overflow-y-auto space-y-0.5">
                 {profiles.map((prof) => {
                   const isProtected = prof.id === 'user-ivan' || prof.id === 'user-catalina';
                   return (
                     <div 
                       key={prof.id} 
-                      className="group flex items-center justify-between rounded-lg hover:bg-cream-100 transition-all"
+                      className="group flex items-center justify-between rounded-lg hover:bg-stone-800 md:hover:bg-cream-100 transition-all"
                     >
                       <button
                         onClick={() => {
@@ -111,18 +111,18 @@ export default function Navigation() {
                         }}
                         className={`flex-1 flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left text-xs transition-all ${
                           prof.id === currentProfileId 
-                            ? 'bg-cream-200 text-stone-900 font-bold border-l-2 border-stone-850' 
-                            : 'text-stone-600'
+                            ? 'bg-stone-800 text-white font-bold border-l-2 border-gold-500 md:bg-cream-200 md:text-stone-900 md:border-stone-850' 
+                            : 'text-stone-300 md:text-stone-600'
                         }`}
                       >
                         <div className="flex items-center gap-2">
-                          <span className="w-5 h-5 rounded-full bg-cream-200 flex items-center justify-center text-[8px] font-bold text-stone-600">
+                          <span className="w-5 h-5 rounded-full bg-stone-800 text-stone-300 md:bg-cream-200 md:text-stone-600 flex items-center justify-center text-[8px] font-bold shrink-0">
                             {getInitials(prof.display_name)}
                           </span>
                           <span>{prof.display_name}</span>
                         </div>
                         {prof.is_admin && (
-                          <span className="text-[7px] bg-stone-900 text-white px-1 py-0.5 rounded font-bold uppercase tracking-wider shrink-0">Admin</span>
+                          <span className="text-[7px] bg-stone-800 text-stone-300 border border-stone-700 px-1 py-0.5 rounded font-bold uppercase tracking-wider shrink-0 md:bg-stone-900 md:text-white md:border-none">Admin</span>
                         )}
                       </button>
 
@@ -135,7 +135,7 @@ export default function Navigation() {
                               await deleteProfile(prof.id);
                             }
                           }}
-                          className="p-1.5 text-stone-400 hover:text-rose-650 opacity-0 group-hover:opacity-100 transition-all rounded hover:bg-cream-200 mr-1 shrink-0"
+                          className="p-1.5 text-stone-500 hover:text-rose-450 opacity-0 group-hover:opacity-100 transition-all rounded hover:bg-stone-800 md:hover:text-rose-650 md:hover:bg-cream-200 mr-1 shrink-0"
                           title="Eliminar participante"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -149,7 +149,7 @@ export default function Navigation() {
               {/* Add Participant Option (Only for Admins like Iván) */}
               {activeProfile?.is_admin && (
                 <>
-                  <div className="h-px bg-cream-200 my-1" />
+                  <div className="h-px bg-stone-800 md:bg-cream-200 my-1" />
                   {isAdding ? (
                     <div className="px-2 py-1.5 space-y-1.5">
                       <div className="flex gap-1 items-center">
@@ -158,7 +158,7 @@ export default function Navigation() {
                           placeholder="Nombre..."
                           value={newParticipantName}
                           onChange={(e) => setNewParticipantName(e.target.value)}
-                          className="w-full bg-cream-50 border border-cream-300 rounded-lg px-2 py-1 text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:border-gold-500"
+                          className="w-full bg-stone-850 border border-stone-800 rounded-lg px-2 py-1 text-xs text-white placeholder-stone-500 focus:outline-none focus:border-gold-500 md:bg-cream-50 md:border-cream-300 md:text-stone-800 md:placeholder-stone-400"
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                               e.preventDefault();
@@ -169,14 +169,14 @@ export default function Navigation() {
                         />
                         <button
                           onClick={handleAddParticipant}
-                          className="p-1 bg-stone-900 hover:bg-stone-800 text-white rounded-lg flex items-center justify-center shrink-0"
+                          className="p-1 bg-stone-800 hover:bg-stone-700 border border-stone-700 text-white rounded-lg flex items-center justify-center shrink-0 md:bg-stone-900 md:hover:bg-stone-850"
                           aria-label="Agregar"
                         >
                           <Plus className="w-3.5 h-3.5" />
                         </button>
                       </div>
                       {errorMsg && (
-                        <p className="text-[8px] font-bold text-rose-600 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded text-center leading-none">
+                        <p className="text-[8px] font-bold text-rose-400 bg-rose-950/20 border border-rose-900/30 px-2 py-0.5 rounded text-center leading-none md:text-rose-600 md:bg-rose-50 md:border-rose-200">
                           {errorMsg}
                         </p>
                       )}
@@ -184,7 +184,7 @@ export default function Navigation() {
                   ) : (
                     <button
                       onClick={() => setIsAdding(true)}
-                      className="w-full flex items-center justify-center gap-1 py-1.5 text-[9px] uppercase font-extrabold tracking-wider text-gold-650 hover:bg-cream-100 rounded-lg transition-all"
+                      className="w-full flex items-center justify-center gap-1 py-1.5 text-[9px] uppercase font-extrabold tracking-wider text-gold-400 hover:bg-stone-800 rounded-lg transition-all md:text-gold-650 md:hover:bg-cream-100"
                     >
                       <span>+ Nuevo Participante</span>
                     </button>
@@ -198,7 +198,7 @@ export default function Navigation() {
         {/* Mobile Menu Button */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          className="md:hidden w-8 h-8 rounded-full border border-cream-300 bg-white flex items-center justify-center text-stone-700 hover:bg-cream-100 transition-all focus:outline-none"
+          className="md:hidden w-8 h-8 rounded-full border border-stone-800 bg-stone-800 text-stone-300 hover:bg-stone-750 transition-all focus:outline-none flex items-center justify-center"
           aria-label="Menú"
         >
           {menuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
@@ -207,7 +207,7 @@ export default function Navigation() {
 
       {/* Mobile Menu Panel */}
       {menuOpen && (
-        <div className="absolute bottom-16 left-0 w-full md:hidden bg-white/95 backdrop-blur-md border-t border-x-0 border-b-0 border-cream-300 rounded-t-3xl rounded-b-none p-4 shadow-lg z-50 flex flex-col gap-1.5 animate-in fade-in slide-in-from-bottom-2 duration-200">
+        <div className="absolute bottom-16 left-0 w-full md:hidden bg-stone-900/95 backdrop-blur-md border-t border-x-0 border-b-0 border-stone-800 rounded-t-3xl rounded-b-none p-4 shadow-lg z-50 flex flex-col gap-1.5 animate-in fade-in slide-in-from-bottom-2 duration-200">
           {navItems.map((item) => {
             const isActive = pathname === item.path;
             return (
@@ -217,8 +217,8 @@ export default function Navigation() {
                 onClick={() => setMenuOpen(false)}
                 className={`text-[9px] uppercase font-bold tracking-wider py-2.5 px-4 rounded-xl transition-all ${
                   isActive 
-                    ? 'bg-stone-900 text-white font-extrabold shadow-sm' 
-                    : 'text-stone-500 hover:bg-cream-100'
+                    ? 'bg-gold-600 text-white font-extrabold shadow-sm' 
+                    : 'text-stone-300 hover:bg-stone-800 hover:text-white'
                 }`}
               >
                 {item.name}
