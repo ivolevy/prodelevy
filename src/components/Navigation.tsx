@@ -47,7 +47,7 @@ export default function Navigation() {
   };
 
   return (
-    <header className="fixed bottom-4 md:bottom-auto md:top-4 left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-2xl h-14 rounded-full border border-cream-300 bg-white/90 backdrop-blur-md px-5 flex items-center justify-between shadow-sm">
+    <header className="fixed bottom-0 left-0 w-full h-16 rounded-none border-t border-b-0 border-x-0 border-cream-300 bg-stone-100/95 backdrop-blur-md px-6 flex items-center justify-between z-50 shadow-lg md:bottom-auto md:top-4 md:left-1/2 md:-translate-x-1/2 md:w-[94%] md:max-w-2xl md:h-14 md:rounded-full md:border md:border-cream-300 md:bg-white/90 md:px-5 md:shadow-sm">
       
       {/* Left: Brand logo as plain elegant text */}
       <Link href="/" className="font-sans text-[10px] tracking-widest font-black text-stone-900 uppercase">
@@ -207,7 +207,7 @@ export default function Navigation() {
 
       {/* Mobile Menu Panel */}
       {menuOpen && (
-        <div className="absolute bottom-16 left-0 right-0 md:hidden bg-white/95 backdrop-blur-md border border-cream-300 rounded-3xl p-3 shadow-lg z-50 flex flex-col gap-1 animate-in fade-in slide-in-from-bottom-2 duration-200">
+        <div className="absolute bottom-16 left-0 w-full md:hidden bg-white/95 backdrop-blur-md border-t border-x-0 border-b-0 border-cream-300 rounded-t-3xl rounded-b-none p-4 shadow-lg z-50 flex flex-col gap-1.5 animate-in fade-in slide-in-from-bottom-2 duration-200">
           {navItems.map((item) => {
             const isActive = pathname === item.path;
             return (
