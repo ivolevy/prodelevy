@@ -113,13 +113,16 @@ export default function StoreInitializer({ children }: { children: React.ReactNo
       }
     };
 
-    // Run sync immediately on load
-    performSync();
+    // Run sync immediately on load (delayed slightly to prevent state updates before child components have fully mounted)
+    const timeoutId = setTimeout(performSync, 100);
 
     // Poll every 60 seconds for real-time tournament scores
     const interval = setInterval(performSync, 60_000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(timeoutId);
+      clearInterval(interval);
+    };
   }, [isLoading]);
 
   return <>{children}</>;
