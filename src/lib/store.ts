@@ -125,6 +125,7 @@ interface TournamentState {
   resetToDefaults: () => Promise<void>;
   autoSeedPredictions: () => Promise<void>;
   addProfile: (displayName: string) => Promise<void>;
+  deleteProfile: (id: string) => Promise<void>;
 }
 
 // --- ZUSTAND STORE IMPLEMENTATION ---
@@ -412,6 +413,44 @@ export const useStore = create<TournamentState>((set, get) => ({
         });
       } catch (e) {
         console.error('Failed to sync new profile to Supabase:', e);
+      }
+    }
+  },
+
+  deleteProfile: async (id: string) => {
+    const { isDemoMode, profiles, matches, predictions, currentProfileId } = get();
+
+    // Prevent deleting primary users
+    if (id === 'user-ivan' || id === 'user-catalina') return;
+
+    const updatedProfiles = profiles.filter(p => p.id !== id);
+    const updatedPredictions = predictions.filter(p => p.participant_id !== id);
+    const standings = updateStandings(matches, updatedPredictions, updatedProfiles);
+
+    // If the active profile was deleted, fallback to user-ivan
+    let nextProfileId = currentProfileId;
+    if (currentProfileId === id) {
+      nextProfileId = 'user-ivan';
+    }
+
+    set({ 
+      profiles: updatedProfiles, 
+      predictions: updatedPredictions, 
+      standings,
+      currentProfileId: nextProfileId
+    });
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('prode_profiles', JSON.stringify(updatedProfiles));
+      localStorage.setItem('prode_predictions', JSON.stringify(updatedPredictions));
+      localStorage.setItem('prode_active_profile', nextProfileId);
+    }
+
+    if (!isDemoMode && supabase) {
+      try {
+        await supabase.from('profiles').delete().eq('id', id);
+      } catch (e) {
+        console.error('Failed to delete profile from Supabase:', e);
       }
     }
   }

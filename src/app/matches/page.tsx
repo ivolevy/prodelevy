@@ -11,6 +11,7 @@ export default function MatchesPage() {
   const [activeFilter, setActiveFilter] = useState<'ALL' | 'upcoming' | 'live' | 'finished'>('ALL');
   const [predictingMatchId, setPredictingMatchId] = useState<number | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
   
   // Forms states for prediction inputs
   const [predHome, setPredHome] = useState<string>('');
@@ -47,6 +48,8 @@ export default function MatchesPage() {
     try {
       await savePrediction(currentProfileId, matchId, h, a);
       setPredictingMatchId(null);
+      setSaveSuccess('¡Pronóstico guardado con éxito!');
+      setTimeout(() => setSaveSuccess(null), 3000);
     } catch (e: any) {
       setValidationError(e.message || 'Error al guardar la predicción.');
     }
@@ -99,7 +102,21 @@ export default function MatchesPage() {
     : matches.filter(m => m.status === activeFilter);
 
   return (
-    <div className="space-y-6 text-stone-900 max-w-5xl mx-auto pt-2">
+    <div className="space-y-6 text-stone-900 max-w-5xl mx-auto pt-2 relative">
+      {/* Success Toast (Heuristic #1: Visibility of System Status) */}
+      <AnimatePresence>
+        {saveSuccess && (
+          <motion.div
+            initial={{ opacity: 0, y: -50, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -50, scale: 0.95 }}
+            className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-emerald-50 border border-emerald-250 text-emerald-800 text-xs font-bold uppercase tracking-wider px-5 py-3 rounded-2xl shadow-xl flex items-center gap-2"
+          >
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+            <span>{saveSuccess}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row justify-between items-center border-b border-cream-300 pb-4 gap-3">
         <div className="text-center sm:text-left">

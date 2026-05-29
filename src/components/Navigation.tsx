@@ -4,15 +4,16 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useStore } from '@/lib/store';
 import { useState } from 'react';
-import { Menu, X, Plus } from 'lucide-react';
+import { Menu, X, Plus, Trash2 } from 'lucide-react';
 
 export default function Navigation() {
   const pathname = usePathname();
-  const { profiles, currentProfileId, setCurrentProfile, addProfile } = useStore();
+  const { profiles, currentProfileId, setCurrentProfile, addProfile, deleteProfile } = useStore();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [newParticipantName, setNewParticipantName] = useState('');
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const activeProfile = profiles.find(p => p.id === currentProfileId);
 
@@ -30,6 +31,16 @@ export default function Navigation() {
   const handleAddParticipant = async () => {
     const name = newParticipantName.trim();
     if (!name) return;
+    
+    // Error Prevention: Check for duplicate name
+    const isDuplicate = profiles.some(p => p.display_name.toLowerCase() === name.toLowerCase());
+    if (isDuplicate) {
+      setErrorMsg('El nombre ya existe');
+      setTimeout(() => setErrorMsg(null), 3000);
+      return;
+    }
+
+    setErrorMsg(null);
     await addProfile(name);
     setNewParticipantName('');
     setIsAdding(false);
@@ -74,6 +85,7 @@ export default function Navigation() {
             onClick={() => {
               setDropdownOpen(!dropdownOpen);
               setIsAdding(false);
+              setErrorMsg(null);
             }}
             className="w-8 h-8 rounded-full border border-cream-300 bg-white flex items-center justify-center text-[10px] font-black text-stone-700 hover:bg-cream-100 transition-all focus:outline-none"
           >
@@ -81,34 +93,57 @@ export default function Navigation() {
           </button>
 
           {dropdownOpen && (
-            <div className="absolute right-0 mt-3 w-52 rounded-xl bg-white border border-cream-300 shadow-lg p-1.5 z-50 text-stone-900">
+            <div className="absolute right-0 mt-3 w-56 rounded-xl bg-white border border-cream-300 shadow-lg p-1.5 z-50 text-stone-900 animate-in fade-in slide-in-from-top-1 duration-150">
               <p className="text-[8px] text-stone-400 font-bold px-2.5 py-1 uppercase tracking-wider">Participante</p>
               <div className="h-px bg-cream-200 my-1" />
               <div className="max-h-60 overflow-y-auto space-y-0.5">
-                {profiles.map((prof) => (
-                  <button
-                    key={prof.id}
-                    onClick={() => {
-                      setCurrentProfile(prof.id);
-                      setDropdownOpen(false);
-                    }}
-                    className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left text-xs transition-all ${
-                      prof.id === currentProfileId 
-                        ? 'bg-cream-200 text-stone-900 font-bold border-l-2 border-stone-850' 
-                        : 'text-stone-600 hover:bg-cream-100'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 rounded-full bg-cream-200 flex items-center justify-center text-[8px] font-bold text-stone-600">
-                        {getInitials(prof.display_name)}
-                      </span>
-                      <span>{prof.display_name}</span>
+                {profiles.map((prof) => {
+                  const isProtected = prof.id === 'user-ivan' || prof.id === 'user-catalina';
+                  return (
+                    <div 
+                      key={prof.id} 
+                      className="group flex items-center justify-between rounded-lg hover:bg-cream-100 transition-all"
+                    >
+                      <button
+                        onClick={() => {
+                          setCurrentProfile(prof.id);
+                          setDropdownOpen(false);
+                        }}
+                        className={`flex-1 flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left text-xs transition-all ${
+                          prof.id === currentProfileId 
+                            ? 'bg-cream-200 text-stone-900 font-bold border-l-2 border-stone-850' 
+                            : 'text-stone-600'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="w-5 h-5 rounded-full bg-cream-200 flex items-center justify-center text-[8px] font-bold text-stone-600">
+                            {getInitials(prof.display_name)}
+                          </span>
+                          <span>{prof.display_name}</span>
+                        </div>
+                        {prof.is_admin && (
+                          <span className="text-[7px] bg-stone-900 text-white px-1 py-0.5 rounded font-bold uppercase tracking-wider shrink-0">Admin</span>
+                        )}
+                      </button>
+
+                      {/* Deletion Option (User Control & Freedom) */}
+                      {!isProtected && activeProfile?.is_admin && (
+                        <button
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            if (confirm(`¿Eliminar participante "${prof.display_name}"? Sus pronósticos y puntos se perderán de manera permanente.`)) {
+                              await deleteProfile(prof.id);
+                            }
+                          }}
+                          className="p-1.5 text-stone-400 hover:text-rose-650 opacity-0 group-hover:opacity-100 transition-all rounded hover:bg-cream-200 mr-1 shrink-0"
+                          title="Eliminar participante"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                     </div>
-                    {prof.is_admin && (
-                      <span className="text-[7px] bg-stone-900 text-white px-1 py-0.5 rounded font-bold uppercase tracking-wider">Admin</span>
-                    )}
-                  </button>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Add Participant Option (Only for Admins like Iván) */}
@@ -116,28 +151,35 @@ export default function Navigation() {
                 <>
                   <div className="h-px bg-cream-200 my-1" />
                   {isAdding ? (
-                    <div className="px-2 py-1.5 flex gap-1 items-center">
-                      <input
-                        type="text"
-                        placeholder="Nombre..."
-                        value={newParticipantName}
-                        onChange={(e) => setNewParticipantName(e.target.value)}
-                        className="w-full bg-cream-50 border border-cream-300 rounded-lg px-2 py-1 text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:border-gold-500"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            handleAddParticipant();
-                          }
-                        }}
-                        autoFocus
-                      />
-                      <button
-                        onClick={handleAddParticipant}
-                        className="p-1 bg-stone-900 hover:bg-stone-800 text-white rounded-lg flex items-center justify-center shrink-0"
-                        aria-label="Agregar"
-                      >
-                        <Plus className="w-3.5 h-3.5" />
-                      </button>
+                    <div className="px-2 py-1.5 space-y-1.5">
+                      <div className="flex gap-1 items-center">
+                        <input
+                          type="text"
+                          placeholder="Nombre..."
+                          value={newParticipantName}
+                          onChange={(e) => setNewParticipantName(e.target.value)}
+                          className="w-full bg-cream-50 border border-cream-300 rounded-lg px-2 py-1 text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:border-gold-500"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleAddParticipant();
+                            }
+                          }}
+                          autoFocus
+                        />
+                        <button
+                          onClick={handleAddParticipant}
+                          className="p-1 bg-stone-900 hover:bg-stone-800 text-white rounded-lg flex items-center justify-center shrink-0"
+                          aria-label="Agregar"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                      {errorMsg && (
+                        <p className="text-[8px] font-bold text-rose-600 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded text-center leading-none">
+                          {errorMsg}
+                        </p>
+                      )}
                     </div>
                   ) : (
                     <button
