@@ -36,11 +36,30 @@ export default function MatchesPage() {
     }
   };
 
+  const handleScoreChange = (value: string, setter: (val: string) => void) => {
+    if (value === '') {
+      setter('');
+      return;
+    }
+    // Strip non-digits (removes negative signs, decimals, e, etc.)
+    const digitsOnly = value.replace(/\D/g, '');
+    if (digitsOnly === '') {
+      setter('');
+      return;
+    }
+    const num = parseInt(digitsOnly, 10);
+    if (num > 20) {
+      setter('20');
+    } else {
+      setter(String(num));
+    }
+  };
+
   const handleSavePrediction = async (matchId: number) => {
     const h = parseInt(predHome);
     const a = parseInt(predAway);
-    if (isNaN(h) || isNaN(a) || h < 0 || a < 0) {
-      setValidationError('Ingresá números válidos (0 o más)');
+    if (isNaN(h) || isNaN(a) || h < 0 || a < 0 || h > 20 || a > 20) {
+      setValidationError('Ingresá números entre 0 y 20');
       return;
     }
 
@@ -311,8 +330,9 @@ export default function MatchesPage() {
                               type="number"
                               pattern="[0-9]*"
                               min="0"
+                              max="20"
                               value={predHome}
-                              onChange={(e) => setPredHome(e.target.value)}
+                              onChange={(e) => handleScoreChange(e.target.value, setPredHome)}
                               className="w-12 h-10 text-center bg-white border border-cream-300 rounded-xl text-lg font-bold text-stone-850 focus:outline-none focus:border-gold-500" 
                             />
                           </div>
@@ -325,8 +345,9 @@ export default function MatchesPage() {
                               type="number"
                               pattern="[0-9]*"
                               min="0"
+                              max="20"
                               value={predAway}
-                              onChange={(e) => setPredAway(e.target.value)}
+                              onChange={(e) => handleScoreChange(e.target.value, setPredAway)}
                               className="w-12 h-10 text-center bg-white border border-cream-300 rounded-xl text-lg font-bold text-stone-850 focus:outline-none focus:border-gold-500" 
                             />
                           </div>

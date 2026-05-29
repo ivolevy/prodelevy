@@ -287,6 +287,11 @@ export const useStore = create<TournamentState>((set, get) => ({
       throw new Error('La predicción está cerrada para este partido (cierre de 24hs).');
     }
 
+    // Validate prediction scores are between 0 and 20
+    if (homeScore < 0 || homeScore > 20 || awayScore < 0 || awayScore > 20) {
+      throw new Error('Los resultados deben estar entre 0 y 20.');
+    }
+
     const existingIdx = predictions.findIndex(p => p.participant_id === profileId && p.match_id === matchId);
     let updatedPredictions = [...predictions];
 
