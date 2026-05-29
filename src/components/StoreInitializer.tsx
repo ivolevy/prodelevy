@@ -77,7 +77,7 @@ export default function StoreInitializer({ children }: { children: React.ReactNo
       if (isSyncing) return;
       isSyncing = true;
       try {
-        const res = await fetch('/api/sync-gemini', {
+        const res = await fetch('/api/sync-matches', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ matches: matchesRef.current }),

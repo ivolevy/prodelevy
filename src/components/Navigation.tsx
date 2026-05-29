@@ -4,27 +4,35 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useStore } from '@/lib/store';
 import { useState } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Plus } from 'lucide-react';
 
 export default function Navigation() {
   const pathname = usePathname();
-  const { profiles, currentProfileId, setCurrentProfile } = useStore();
+  const { profiles, currentProfileId, setCurrentProfile, addProfile } = useStore();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
+  const [newParticipantName, setNewParticipantName] = useState('');
 
   const activeProfile = profiles.find(p => p.id === currentProfileId);
 
   const navItems = [
     { name: 'Inicio', path: '/' },
-    { name: 'Draft', path: '/draft' },
     { name: 'Fixture', path: '/matches' },
     { name: 'Reglas', path: '/rules' },
-    { name: 'Admin', path: '/admin' },
   ];
 
   // Helper to get initials
   const getInitials = (name: string) => {
     return name ? name.substring(0, 2).toUpperCase() : 'US';
+  };
+
+  const handleAddParticipant = async () => {
+    const name = newParticipantName.trim();
+    if (!name) return;
+    await addProfile(name);
+    setNewParticipantName('');
+    setIsAdding(false);
   };
 
   return (
@@ -63,40 +71,84 @@ export default function Navigation() {
         {/* Profile Dropdown */}
         <div className="relative">
           <button 
-            onClick={() => setDropdownOpen(!dropdownOpen)}
+            onClick={() => {
+              setDropdownOpen(!dropdownOpen);
+              setIsAdding(false);
+            }}
             className="w-8 h-8 rounded-full border border-cream-300 bg-white flex items-center justify-center text-[10px] font-black text-stone-700 hover:bg-cream-100 transition-all focus:outline-none"
           >
             <span>{getInitials(activeProfile?.display_name || 'US')}</span>
           </button>
 
           {dropdownOpen && (
-            <div className="absolute right-0 mt-3 w-48 rounded-xl bg-white border border-cream-300 shadow-lg p-1.5 z-50 text-stone-900">
+            <div className="absolute right-0 mt-3 w-52 rounded-xl bg-white border border-cream-300 shadow-lg p-1.5 z-50 text-stone-900">
               <p className="text-[8px] text-stone-400 font-bold px-2.5 py-1 uppercase tracking-wider">Participante</p>
               <div className="h-px bg-cream-200 my-1" />
-              {profiles.map((prof) => (
-                <button
-                  key={prof.id}
-                  onClick={() => {
-                    setCurrentProfile(prof.id);
-                    setDropdownOpen(false);
-                  }}
-                  className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left text-xs transition-all ${
-                    prof.id === currentProfileId 
-                      ? 'bg-cream-200 text-stone-900 font-bold border-l-2 border-stone-850' 
-                      : 'text-stone-605 hover:bg-cream-100'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-cream-200 flex items-center justify-center text-[8px] font-bold text-stone-600">
-                      {getInitials(prof.display_name)}
-                    </span>
-                    <span>{prof.display_name}</span>
-                  </div>
-                  {prof.is_admin && (
-                    <span className="text-[7px] bg-stone-900 text-white px-1 py-0.5 rounded font-bold uppercase tracking-wider">Admin</span>
+              <div className="max-h-60 overflow-y-auto space-y-0.5">
+                {profiles.map((prof) => (
+                  <button
+                    key={prof.id}
+                    onClick={() => {
+                      setCurrentProfile(prof.id);
+                      setDropdownOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left text-xs transition-all ${
+                      prof.id === currentProfileId 
+                        ? 'bg-cream-200 text-stone-900 font-bold border-l-2 border-stone-850' 
+                        : 'text-stone-600 hover:bg-cream-100'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-cream-200 flex items-center justify-center text-[8px] font-bold text-stone-600">
+                        {getInitials(prof.display_name)}
+                      </span>
+                      <span>{prof.display_name}</span>
+                    </div>
+                    {prof.is_admin && (
+                      <span className="text-[7px] bg-stone-900 text-white px-1 py-0.5 rounded font-bold uppercase tracking-wider">Admin</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              {/* Add Participant Option (Only for Admins like Iván) */}
+              {activeProfile?.is_admin && (
+                <>
+                  <div className="h-px bg-cream-200 my-1" />
+                  {isAdding ? (
+                    <div className="px-2 py-1.5 flex gap-1 items-center">
+                      <input
+                        type="text"
+                        placeholder="Nombre..."
+                        value={newParticipantName}
+                        onChange={(e) => setNewParticipantName(e.target.value)}
+                        className="w-full bg-cream-50 border border-cream-300 rounded-lg px-2 py-1 text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:border-gold-500"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAddParticipant();
+                          }
+                        }}
+                        autoFocus
+                      />
+                      <button
+                        onClick={handleAddParticipant}
+                        className="p-1 bg-stone-900 hover:bg-stone-800 text-white rounded-lg flex items-center justify-center shrink-0"
+                        aria-label="Agregar"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setIsAdding(true)}
+                      className="w-full flex items-center justify-center gap-1 py-1.5 text-[9px] uppercase font-extrabold tracking-wider text-gold-650 hover:bg-cream-100 rounded-lg transition-all"
+                    >
+                      <span>+ Nuevo Participante</span>
+                    </button>
                   )}
-                </button>
-              ))}
+                </>
+              )}
             </div>
           )}
         </div>

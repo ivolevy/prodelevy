@@ -14,8 +14,8 @@ export const metadata: Metadata = {
   description: "El torneo familiar más importante del planeta.",
   manifest: "/manifest.json",
   icons: {
-    icon: "/favicon.svg",
-    apple: "/icons/icon-192x192.svg",
+    icon: "/favicon.png",
+    apple: "/icons/icon-192x192.png",
   },
   appleWebApp: {
     capable: true,

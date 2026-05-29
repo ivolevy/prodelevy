@@ -1,90 +1,79 @@
-import { Team, ParticipantSelection, Standing } from './types';
-
-export const STAGE_POINTS: Record<string, number> = {
-  group: 0,
-  octavos: 1,
-  cuartos: 2,
-  semifinal: 3,
-  finalist: 5,
-  champion: 8
-};
+import { Match, Prediction, Profile, Standing } from './types';
 
 /**
- * Calculates the score based on the highest stage reached by a team (non-cumulative).
+ * Calculates standings based on match predictions and actual finished match results.
  */
-export function calculatePoints(teamStage: string): number {
-  return STAGE_POINTS[teamStage.toLowerCase()] || 0;
-}
+export function updateStandings(
+  matches: Match[],
+  predictions: Prediction[],
+  profiles: Profile[]
+): Standing[] {
+  const standingsList: Standing[] = profiles.map(profile => {
+    // Find all predictions for this participant
+    const userPredictions = predictions.filter(p => p.participant_id === profile.id);
 
-/**
- * Retrieves the maximum stage reached by a team name or ID.
- */
-export function getTeamStage(teamNameOrId: string, teams: Team[]): string {
-  const team = teams.find(t => t.id === teamNameOrId || t.name === teamNameOrId);
-  return team ? team.stage_reached : 'group';
-}
+    let exactGuesses = 0;
+    let outcomeGuesses = 0;
+    let totalPoints = 0;
 
-/**
- * Compares two standings to determine who has the tiebreak advantage.
- * Returns negative if a wins tiebreak (should be higher rank), positive if b wins, 0 if identical.
- */
-export function breakTie(a: Standing, b: Standing): number {
-  // 1. Gana quien tenga al campeón del mundo
-  const aHasChamp = a.has_champion ? 1 : 0;
-  const bHasChamp = b.has_champion ? 1 : 0;
-  if (bHasChamp !== aHasChamp) {
-    return bHasChamp - aHasChamp; // 1 (b has champ, so b ranks higher/lower index) or -1 (a ranks higher)
-  }
+    userPredictions.forEach(pred => {
+      const match = matches.find(m => m.id === pred.match_id);
+      if (!match || match.status !== 'finished') return;
 
-  // 2. Si sigue el empate, gana quien tenga más finalistas
-  if (b.finalists_count !== a.finalists_count) {
-    return b.finalists_count - a.finalists_count;
-  }
+      const actHome = match.home_score;
+      const actAway = match.away_score;
+      const predHome = pred.home_score;
+      const predAway = pred.away_score;
 
-  // 3. Si sigue igual, se define por penales, moneda o batalla campal familiar (0)
-  return 0;
-}
+      if (actHome === null || actHome === undefined || actAway === null || actAway === undefined) {
+        return;
+      }
 
-/**
- * Generates the full rankings table and assigns ranks, sorting by points and tiebreakers.
- */
-export function updateStandings(teams: Team[], selections: ParticipantSelection[]): Standing[] {
-  const list: Standing[] = selections.map(sel => {
-    const team1 = sel.team1_id ? teams.find(t => t.id === sel.team1_id) : undefined;
-    const team2 = sel.team2_id ? teams.find(t => t.id === sel.team2_id) : undefined;
-
-    const team1_points = team1 ? calculatePoints(team1.stage_reached) : 0;
-    const team2_points = team2 ? calculatePoints(team2.stage_reached) : 0;
-    const total_points = team1_points + team2_points;
-
-    const has_champion = 
-      (team1?.stage_reached === 'champion') || 
-      (team2?.stage_reached === 'champion');
-
-    const finalists_count = 
-      (team1 && (team1.stage_reached === 'finalist' || team1.stage_reached === 'champion') ? 1 : 0) +
-      (team2 && (team2.stage_reached === 'finalist' || team2.stage_reached === 'champion') ? 1 : 0);
+      // 1. Exact Match
+      if (predHome === actHome && predAway === actAway) {
+        exactGuesses++;
+        totalPoints += 3;
+      } 
+      // 2. Correct Outcome (Winner or Draw) but incorrect score
+      else {
+        const actualDiff = actHome - actAway;
+        const predDiff = predHome - predAway;
+        
+        // Both predicted home win (diff > 0), both predicted draw (diff === 0), or both predicted away win (diff < 0)
+        const correctOutcome = Math.sign(actualDiff) === Math.sign(predDiff);
+        
+        if (correctOutcome) {
+          outcomeGuesses++;
+          totalPoints += 1;
+        }
+      }
+    });
 
     return {
-      profile_id: sel.profile_id,
-      display_name: sel.manual_name || 'Participante',
-      avatar_url: sel.manual_avatar || '',
-      team1,
-      team2,
-      team1_points,
-      team2_points,
-      total_points,
-      has_champion,
-      finalists_count
+      profile_id: profile.id,
+      display_name: profile.display_name,
+      avatar_url: profile.avatar_url,
+      exact_guesses: exactGuesses,
+      outcome_guesses: outcomeGuesses,
+      total_points: totalPoints,
     };
   });
 
-  // Sort: Primary by total points descending, secondary by breakTie
-  const sorted = list.sort((a, b) => {
+  // Sort standings:
+  // 1. Total points descending
+  // 2. Exact guesses descending
+  // 3. Outcome guesses descending
+  const sorted = standingsList.sort((a, b) => {
     if (b.total_points !== a.total_points) {
       return b.total_points - a.total_points;
     }
-    return breakTie(a, b);
+    if (b.exact_guesses !== a.exact_guesses) {
+      return b.exact_guesses - a.exact_guesses;
+    }
+    if (b.outcome_guesses !== a.outcome_guesses) {
+      return b.outcome_guesses - a.outcome_guesses;
+    }
+    return 0;
   });
 
   // Assign ranks, allowing shared ranks in case of absolute ties
@@ -93,9 +82,10 @@ export function updateStandings(teams: Team[], selections: ParticipantSelection[
     if (index > 0) {
       const prev = arr[index - 1];
       const pointsDiff = prev.total_points - item.total_points;
-      const tieDiff = breakTie(prev, item);
+      const exactDiff = prev.exact_guesses - item.exact_guesses;
+      const outcomeDiff = prev.outcome_guesses - item.outcome_guesses;
       
-      if (pointsDiff !== 0 || tieDiff !== 0) {
+      if (pointsDiff !== 0 || exactDiff !== 0 || outcomeDiff !== 0) {
         currentRank = index + 1;
       }
     }

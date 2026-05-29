@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Team, Match, ParticipantSelection, Standing, Profile, Prediction } from './types';
+import { Team, Match, Standing, Profile, Prediction } from './types';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 import { updateStandings } from './scoring';
 
@@ -84,20 +84,25 @@ export const INITIAL_MATCHES: Match[] = [
 ];
 
 export const INITIAL_PROFILES: Profile[] = [
-  { id: 'user-leila', display_name: 'Leila', is_admin: false, avatar_url: 'LE', created_at: '', updated_at: '' },
   { id: 'user-ivan', display_name: 'Iván', is_admin: true, avatar_url: 'IV', created_at: '', updated_at: '' },
-  { id: 'user-laura', display_name: 'Laura', is_admin: false, avatar_url: 'LA', created_at: '', updated_at: '' },
-  { id: 'user-carlos', display_name: 'Carlos', is_admin: false, avatar_url: 'CA', created_at: '', updated_at: '' },
-  { id: 'user-santiago', display_name: 'Santiago', is_admin: false, avatar_url: 'SA', created_at: '', updated_at: '' }
+  { id: 'user-catalina', display_name: 'Catalina', is_admin: false, avatar_url: 'CA', created_at: '', updated_at: '' }
 ];
 
-export const INITIAL_SELECTIONS: ParticipantSelection[] = [
-  { profile_id: 'user-leila', team1_id: null, team2_id: null, manual_name: 'Leila', manual_avatar: 'LE' },
-  { profile_id: 'user-ivan', team1_id: null, team2_id: null, manual_name: 'Iván', manual_avatar: 'IV' },
-  { profile_id: 'user-laura', team1_id: null, team2_id: null, manual_name: 'Laura', manual_avatar: 'LA' },
-  { profile_id: 'user-carlos', team1_id: null, team2_id: null, manual_name: 'Carlos', manual_avatar: 'CA' },
-  { profile_id: 'user-santiago', team1_id: null, team2_id: null, manual_name: 'Santiago', manual_avatar: 'SA' }
-];
+// Helper to determine if a match is predictable (open to predictions)
+export function isMatchPredictable(match: Match): boolean {
+  if (match.status !== 'upcoming') return false;
+
+  const matchDateTimeStr = `${match.fecha}T${match.hora_arg.includes('-') || match.hora_arg.includes('+') ? match.hora_arg : match.hora_arg + '-03:00'}`;
+  const matchTime = new Date(matchDateTimeStr).getTime();
+
+  if (isNaN(matchTime)) {
+    return true; // Fallback
+  }
+
+  const now = new Date().getTime();
+  const diffHours = (matchTime - now) / (1000 * 60 * 60);
+  return diffHours >= 24;
+}
 
 // --- ZUSTAND STORE TYPE DECLARATION ---
 
@@ -105,7 +110,6 @@ interface TournamentState {
   teams: Team[];
   matches: Match[];
   profiles: Profile[];
-  selections: ParticipantSelection[];
   predictions: Prediction[];
   standings: Standing[];
   currentProfileId: string;
@@ -115,12 +119,12 @@ interface TournamentState {
   // Actions
   initStore: () => Promise<void>;
   setCurrentProfile: (id: string) => void;
-  selectTeams: (profileId: string, team1Id: string | null, team2Id: string | null) => Promise<void>;
   updateMatchScore: (matchId: number, homeScore: number | null, awayScore: number | null, status: Match['status']) => Promise<void>;
   updateTeamStage: (teamId: string, stage: Team['stage_reached']) => Promise<void>;
   savePrediction: (profileId: string, matchId: number, homeScore: number, awayScore: number) => Promise<void>;
   resetToDefaults: () => Promise<void>;
-  autoSeedDraft: () => Promise<void>;
+  autoSeedPredictions: () => Promise<void>;
+  addProfile: (displayName: string) => Promise<void>;
 }
 
 // --- ZUSTAND STORE IMPLEMENTATION ---
@@ -129,7 +133,6 @@ export const useStore = create<TournamentState>((set, get) => ({
   teams: [],
   matches: [],
   profiles: [],
-  selections: [],
   predictions: [],
   standings: [],
   currentProfileId: 'user-ivan', // Iván is default active profile (admin)
@@ -149,34 +152,21 @@ export const useStore = create<TournamentState>((set, get) => ({
         const { data: teamsData } = await supabase.from('teams').select('*');
         const { data: matchesData } = await supabase.from('matches').select('*').order('id', { ascending: true });
         const { data: profilesData } = await supabase.from('profiles').select('*');
-        const { data: selectionsData } = await supabase.from('participants').select('*');
         const { data: predictionsData } = await supabase.from('predictions').select('*');
-
-        // Transform selections from Supabase column names to selection object structure
-        const mappedSelections: ParticipantSelection[] = (selectionsData || []).map((sel: any) => ({
-          profile_id: sel.profile_id,
-          team1_id: sel.team1_id,
-          team2_id: sel.team2_id,
-          manual_name: sel.manual_name || profilesData?.find(p => p.id === sel.profile_id)?.display_name || 'Participante',
-          manual_avatar: sel.manual_avatar || profilesData?.find(p => p.id === sel.profile_id)?.avatar_url || '👤'
-        }));
 
         const teams = (teamsData && teamsData.length > 0) ? teamsData : INITIAL_TEAMS;
         const matches = (matchesData && matchesData.length > 0) ? matchesData : INITIAL_MATCHES;
         const profiles = (profilesData && profilesData.length > 0) ? profilesData : INITIAL_PROFILES;
-        const selections = mappedSelections.length > 0 ? mappedSelections : INITIAL_SELECTIONS;
+        const predictions = predictionsData || [];
 
-        // If no profiles loaded (empty DB), we use mock logins
         const currentUserId = profiles[0]?.id || 'user-ivan';
-
-        const standings = updateStandings(teams, selections);
+        const standings = updateStandings(matches, predictions, profiles);
 
         set({
           teams,
           matches,
           profiles,
-          selections,
-          predictions: predictionsData || [],
+          predictions,
           standings,
           currentProfileId: currentUserId,
           isLoading: false
@@ -193,14 +183,12 @@ export const useStore = create<TournamentState>((set, get) => ({
       const storedTeams = localStorage.getItem('prode_teams');
       const storedMatches = localStorage.getItem('prode_matches');
       const storedProfiles = localStorage.getItem('prode_profiles');
-      const storedSelections = localStorage.getItem('prode_selections');
       const storedPredictions = localStorage.getItem('prode_predictions');
       const storedActiveProfile = localStorage.getItem('prode_active_profile');
 
       const teams = storedTeams ? JSON.parse(storedTeams) : INITIAL_TEAMS;
       const matches = storedMatches ? JSON.parse(storedMatches) : INITIAL_MATCHES;
       const profiles = storedProfiles ? JSON.parse(storedProfiles) : INITIAL_PROFILES;
-      const selections = storedSelections ? JSON.parse(storedSelections) : INITIAL_SELECTIONS;
       const predictions = storedPredictions ? JSON.parse(storedPredictions) : [];
       const currentProfileId = storedActiveProfile || 'user-ivan';
 
@@ -208,17 +196,15 @@ export const useStore = create<TournamentState>((set, get) => ({
       localStorage.setItem('prode_teams', JSON.stringify(teams));
       localStorage.setItem('prode_matches', JSON.stringify(matches));
       localStorage.setItem('prode_profiles', JSON.stringify(profiles));
-      localStorage.setItem('prode_selections', JSON.stringify(selections));
       localStorage.setItem('prode_predictions', JSON.stringify(predictions));
       localStorage.setItem('prode_active_profile', currentProfileId);
 
-      const standings = updateStandings(teams, selections);
+      const standings = updateStandings(matches, predictions, profiles);
 
       set({
         teams,
         matches,
         profiles,
-        selections,
         predictions,
         standings,
         currentProfileId,
@@ -229,8 +215,8 @@ export const useStore = create<TournamentState>((set, get) => ({
         teams: INITIAL_TEAMS,
         matches: INITIAL_MATCHES,
         profiles: INITIAL_PROFILES,
-        selections: INITIAL_SELECTIONS,
-        standings: updateStandings(INITIAL_TEAMS, INITIAL_SELECTIONS),
+        predictions: [],
+        standings: updateStandings(INITIAL_MATCHES, [], INITIAL_PROFILES),
         isLoading: false
       });
     }
@@ -243,37 +229,8 @@ export const useStore = create<TournamentState>((set, get) => ({
     }
   },
 
-  selectTeams: async (profileId: string, team1Id: string | null, team2Id: string | null) => {
-    const { isDemoMode, selections, teams } = get();
-
-    // Optimistic / Local update
-    const updatedSelections = selections.map(sel => 
-      sel.profile_id === profileId 
-        ? { ...sel, team1_id: team1Id, team2_id: team2Id, selected_at: new Date().toISOString() }
-        : sel
-    );
-
-    const standings = updateStandings(teams, updatedSelections);
-
-    set({ selections: updatedSelections, standings });
-
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('prode_selections', JSON.stringify(updatedSelections));
-    }
-
-    if (!isDemoMode && supabase) {
-      // Upsert into Supabase
-      await supabase.from('participants').upsert({
-        profile_id: profileId,
-        team1_id: team1Id,
-        team2_id: team2Id,
-        selected_at: new Date().toISOString()
-      });
-    }
-  },
-
   updateMatchScore: async (matchId: number, homeScore: number | null, awayScore: number | null, status: Match['status']) => {
-    const { isDemoMode, matches } = get();
+    const { isDemoMode, matches, predictions, profiles } = get();
 
     const updatedMatches = matches.map(m => 
       m.id === matchId 
@@ -281,7 +238,9 @@ export const useStore = create<TournamentState>((set, get) => ({
         : m
     );
 
-    set({ matches: updatedMatches });
+    const standings = updateStandings(updatedMatches, predictions, profiles);
+
+    set({ matches: updatedMatches, standings });
 
     if (typeof window !== 'undefined') {
       localStorage.setItem('prode_matches', JSON.stringify(updatedMatches));
@@ -297,13 +256,13 @@ export const useStore = create<TournamentState>((set, get) => ({
   },
 
   updateTeamStage: async (teamId: string, stage: Team['stage_reached']) => {
-    const { isDemoMode, teams, selections } = get();
+    const { isDemoMode, teams, matches, predictions, profiles } = get();
 
     const updatedTeams = teams.map(t => 
       t.id === teamId ? { ...t, stage_reached: stage } : t
     );
 
-    const standings = updateStandings(updatedTeams, selections);
+    const standings = updateStandings(matches, predictions, profiles);
 
     set({ teams: updatedTeams, standings });
 
@@ -319,7 +278,13 @@ export const useStore = create<TournamentState>((set, get) => ({
   },
 
   savePrediction: async (profileId: string, matchId: number, homeScore: number, awayScore: number) => {
-    const { isDemoMode, predictions } = get();
+    const { isDemoMode, predictions, matches, profiles } = get();
+
+    // Enforce the 24 hours lock
+    const match = matches.find(m => m.id === matchId);
+    if (match && !isMatchPredictable(match)) {
+      throw new Error('La predicción está cerrada para este partido (cierre de 24hs).');
+    }
 
     const existingIdx = predictions.findIndex(p => p.participant_id === profileId && p.match_id === matchId);
     let updatedPredictions = [...predictions];
@@ -336,7 +301,9 @@ export const useStore = create<TournamentState>((set, get) => ({
       });
     }
 
-    set({ predictions: updatedPredictions });
+    const standings = updateStandings(matches, updatedPredictions, profiles);
+
+    set({ predictions: updatedPredictions, standings });
 
     if (typeof window !== 'undefined') {
       localStorage.setItem('prode_predictions', JSON.stringify(updatedPredictions));
@@ -357,64 +324,94 @@ export const useStore = create<TournamentState>((set, get) => ({
       localStorage.removeItem('prode_teams');
       localStorage.removeItem('prode_matches');
       localStorage.removeItem('prode_profiles');
-      localStorage.removeItem('prode_selections');
       localStorage.removeItem('prode_predictions');
       localStorage.removeItem('prode_active_profile');
     }
 
     const { isDemoMode } = get();
     if (!isDemoMode && supabase) {
-      // Reset Supabase by setting everything back to initial states
-      // Resets stages to 'group'
       await supabase.from('teams').update({ stage_reached: 'group' }).neq('id', 'NONE');
-      // Resets matches status and scores
       await supabase.from('matches').update({ home_score: null, away_score: null, status: 'upcoming' }).gt('id', 0);
-      // Clear selections
-      await supabase.from('participants').update({ team1_id: null, team2_id: null, selected_at: null }).neq('profile_id', '00000000-0000-0000-0000-000000000000');
+      await supabase.from('predictions').delete().neq('id', '00000000-0000-0000-0000-000000000000');
     }
 
     // Reload the store
     await get().initStore();
   },
 
-  autoSeedDraft: async () => {
-    // Automatically drafts 2 random, unrepeated teams for each of the 5 mock participants.
-    // Extremely useful for testing and verifying the leaderboard.
-    const { selections, teams } = get();
+  autoSeedPredictions: async () => {
+    const { matches, profiles } = get();
     
-    // Choose 10 distinct top teams to draft:
-    // ARG (Argentina), BRA (Brasil), GER (Alemania), FRA (Francia), ESP (España), 
-    // POR (Portugal), ENG (Inglaterra), NED (Países Bajos), BEL (Bélgica), USA (Estados Unidos)
-    const seedPicks = ['ARG', 'BRA', 'GER', 'FRA', 'ESP', 'POR', 'ENG', 'NED', 'BEL', 'USA'];
-    
-    const updatedSelections = selections.map((sel, index) => {
-      const pick1 = seedPicks[index * 2];
-      const pick2 = seedPicks[index * 2 + 1];
-      return {
-        ...sel,
-        team1_id: pick1,
-        team2_id: pick2,
-        selected_at: new Date().toISOString()
-      };
+    // Generate random predictions for each user and each match
+    const seededPredictions: Prediction[] = [];
+    profiles.forEach(profile => {
+      matches.forEach(match => {
+        const homeScore = Math.floor(Math.random() * 4);
+        const awayScore = Math.floor(Math.random() * 4);
+        
+        seededPredictions.push({
+          id: Math.random().toString(36).substring(7),
+          participant_id: profile.id,
+          match_id: match.id,
+          home_score: homeScore,
+          away_score: awayScore,
+          created_at: new Date().toISOString()
+        });
+      });
     });
 
-    const standings = updateStandings(teams, updatedSelections);
-    set({ selections: updatedSelections, standings });
+    const standings = updateStandings(matches, seededPredictions, profiles);
+    set({ predictions: seededPredictions, standings });
 
     if (typeof window !== 'undefined') {
-      localStorage.setItem('prode_selections', JSON.stringify(updatedSelections));
+      localStorage.setItem('prode_predictions', JSON.stringify(seededPredictions));
     }
 
-    // Sync to Supabase if live
     const { isDemoMode } = get();
     if (!isDemoMode && supabase) {
-      for (const sel of updatedSelections) {
-        await supabase.from('participants').upsert({
-          profile_id: sel.profile_id,
-          team1_id: sel.team1_id,
-          team2_id: sel.team2_id,
-          selected_at: new Date().toISOString()
+      for (const pred of seededPredictions) {
+        await supabase.from('predictions').upsert({
+          participant_id: pred.participant_id,
+          match_id: pred.match_id,
+          home_score: pred.home_score,
+          away_score: pred.away_score
         });
+      }
+    }
+  },
+
+  addProfile: async (displayName: string) => {
+    const { isDemoMode, profiles, matches, predictions } = get();
+
+    const newId = `user-${Math.random().toString(36).substring(7)}`;
+    const newProfile: Profile = {
+      id: newId,
+      display_name: displayName,
+      is_admin: false,
+      avatar_url: displayName.substring(0, 2).toUpperCase(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    const updatedProfiles = [...profiles, newProfile];
+    const standings = updateStandings(matches, predictions, updatedProfiles);
+
+    set({ profiles: updatedProfiles, standings });
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('prode_profiles', JSON.stringify(updatedProfiles));
+    }
+
+    if (!isDemoMode && supabase) {
+      try {
+        await supabase.from('profiles').insert({
+          id: newId,
+          display_name: displayName,
+          avatar_url: newProfile.avatar_url,
+          is_admin: false
+        });
+      } catch (e) {
+        console.error('Failed to sync new profile to Supabase:', e);
       }
     }
   }

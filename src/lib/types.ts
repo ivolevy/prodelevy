@@ -54,13 +54,9 @@ export interface Standing {
   profile_id: string;
   display_name: string;
   avatar_url?: string;
-  team1?: Team;
-  team2?: Team;
-  team1_points: number;
-  team2_points: number;
+  exact_guesses: number;
+  outcome_guesses: number;
   total_points: number;
-  has_champion: boolean;
-  finalists_count: number;
   rank?: number;
 }
 
