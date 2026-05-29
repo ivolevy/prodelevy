@@ -47,7 +47,7 @@ export default function Navigation() {
   };
 
   return (
-    <header className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-2xl h-14 rounded-full border border-cream-300 bg-white/90 backdrop-blur-md px-5 flex items-center justify-between shadow-sm">
+    <header className="fixed bottom-4 md:bottom-auto md:top-4 left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-2xl h-14 rounded-full border border-cream-300 bg-white/90 backdrop-blur-md px-5 flex items-center justify-between shadow-sm">
       
       {/* Left: Brand logo as plain elegant text */}
       <Link href="/" className="font-sans text-[10px] tracking-widest font-black text-stone-900 uppercase">
@@ -93,7 +93,7 @@ export default function Navigation() {
           </button>
 
           {dropdownOpen && (
-            <div className="absolute right-0 mt-3 w-56 rounded-xl bg-white border border-cream-300 shadow-lg p-1.5 z-50 text-stone-900 animate-in fade-in slide-in-from-top-1 duration-150">
+            <div className="absolute right-0 bottom-full mb-3 md:bottom-auto md:mb-0 md:top-full md:mt-3 w-56 rounded-xl bg-white border border-cream-300 shadow-lg p-1.5 z-50 text-stone-900 animate-in fade-in slide-in-from-bottom-1 md:slide-in-from-top-1 duration-150">
               <p className="text-[8px] text-stone-400 font-bold px-2.5 py-1 uppercase tracking-wider">Participante</p>
               <div className="h-px bg-cream-200 my-1" />
               <div className="max-h-60 overflow-y-auto space-y-0.5">
@@ -207,7 +207,7 @@ export default function Navigation() {
 
       {/* Mobile Menu Panel */}
       {menuOpen && (
-        <div className="absolute top-16 left-0 right-0 md:hidden bg-white/95 backdrop-blur-md border border-cream-300 rounded-3xl p-3 shadow-lg z-50 flex flex-col gap-1">
+        <div className="absolute bottom-16 left-0 right-0 md:hidden bg-white/95 backdrop-blur-md border border-cream-300 rounded-3xl p-3 shadow-lg z-50 flex flex-col gap-1 animate-in fade-in slide-in-from-bottom-2 duration-200">
           {navItems.map((item) => {
             const isActive = pathname === item.path;
             return (

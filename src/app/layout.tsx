@@ -45,7 +45,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col font-sans bg-sports-bg text-stone-900">
         <StoreInitializer>
           <Navigation />
-          <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12 relative z-10">
+          <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 md:pt-24 pb-24 md:pb-12 relative z-10">
             {children}
           </main>
         </StoreInitializer>

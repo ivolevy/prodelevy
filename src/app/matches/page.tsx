@@ -283,19 +283,27 @@ export default function MatchesPage() {
                   {isPredictable ? (
                     <button
                       onClick={() => handlePredictClick(match.id)}
-                      className={`px-2.5 py-1 rounded font-bold uppercase tracking-wider flex items-center gap-1 transition-all border text-[9px] ${
-                        prediction 
-                          ? 'bg-gold-500/10 text-gold-700 border-gold-300/40 hover:bg-gold-500/20' 
-                          : 'bg-white text-stone-600 border-cream-300 hover:bg-cream-250'
+                      className={`px-3.5 py-1.5 rounded-full font-extrabold uppercase tracking-widest flex items-center gap-1.5 transition-all text-[9px] shadow-xs cursor-pointer ${
+                        predictingMatchId === match.id
+                          ? 'bg-stone-900 text-white border border-stone-900 shadow-sm'
+                          : prediction 
+                            ? 'bg-gold-600 text-white border border-gold-600 hover:bg-gold-500 hover:border-gold-500 hover:scale-[1.03] hover:shadow-sm active:scale-[0.97]' 
+                            : 'bg-white text-stone-750 border border-cream-300 hover:bg-cream-200 hover:scale-[1.03] hover:shadow-xs active:scale-[0.97]'
                       }`}
                     >
-                      <span>{prediction ? `Edit: ${prediction.home_score}-${prediction.away_score}` : 'Pronosticar'}</span>
+                      <span>
+                        {predictingMatchId === match.id
+                          ? 'Cerrar'
+                          : prediction 
+                            ? `Editar: ${prediction.home_score} - ${prediction.away_score}` 
+                            : 'Pronosticar'}
+                      </span>
                       {predictingMatchId === match.id ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                     </button>
                   ) : (
-                    <span className={`px-2.5 py-1 rounded font-bold uppercase border text-[9px] ${
+                    <span className={`px-3.5 py-1.5 rounded-full font-extrabold uppercase border text-[9px] tracking-widest ${
                       prediction 
-                        ? 'bg-stone-100 text-stone-600 border-stone-250' 
+                        ? 'bg-cream-200 text-stone-700 border-cream-300' 
                         : 'bg-stone-50 text-stone-400 border-stone-200'
                     }`}>
                       {prediction ? `Mi pronóstico: ${prediction.home_score}-${prediction.away_score}` : 'Sin pronóstico'}
@@ -312,54 +320,59 @@ export default function MatchesPage() {
                       exit={{ height: 0, opacity: 0 }}
                       className="overflow-hidden border-t border-cream-200 bg-cream-100/50"
                     >
-                      <div className="p-4 flex flex-col items-center gap-3">
-                        <span className="text-[8px] uppercase font-bold text-gold-650 tracking-wider">
+                      <div className="p-5 flex flex-col items-center gap-4">
+                        <span className="text-[9px] uppercase font-black text-gold-650 tracking-widest">
                           Pronóstico de {activeProfile?.display_name}
                         </span>
 
                         {validationError && (
-                          <span className="text-[9px] font-bold text-rose-600 bg-rose-50 border border-rose-200 px-2 py-1 rounded-lg">
+                          <span className="text-[9px] font-bold text-rose-600 bg-rose-50 border border-rose-250/55 px-3 py-1.5 rounded-xl">
                             {validationError}
                           </span>
                         )}
                         
-                        <div className="flex items-center gap-3">
-                          <div className="flex flex-col items-center">
-                            <span className="text-[8px] text-stone-450 font-bold mb-1">{match.home_team_id}</span>
-                            <input 
-                              type="number"
-                              pattern="[0-9]*"
-                              min="0"
-                              max="20"
-                              value={predHome}
-                              onChange={(e) => handleScoreChange(e.target.value, setPredHome)}
-                              className="w-12 h-10 text-center bg-white border border-cream-300 rounded-xl text-lg font-bold text-stone-850 focus:outline-none focus:border-gold-500" 
-                            />
+                        <div className="flex flex-col items-center gap-4 w-full max-w-[260px] mx-auto">
+                          {/* Inputs Row */}
+                          <div className="flex items-center justify-center gap-4 w-full">
+                            {/* Home Input */}
+                            <div className="flex-1 flex items-center justify-end gap-2.5">
+                              <span className="text-[10px] font-bold text-stone-500 tracking-wider">{match.home_team_id}</span>
+                              <input 
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
+                                value={predHome}
+                                onChange={(e) => handleScoreChange(e.target.value, setPredHome)}
+                                className="w-14 h-12 text-center bg-white border border-cream-300 rounded-2xl text-xl font-extrabold text-stone-900 focus:outline-none focus:border-gold-550 focus:ring-4 focus:ring-gold-550/10 transition-all shadow-xs" 
+                                placeholder="-"
+                              />
+                            </div>
+
+                            <span className="text-stone-400 font-extrabold text-lg select-none">:</span>
+
+                            {/* Away Input */}
+                            <div className="flex-1 flex items-center justify-start gap-2.5">
+                              <input 
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
+                                value={predAway}
+                                onChange={(e) => handleScoreChange(e.target.value, setPredAway)}
+                                className="w-14 h-12 text-center bg-white border border-cream-300 rounded-2xl text-xl font-extrabold text-stone-900 focus:outline-none focus:border-gold-550 focus:ring-4 focus:ring-gold-550/10 transition-all shadow-xs" 
+                                placeholder="-"
+                              />
+                              <span className="text-[10px] font-bold text-stone-500 tracking-wider">{match.away_team_id}</span>
+                            </div>
                           </div>
 
-                          <span className="text-stone-450 font-bold mt-4">-</span>
-
-                          <div className="flex flex-col items-center">
-                            <span className="text-[8px] text-stone-450 font-bold mb-1">{match.away_team_id}</span>
-                            <input 
-                              type="number"
-                              pattern="[0-9]*"
-                              min="0"
-                              max="20"
-                              value={predAway}
-                              onChange={(e) => handleScoreChange(e.target.value, setPredAway)}
-                              className="w-12 h-10 text-center bg-white border border-cream-300 rounded-xl text-lg font-bold text-stone-850 focus:outline-none focus:border-gold-500" 
-                            />
-                          </div>
-
+                          {/* Save Button */}
                           <button
                             onClick={() => handleSavePrediction(match.id)}
-                            className="h-10 px-4 mt-4 bg-stone-900 hover:bg-stone-850 text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-sm transition-all flex items-center gap-1.5 shrink-0"
+                            className="w-full h-11 bg-stone-900 hover:bg-stone-800 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-md transition-all flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                           >
-                            <Check className="w-4 h-4" />
-                            <span>Guardar</span>
+                            <Check className="w-4 h-4 text-emerald-400 stroke-[3]" />
+                            <span>Confirmar Pronóstico</span>
                           </button>
-
                         </div>
                       </div>
                     </motion.div>
