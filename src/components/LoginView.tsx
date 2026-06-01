@@ -1,16 +1,43 @@
 'use client';
 
 import { useStore } from '@/lib/store';
-import { LogIn, Trophy, User } from 'lucide-react';
+import { LogIn, Trophy, Lock, User as UserIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useState } from 'react';
 
 export default function LoginView() {
   const { profiles, setCurrentProfile } = useStore();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   const ivanProfile = profiles.find(p => p.id === 'user-ivan');
-  const otherProfiles = profiles.filter(p => p.id !== 'user-ivan');
 
-  const handleLogin = (id: string) => {
+  const handleFormLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    const u = username.trim().toLowerCase();
+    const p = password.trim();
+
+    if (!u || !p) {
+      setError('Por favor, ingresá usuario y contraseña.');
+      return;
+    }
+
+    // Check credentials (accepting "ivan" / "1234" or "admin" / "admin" to log in as Ivan)
+    if ((u === 'ivan' || u === 'admin') && (p === '1234' || p === 'admin')) {
+      if (ivanProfile) {
+        setCurrentProfile(ivanProfile.id);
+      } else {
+        setError('Error al iniciar sesión: el perfil de Iván no existe.');
+      }
+    } else {
+      setError('Usuario o contraseña incorrectos.');
+    }
+  };
+
+  const handleShortcutLogin = (id: string) => {
     setCurrentProfile(id);
   };
 
@@ -30,7 +57,7 @@ export default function LoginView() {
       </div>
 
       {/* Main Login Card */}
-      <div className="w-full max-w-md bg-white border border-cream-300 rounded-3xl p-8 shadow-[0_12px_40px_rgba(0,0,0,0.03)] text-center relative overflow-hidden">
+      <div className="w-full max-w-md bg-white border border-cream-300 rounded-3xl p-8 shadow-[0_12px_40px_rgba(0,0,0,0.03)] relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-gold-500/5 to-transparent rounded-full -mr-12 -mt-12 pointer-events-none" />
         
         <div className="flex justify-center mb-6">
@@ -39,58 +66,78 @@ export default function LoginView() {
           </div>
         </div>
 
-        <h3 className="text-sm font-black text-stone-850 uppercase tracking-widest mb-6">
-          Selecciona tu Perfil
-        </h3>
+        {/* Username/Password Form */}
+        <form onSubmit={handleFormLogin} className="space-y-4 text-left">
+          <div>
+            <label className="block text-[10px] font-black uppercase tracking-wider text-stone-450 mb-1.5">
+              Usuario
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="ej: ivan"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full bg-cream-50/30 border border-cream-300 rounded-xl px-4 py-2.5 pl-10 text-xs text-stone-850 placeholder-stone-400 focus:outline-none focus:border-gold-500 transition-all"
+              />
+              <UserIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+            </div>
+          </div>
 
-        <div className="space-y-4">
-          {/* Main User: Iván */}
-          {ivanProfile && (
+          <div>
+            <label className="block text-[10px] font-black uppercase tracking-wider text-stone-450 mb-1.5">
+              Contraseña
+            </label>
+            <div className="relative">
+              <input
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-cream-50/30 border border-cream-300 rounded-xl px-4 py-2.5 pl-10 text-xs text-stone-850 placeholder-stone-400 focus:outline-none focus:border-gold-500 transition-all"
+              />
+              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+            </div>
+          </div>
+
+          {error && (
+            <p className="text-[10px] font-bold text-rose-650 bg-rose-50 border border-rose-200/50 p-2.5 rounded-lg text-center leading-tight animate-in fade-in duration-200">
+              {error}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            className="w-full py-2.5 bg-stone-900 hover:bg-stone-800 text-white font-bold text-[10px] uppercase tracking-widest rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer mt-2"
+          >
+            <LogIn className="w-3.5 h-3.5" />
+            Iniciar Sesión
+          </button>
+        </form>
+
+        {/* Shortcut Button (Bypass for Iván) */}
+        {ivanProfile && (
+          <div className="mt-6 pt-6 border-t border-cream-200">
+            <h4 className="text-[9px] font-black tracking-widest text-stone-450 uppercase mb-3 text-center">Acceso Directo (Admin)</h4>
             <motion.button
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
-              onClick={() => handleLogin(ivanProfile.id)}
-              className="w-full flex items-center justify-between p-4 bg-stone-900 text-white rounded-2xl hover:bg-stone-800 transition-all shadow-md group"
+              onClick={() => handleShortcutLogin(ivanProfile.id)}
+              className="w-full flex items-center justify-between p-3.5 bg-cream-50/50 border border-cream-300 hover:border-gold-500/50 hover:bg-cream-100/10 text-stone-900 rounded-2xl transition-all group"
             >
               <div className="flex items-center gap-3">
-                <span className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-xs font-black text-white uppercase">
+                <span className="w-8 h-8 rounded-full bg-stone-900 flex items-center justify-center text-xs font-black text-white uppercase shrink-0">
                   {ivanProfile.display_name.substring(0, 2).toUpperCase()}
                 </span>
                 <div className="text-left">
                   <span className="block text-xs font-black uppercase tracking-wider">Entrar como {ivanProfile.display_name}</span>
-                  <span className="block text-[9px] text-stone-400 font-semibold uppercase leading-none mt-0.5">Administrador</span>
+                  <span className="block text-[8px] text-stone-400 font-semibold uppercase leading-none mt-0.5">Administrador</span>
                 </div>
               </div>
-              <LogIn className="w-4 h-4 text-white/70 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
+              <LogIn className="w-3.5 h-3.5 text-stone-450 group-hover:text-stone-850 group-hover:translate-x-0.5 transition-all" />
             </motion.button>
-          )}
-
-          {/* Secondary Users (e.g. Catalina, others) */}
-          {otherProfiles.length > 0 && (
-            <div className="pt-2">
-              <div className="relative flex py-3 items-center">
-                <div className="flex-grow border-t border-cream-200"></div>
-                <span className="flex-shrink mx-4 text-[9px] text-stone-400 font-bold uppercase tracking-wider">Otros Participantes</span>
-                <div className="flex-grow border-t border-cream-200"></div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-3">
-                {otherProfiles.map((prof) => (
-                  <button
-                    key={prof.id}
-                    onClick={() => handleLogin(prof.id)}
-                    className="flex items-center gap-2.5 p-3 rounded-xl border border-cream-300 hover:border-gold-500/50 bg-cream-50/20 hover:bg-white text-left transition-all text-xs font-bold text-stone-750"
-                  >
-                    <span className="w-7 h-7 rounded-full bg-cream-200 flex items-center justify-center text-[9px] font-bold text-stone-600 uppercase shrink-0">
-                      {prof.display_name.substring(0, 2).toUpperCase()}
-                    </span>
-                    <span className="truncate">{prof.display_name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
