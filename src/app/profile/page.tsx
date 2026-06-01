@@ -142,32 +142,6 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
-
-      {/* Switch Participant Section */}
-      {otherProfiles.length > 0 && (
-        <div className="glass-card p-6 border border-cream-300 shadow-sm bg-white text-left">
-          <h4 className="text-[9.5px] font-black tracking-widest text-stone-450 uppercase mb-3 flex items-center gap-1.5">
-            <Users className="w-3.5 h-3.5 text-stone-600 shrink-0" /> Cambiar de Participante
-          </h4>
-          <div className="grid grid-cols-2 gap-3">
-            {otherProfiles.map((prof) => {
-              const initials = prof.display_name ? prof.display_name.substring(0, 2).toUpperCase() : 'US';
-              return (
-                <button
-                  key={prof.id}
-                  onClick={() => setCurrentProfile(prof.id)}
-                  className="flex items-center gap-2.5 p-3 rounded-xl border border-cream-300 hover:border-gold-500/50 bg-cream-50/20 hover:bg-white text-left transition-all text-xs font-bold text-stone-750 cursor-pointer"
-                >
-                  <span className="w-7 h-7 rounded-full bg-cream-200 flex items-center justify-center text-[9px] font-bold text-stone-600 uppercase shrink-0">
-                    {initials}
-                  </span>
-                  <span className="truncate">{prof.display_name}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
