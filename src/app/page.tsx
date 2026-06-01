@@ -1,20 +1,24 @@
 'use client';
 
+import { useState } from 'react';
 import { useStore } from '@/lib/store';
 import Countdown from '@/components/Countdown';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, ArrowRight, Sparkles, AlertCircle, CheckCircle } from 'lucide-react';
+import { Trophy, ArrowRight, Sparkles, AlertCircle, CheckCircle, ChevronDown, ChevronRight, Smartphone } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export default function Home() {
+  const [showPwaGuide, setShowPwaGuide] = useState(false);
   const { 
     standings, 
     matches, 
     predictions,
     teams,
+    profiles,
     currentProfileId, 
     autoSeedPredictions, 
+    saveChampionPrediction,
     isDemoMode,
     isLoading 
   } = useStore();
@@ -30,6 +34,11 @@ export default function Home() {
   const featuredMatches = [...liveMatches, ...upcomingMatches].slice(0, 3);
 
   const currentStanding = standings.find(s => s.profile_id === currentProfileId);
+
+  const activeProfile = profiles.find(p => p.id === currentProfileId);
+  const currentChampionPred = activeProfile?.champion_prediction;
+  const deadline = new Date('2026-06-10T16:00:00-03:00').getTime();
+  const isChampionOpen = new Date().getTime() < deadline;
 
   const triggerConfetti = () => {
     confetti({
@@ -52,17 +61,90 @@ export default function Home() {
   return (
     <div className="space-y-8 text-stone-900 max-w-5xl mx-auto pt-2">
       {/* Editorial Title */}
-      <div className="text-center space-y-1.5 pb-2 border-b border-cream-300">
-        <h2 className="text-[11px] tracking-widest font-black uppercase text-stone-400">
-          COPA MUNDIAL 2026
-        </h2>
-        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-stone-900 leading-none uppercase">
-          PRODE MUNDIAL 2026
-        </h1>
+      <div className="text-center pb-2 border-b border-cream-300">
+        {/* Desktop title */}
+        <div className="hidden md:block space-y-1.5">
+          <h2 className="text-[11px] tracking-widest font-black uppercase text-stone-400">
+            COPA MUNDIAL 2026
+          </h2>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-stone-900 leading-none uppercase">
+            PRODE MUNDIAL 2026
+          </h1>
+        </div>
+        {/* Mobile title */}
+        <div className="block md:hidden">
+          <h1 className="text-[10px] font-black tracking-widest text-stone-400 uppercase">
+            prode mundial usa-mex 26′
+          </h1>
+        </div>
       </div>
 
       {/* Countdown Strip */}
       <Countdown />
+
+      {/* Champion Prediction Banner */}
+      <div className="glass-card p-5 border border-cream-300 shadow-sm bg-white flex flex-col md:flex-row justify-between items-center gap-4 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-gold-500/10 to-transparent rounded-full -mr-8 -mt-8 pointer-events-none" />
+        <div className="space-y-1 text-left w-full md:w-auto">
+          <div className="flex items-center gap-2">
+            <Trophy className="w-5 h-5 text-gold-500 shrink-0" />
+            <h4 className="text-[10px] font-extrabold uppercase tracking-wider text-stone-750">Predicción de Campeón</h4>
+            <span className="text-[7.5px] bg-gold-500/10 text-gold-650 px-1.5 py-0.5 rounded font-black uppercase tracking-wider">
+              +10 puntos
+            </span>
+          </div>
+          <p className="text-[11px] text-stone-500">
+            {isChampionOpen 
+              ? "Elegí qué selección ganará el mundial. Podés cambiar tu voto hasta 24hs antes del debut."
+              : "Las predicciones de campeón ya se encuentran cerradas."
+            }
+          </p>
+        </div>
+
+        <div className="w-full md:w-auto flex flex-col sm:flex-row items-center gap-3 shrink-0">
+          {isChampionOpen ? (
+            <div className="w-full sm:w-auto flex gap-2 items-center relative">
+              <select
+                value={currentChampionPred || ''}
+                onChange={async (e) => {
+                  if (e.target.value) {
+                    await saveChampionPrediction(currentProfileId, e.target.value);
+                    triggerConfetti();
+                  }
+                }}
+                className="w-full sm:w-60 appearance-none bg-white border border-cream-300 rounded-xl px-4 py-2.5 pr-10 text-xs text-stone-850 font-extrabold focus:outline-none focus:border-gold-500 cursor-pointer shadow-xs transition-all"
+              >
+                <option value="">-- Elegir Campeón --</option>
+                {teams.map(t => (
+                  <option key={t.id} value={t.id}>
+                    {t.flag_emoji} {t.name}
+                  </option>
+                ))}
+              </select>
+              <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
+                <ChevronDown className="w-4 h-4" />
+              </div>
+            </div>
+          ) : (
+            <div className="w-full sm:w-auto px-4 py-2 border border-cream-250 bg-cream-100/50 rounded-lg text-center">
+              {currentChampionPred ? (
+                (() => {
+                  const team = teams.find(t => t.id === currentChampionPred);
+                  return (
+                    <span className="text-xs font-bold text-stone-750 flex items-center justify-center gap-1.5">
+                      Tu elegido: <span className="text-stone-900">{team?.flag_emoji} {team?.name}</span> 🔒
+                    </span>
+                  );
+                })()
+              ) : (
+                <span className="text-xs font-semibold text-rose-500 flex items-center justify-center gap-1.5">
+                  No registraste predicción 🔒
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Demo Seed Notification */}
       {predictions.length === 0 && isDemoMode && (
@@ -263,6 +345,78 @@ export default function Home() {
             <p className="text-[10px] text-stone-400 italic">No hay próximos partidos.</p>
           )}
         </div>
+      </div>
+
+      {/* PWA Mobile Installation Guide */}
+      <div className="glass-card border border-cream-300 shadow-sm bg-white relative overflow-hidden mt-8 max-w-5xl mx-auto text-left transition-all duration-300">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-cream-200/20 to-transparent rounded-full -mr-12 -mt-12 pointer-events-none" />
+        
+        {/* Toggle Button Header */}
+        <button 
+          onClick={() => setShowPwaGuide(!showPwaGuide)}
+          className="w-full flex items-center justify-between p-5 focus:outline-none hover:bg-stone-50/50 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <Smartphone className="w-5 h-5 text-stone-700 shrink-0" />
+            <div className="text-left">
+              <h4 className="text-[9.5px] font-extrabold text-stone-450 uppercase leading-none mb-1">Cómo instalar el Prode en tu celular</h4>
+              <h3 className="text-xs font-black text-stone-900 uppercase">Instalar App Móvil</h3>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="hidden sm:inline-block text-[8px] bg-stone-100 border border-stone-250 text-stone-550 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+              Sin Descargas
+            </span>
+            <ChevronDown className={`w-4 h-4 text-stone-400 transition-transform duration-300 ${showPwaGuide ? 'rotate-180' : ''}`} />
+          </div>
+        </button>
+
+        {/* Collapsible Content */}
+        <AnimatePresence initial={false}>
+          {showPwaGuide && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25, ease: 'easeInOut' }}
+              className="overflow-hidden"
+            >
+              <div className="px-5 pb-6 border-t border-cream-200 pt-5">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs text-stone-600">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-stone-900 text-white font-extrabold text-[10px] flex items-center justify-center">1</span>
+                      <h4 className="font-bold text-stone-850">Abrí el enlace</h4>
+                    </div>
+                    <p className="pl-7 text-[11px] leading-relaxed text-stone-500">
+                      Ingresá a la web del Prode desde el navegador de tu celular (preferentemente <strong>Safari</strong> en iPhone o <strong>Chrome</strong> en Android).
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-stone-900 text-white font-extrabold text-[10px] flex items-center justify-center">2</span>
+                      <h4 className="font-bold text-stone-850">Tocá compartir</h4>
+                    </div>
+                    <p className="pl-7 text-[11px] leading-relaxed text-stone-500">
+                      Presioná el botón de <strong>Compartir</strong> (el ícono de la caja con flecha hacia arriba en la barra inferior de iPhone, o los tres puntos arriba a la derecha en Android).
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-stone-900 text-white font-extrabold text-[10px] flex items-center justify-center">3</span>
+                      <h4 className="font-bold text-stone-850">Añadir a Inicio</h4>
+                    </div>
+                    <p className="pl-7 text-[11px] leading-relaxed text-stone-500">
+                      Buscá y presioná la opción <strong>Añadir a pantalla de inicio</strong> (en iOS tocá "Compartir", luego bajá y tocá "Añadir a pantalla de inicio"). ¡Y listo!
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

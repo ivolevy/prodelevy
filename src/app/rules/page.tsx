@@ -7,18 +7,28 @@ export default function RulesPage() {
     { type: 'Acierto Exacto', desc: 'Acertar el resultado exacto (ej. pronóstico: 2-1, resultado: 2-1)', pts: 3, color: 'text-gold-650 font-bold' },
     { type: 'Acierto de Resultado', desc: 'Acertar el ganador o el empate con marcador diferente (ej. pronóstico: 1-0, resultado: 3-1)', pts: 1, color: 'text-stone-700' },
     { type: 'Sin Acierto', desc: 'No acertar el ganador ni el empate', pts: 0, color: 'text-stone-400' },
+    { type: 'Predicción de Campeón', desc: 'Acertar la selección ganadora de la Copa del Mundo (se registra hasta 24 horas antes del inicio del torneo)', pts: 10, color: 'text-gold-650 font-black' },
   ];
 
   return (
     <div className="space-y-6 text-stone-900 max-w-5xl mx-auto pt-2">
       {/* Page Header */}
       <div className="border-b border-cream-300 pb-4 text-center sm:text-left">
-        <h2 className="text-[10px] tracking-widest font-black uppercase text-stone-400">
-          REGLAMENTO DEL JUEGO
-        </h2>
-        <h1 className="text-2xl font-extrabold tracking-tight text-stone-900 leading-none mt-1">
-          Reglas del Prode Mundial 2026.
-        </h1>
+        {/* Desktop Header */}
+        <div className="hidden md:block">
+          <h2 className="text-[10px] tracking-widest font-black uppercase text-stone-400">
+            REGLAMENTO DEL JUEGO
+          </h2>
+          <h1 className="text-2xl font-extrabold tracking-tight text-stone-900 leading-none mt-1">
+            Reglas del Prode Mundial 2026.
+          </h1>
+        </div>
+        {/* Mobile Header */}
+        <div className="block md:hidden">
+          <h1 className="text-[10px] font-black tracking-widest text-stone-400 uppercase">
+            reglas
+          </h1>
+        </div>
       </div>
 
       {/* Responsive Grid layout for rules cards */}
@@ -35,7 +45,7 @@ export default function RulesPage() {
             <ul className="space-y-3 text-xs text-stone-700 leading-relaxed">
               <li className="flex items-start gap-2.5">
                 <span className="text-gold-500 font-black mt-0.5">•</span>
-                <span><strong>Partidos Habilitados:</strong> Por ahora, solo participan los partidos de la **Fase de Grupos** del torneo.</span>
+                <span><strong>Partidos Habilitados:</strong> Por ahora, solo participan los partidos de la <strong>Fase de Grupos</strong> del torneo.</span>
               </li>
               <li className="flex items-start gap-2.5">
                 <span className="text-gold-500 font-black mt-0.5">•</span>
@@ -89,7 +99,7 @@ export default function RulesPage() {
           <ul className="space-y-3 text-xs text-stone-750">
             <li className="flex items-start gap-2">
               <span className="text-rose-500 font-bold">•</span>
-              <span><strong>Cierre Automático:</strong> Las predicciones para cada partido se bloquean estrictamente **24 horas antes** del horario oficial de inicio del partido.</span>
+              <span><strong>Cierre Automático:</strong> Las predicciones para cada partido se bloquean estrictamente <strong>24 horas antes</strong> del horario oficial de inicio del partido.</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-rose-500 font-bold">•</span>
@@ -116,11 +126,11 @@ export default function RulesPage() {
           <ol className="space-y-3 text-xs text-stone-750 pl-1">
             <li className="flex gap-2">
               <span className="font-bold text-gold-600">1.</span>
-              <span>Mayor cantidad de **Aciertos Exactos** (3 puntos).</span>
+              <span>Mayor cantidad de <strong>Aciertos Exactos</strong> (3 puntos).</span>
             </li>
             <li className="flex gap-2">
               <span className="font-bold text-gold-600">2.</span>
-              <span>Mayor cantidad de **Aciertos de Resultado** (1 punto).</span>
+              <span>Mayor cantidad de <strong>Aciertos de Resultado</strong> (1 punto).</span>
             </li>
             <li className="flex gap-2">
               <span className="font-bold text-gold-600">3.</span>

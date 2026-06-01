@@ -5,6 +5,7 @@ export interface Profile {
   is_admin: boolean;
   created_at: string;
   updated_at: string;
+  champion_prediction?: string;
 }
 
 export interface Team {

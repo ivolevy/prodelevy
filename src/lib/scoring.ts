@@ -1,4 +1,4 @@
-import { Match, Prediction, Profile, Standing } from './types';
+import { Match, Prediction, Profile, Standing, Team } from './types';
 
 /**
  * Calculates standings based on match predictions and actual finished match results.
@@ -6,8 +6,11 @@ import { Match, Prediction, Profile, Standing } from './types';
 export function updateStandings(
   matches: Match[],
   predictions: Prediction[],
-  profiles: Profile[]
+  profiles: Profile[],
+  teams?: Team[]
 ): Standing[] {
+  const championTeam = teams?.find(t => t.stage_reached === 'champion');
+
   const standingsList: Standing[] = profiles.map(profile => {
     // Find all predictions for this participant
     const userPredictions = predictions.filter(p => p.participant_id === profile.id);
@@ -15,6 +18,11 @@ export function updateStandings(
     let exactGuesses = 0;
     let outcomeGuesses = 0;
     let totalPoints = 0;
+
+    // Add 10 points if user guessed champion correctly
+    if (championTeam && profile.champion_prediction === championTeam.id) {
+      totalPoints += 10;
+    }
 
     userPredictions.forEach(pred => {
       const match = matches.find(m => m.id === pred.match_id);

@@ -126,6 +126,7 @@ interface TournamentState {
   autoSeedPredictions: () => Promise<void>;
   addProfile: (displayName: string) => Promise<void>;
   deleteProfile: (id: string) => Promise<void>;
+  saveChampionPrediction: (profileId: string, teamId: string) => Promise<void>;
 }
 
 // --- ZUSTAND STORE IMPLEMENTATION ---
@@ -161,7 +162,7 @@ export const useStore = create<TournamentState>((set, get) => ({
         const predictions = predictionsData || [];
 
         const currentUserId = profiles[0]?.id || 'user-ivan';
-        const standings = updateStandings(matches, predictions, profiles);
+        const standings = updateStandings(matches, predictions, profiles, teams);
 
         set({
           teams,
@@ -200,7 +201,7 @@ export const useStore = create<TournamentState>((set, get) => ({
       localStorage.setItem('prode_predictions', JSON.stringify(predictions));
       localStorage.setItem('prode_active_profile', currentProfileId);
 
-      const standings = updateStandings(matches, predictions, profiles);
+      const standings = updateStandings(matches, predictions, profiles, teams);
 
       set({
         teams,
@@ -217,7 +218,7 @@ export const useStore = create<TournamentState>((set, get) => ({
         matches: INITIAL_MATCHES,
         profiles: INITIAL_PROFILES,
         predictions: [],
-        standings: updateStandings(INITIAL_MATCHES, [], INITIAL_PROFILES),
+        standings: updateStandings(INITIAL_MATCHES, [], INITIAL_PROFILES, INITIAL_TEAMS),
         isLoading: false
       });
     }
@@ -239,7 +240,7 @@ export const useStore = create<TournamentState>((set, get) => ({
         : m
     );
 
-    const standings = updateStandings(updatedMatches, predictions, profiles);
+    const standings = updateStandings(updatedMatches, predictions, profiles, get().teams);
 
     set({ matches: updatedMatches, standings });
 
@@ -263,7 +264,7 @@ export const useStore = create<TournamentState>((set, get) => ({
       t.id === teamId ? { ...t, stage_reached: stage } : t
     );
 
-    const standings = updateStandings(matches, predictions, profiles);
+    const standings = updateStandings(matches, predictions, profiles, updatedTeams);
 
     set({ teams: updatedTeams, standings });
 
@@ -307,7 +308,7 @@ export const useStore = create<TournamentState>((set, get) => ({
       });
     }
 
-    const standings = updateStandings(matches, updatedPredictions, profiles);
+    const standings = updateStandings(matches, updatedPredictions, profiles, get().teams);
 
     set({ predictions: updatedPredictions, standings });
 
@@ -366,7 +367,7 @@ export const useStore = create<TournamentState>((set, get) => ({
       });
     });
 
-    const standings = updateStandings(matches, seededPredictions, profiles);
+    const standings = updateStandings(matches, seededPredictions, profiles, get().teams);
     set({ predictions: seededPredictions, standings });
 
     if (typeof window !== 'undefined') {
@@ -400,7 +401,7 @@ export const useStore = create<TournamentState>((set, get) => ({
     };
 
     const updatedProfiles = [...profiles, newProfile];
-    const standings = updateStandings(matches, predictions, updatedProfiles);
+    const standings = updateStandings(matches, predictions, updatedProfiles, get().teams);
 
     set({ profiles: updatedProfiles, standings });
 
@@ -430,9 +431,8 @@ export const useStore = create<TournamentState>((set, get) => ({
 
     const updatedProfiles = profiles.filter(p => p.id !== id);
     const updatedPredictions = predictions.filter(p => p.participant_id !== id);
-    const standings = updateStandings(matches, updatedPredictions, updatedProfiles);
+    const standings = updateStandings(matches, updatedPredictions, updatedProfiles, get().teams);
 
-    // If the active profile was deleted, fallback to user-ivan
     let nextProfileId = currentProfileId;
     if (currentProfileId === id) {
       nextProfileId = 'user-ivan';
@@ -456,6 +456,42 @@ export const useStore = create<TournamentState>((set, get) => ({
         await supabase.from('profiles').delete().eq('id', id);
       } catch (e) {
         console.error('Failed to delete profile from Supabase:', e);
+      }
+    }
+  },
+
+  saveChampionPrediction: async (profileId: string, teamId: string) => {
+    const { isDemoMode, profiles, teams, matches, predictions } = get();
+
+    // Check 24 hours lock before tournament starts (June 11, 2026 16:00:00 UTC-3)
+    const deadline = new Date('2026-06-10T16:00:00-03:00').getTime();
+    if (new Date().getTime() >= deadline) {
+      throw new Error('El pronóstico de campeón está cerrado (cierre de 24hs antes del mundial).');
+    }
+
+    const updatedProfiles = profiles.map(p => 
+      p.id === profileId ? { ...p, champion_prediction: teamId } : p
+    );
+
+    const standings = updateStandings(matches, predictions, updatedProfiles, teams);
+
+    set({ profiles: updatedProfiles, standings });
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('prode_profiles', JSON.stringify(updatedProfiles));
+    }
+
+    if (!isDemoMode && supabase) {
+      try {
+        const { error } = await supabase.from('profiles').update({
+          champion_prediction: teamId
+        }).eq('id', profileId);
+        
+        if (error) {
+          console.warn('Supabase update returned an error (likely due to missing champion_prediction column in profiles table). Falling back to localStorage.', error);
+        }
+      } catch (e) {
+        console.error('Failed to sync champion prediction to Supabase:', e);
       }
     }
   }

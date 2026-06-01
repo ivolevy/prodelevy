@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     display_name TEXT NOT NULL,
     avatar_url TEXT,
     is_admin BOOLEAN DEFAULT FALSE NOT NULL,
+    champion_prediction TEXT REFERENCES public.teams(id),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, now()) NOT NULL
 );
