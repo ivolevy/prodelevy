@@ -144,6 +144,8 @@ export const useStore = create<TournamentState>((set, get) => ({
   initStore: async () => {
     set({ isLoading: true });
     
+    const storedActiveProfile = typeof window !== 'undefined' ? localStorage.getItem('prode_active_profile') : null;
+    
     // 1. Check if Supabase is configured
     const configured = isSupabaseConfigured();
     set({ isDemoMode: !configured });
@@ -156,12 +158,34 @@ export const useStore = create<TournamentState>((set, get) => ({
         const { data: profilesData } = await supabase.from('profiles').select('*');
         const { data: predictionsData } = await supabase.from('predictions').select('*');
 
+        const storedLocalProfiles = typeof window !== 'undefined' ? localStorage.getItem('prode_profiles') : null;
+        const localProfiles = storedLocalProfiles ? JSON.parse(storedLocalProfiles) : [];
+        
+        const dbProfiles = profilesData || [];
+        const mergedProfiles = [...dbProfiles];
+        localProfiles.forEach((lp: any) => {
+          if (!mergedProfiles.some(dp => dp.id === lp.id)) {
+            mergedProfiles.push(lp);
+          }
+        });
+
+        const storedLocalPredictions = typeof window !== 'undefined' ? localStorage.getItem('prode_predictions') : null;
+        const localPredictions = storedLocalPredictions ? JSON.parse(storedLocalPredictions) : [];
+        
+        const dbPredictions = predictionsData || [];
+        const mergedPredictions = [...dbPredictions];
+        localPredictions.forEach((lp: any) => {
+          if (!mergedPredictions.some(dp => dp.participant_id === lp.participant_id && dp.match_id === lp.match_id)) {
+            mergedPredictions.push(lp);
+          }
+        });
+
         const teams = (teamsData && teamsData.length > 0) ? teamsData : INITIAL_TEAMS;
         const matches = (matchesData && matchesData.length > 0) ? matchesData : INITIAL_MATCHES;
-        const profiles = (profilesData && profilesData.length > 0) ? profilesData : INITIAL_PROFILES;
-        const predictions = predictionsData || [];
+        const profiles = mergedProfiles.length > 0 ? mergedProfiles : INITIAL_PROFILES;
+        const predictions = mergedPredictions;
 
-        const currentUserId = profiles[0]?.id || 'user-ivan';
+        const currentUserId = storedActiveProfile !== null ? storedActiveProfile : (profiles[0]?.id || 'user-ivan');
         const standings = updateStandings(matches, predictions, profiles, teams);
 
         set({
@@ -186,13 +210,12 @@ export const useStore = create<TournamentState>((set, get) => ({
       const storedMatches = localStorage.getItem('prode_matches');
       const storedProfiles = localStorage.getItem('prode_profiles');
       const storedPredictions = localStorage.getItem('prode_predictions');
-      const storedActiveProfile = localStorage.getItem('prode_active_profile');
 
       const teams = storedTeams ? JSON.parse(storedTeams) : INITIAL_TEAMS;
       const matches = storedMatches ? JSON.parse(storedMatches) : INITIAL_MATCHES;
       const profiles = storedProfiles ? JSON.parse(storedProfiles) : INITIAL_PROFILES;
       const predictions = storedPredictions ? JSON.parse(storedPredictions) : [];
-      const currentProfileId = storedActiveProfile || 'user-ivan';
+      const currentProfileId = storedActiveProfile !== null ? storedActiveProfile : 'user-ivan';
 
       // Always save back to guarantee consistency
       localStorage.setItem('prode_teams', JSON.stringify(teams));
