@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useStore } from '@/lib/store';
 import { useState } from 'react';
-import { Plus, Trash2, Home, Calendar, FileText } from 'lucide-react';
+import { Plus, Trash2, Home, Calendar, FileText, User } from 'lucide-react';
 
 export default function Navigation() {
   const pathname = usePathname();
@@ -15,6 +15,8 @@ export default function Navigation() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const activeProfile = profiles.find(p => p.id === currentProfileId);
+
+  if (!currentProfileId) return null;
 
   const getChampionInfo = (prof: any) => {
     if (!prof.champion_prediction) return null;
@@ -58,7 +60,7 @@ export default function Navigation() {
       <div className="hidden md:flex items-center justify-between w-full">
         {/* Left: Brand logo */}
         <Link href="/" className="font-sans text-[10px] tracking-widest font-black text-stone-900 uppercase">
-          PRODE<span className="text-gold-600 font-normal">2026</span>
+          PRODE<span className="text-gold-650 font-normal">2026</span>
         </Link>
 
         {/* Center: Nav links */}
@@ -99,7 +101,16 @@ export default function Navigation() {
 
           {dropdownOpen && (
             <div className="absolute right-0 top-full mt-3 w-56 rounded-xl bg-white border border-cream-300 shadow-lg p-1.5 z-50 text-stone-900 animate-in fade-in slide-in-from-top-1 duration-150">
-              <p className="text-[8px] text-stone-400 font-bold px-2.5 py-1 uppercase tracking-wider">Participante</p>
+              <Link
+                href="/profile"
+                onClick={() => setDropdownOpen(false)}
+                className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-gold-650 hover:bg-cream-100 rounded-lg font-bold transition-all"
+              >
+                <User className="w-3.5 h-3.5" />
+                <span>Ver Mi Perfil</span>
+              </Link>
+              <div className="h-px bg-cream-200 my-1" />
+              <p className="text-[8px] text-stone-400 font-bold px-2.5 py-1 uppercase tracking-wider">Cambiar Participante</p>
               <div className="h-px bg-cream-200 my-1" />
               <div className="max-h-60 overflow-y-auto space-y-0.5">
                 {profiles.map((prof) => {
@@ -241,139 +252,21 @@ export default function Navigation() {
           <span className="text-[7.5px] uppercase tracking-widest font-black transition-colors duration-200">Reglas</span>
         </Link>
 
-        {/* Tab 4: Perfil Dropdown */}
-        <div className="relative flex-1 flex justify-center">
-          <button 
-            onClick={() => {
-              setDropdownOpen(!dropdownOpen);
-              setIsAdding(false);
-              setErrorMsg(null);
-            }}
-            className={`flex flex-col items-center justify-center gap-0.5 py-1 focus:outline-none transition-all duration-200 ease-out transform-gpu active:scale-95 relative cursor-pointer min-h-[48px] ${
-              dropdownOpen ? 'text-white scale-105 font-black' : 'text-cream-200/55 hover:text-white'
-            }`}
-          >
-            <span className={`w-5.5 h-5.5 rounded-full border flex items-center justify-center text-[8px] font-black shrink-0 transition-all duration-200 ${
-              dropdownOpen ? 'border-white bg-white text-gold-600' : 'border-cream-100/40 bg-gold-700/30 text-cream-100'
-            }`}>
-              {getInitials(activeProfile?.display_name || 'US')}
-            </span>
-            <span className="text-[7.5px] uppercase tracking-widest font-black transition-colors duration-200">Perfil</span>
-          </button>
+        {/* Tab 4: Perfil Link */}
+        <Link 
+          href="/profile" 
+          className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-1 transition-all duration-200 ease-out transform-gpu active:scale-95 min-h-[48px] ${
+            pathname === '/profile' ? 'text-white scale-105 font-black' : 'text-cream-200/55 hover:text-white'
+          }`}
+        >
+          <span className={`w-5.5 h-5.5 rounded-full border flex items-center justify-center text-[8px] font-black shrink-0 transition-all duration-200 ${
+            pathname === '/profile' ? 'border-white bg-white text-gold-650' : 'border-cream-100/40 bg-gold-700/30 text-cream-100'
+          }`}>
+            {getInitials(activeProfile?.display_name || 'US')}
+          </span>
+          <span className="text-[7.5px] uppercase tracking-widest font-black transition-colors duration-200">Perfil</span>
+        </Link>
 
-          {dropdownOpen && (
-            <>
-              {/* Tap backdrop to dismiss dropdown on mobile */}
-              <div 
-                className="fixed inset-0 z-40 bg-black/25 backdrop-blur-xs md:hidden animate-in fade-in duration-250" 
-                onClick={() => setDropdownOpen(false)}
-              />
-              <div className="absolute right-1/2 translate-x-1/2 bottom-full mb-3 w-56 rounded-xl bg-stone-900 border border-stone-800 text-stone-300 shadow-lg p-1.5 z-50 animate-in fade-in slide-in-from-bottom-2 duration-250 ease-out transform-gpu text-left">
-              <p className="text-[8px] text-stone-400 font-bold px-2.5 py-1 uppercase tracking-wider">Participante</p>
-              <div className="h-px bg-stone-800 my-1" />
-              <div className="max-h-60 overflow-y-auto space-y-0.5">
-                {profiles.map((prof) => {
-                  const isProtected = prof.id === 'user-ivan' || prof.id === 'user-catalina';
-                  return (
-                    <div 
-                      key={prof.id} 
-                      className="group flex items-center justify-between rounded-lg hover:bg-stone-800 transition-all"
-                    >
-                      <button
-                        onClick={() => {
-                          setCurrentProfile(prof.id);
-                          setDropdownOpen(false);
-                        }}
-                        className={`flex-1 flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left text-xs transition-all ${
-                          prof.id === currentProfileId 
-                            ? 'bg-stone-800 text-white font-bold border-l-2 border-gold-500' 
-                            : 'text-stone-350'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="w-5 h-5 rounded-full bg-stone-850 text-cream-100 flex items-center justify-center text-[8px] font-bold shrink-0">
-                            {getInitials(prof.display_name)}
-                          </span>
-                          <div className="flex flex-col">
-                            <span className="font-semibold">{prof.display_name}</span>
-                            {getChampionInfo(prof) && (
-                              <span className="text-[7.5px] text-gold-400 font-normal leading-none mt-0.5">
-                                Campeón: {getChampionInfo(prof)}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        {prof.is_admin && (
-                          <span className="text-[7px] bg-stone-800 text-stone-300 border border-stone-700 px-1 py-0.5 rounded font-bold uppercase tracking-wider shrink-0">Admin</span>
-                        )}
-                      </button>
-
-                      {!isProtected && activeProfile?.is_admin && (
-                        <button
-                          onClick={async (e) => {
-                            e.stopPropagation();
-                            if (confirm(`¿Eliminar participante "${prof.display_name}"? Sus pronósticos y puntos se perderán de manera permanente.`)) {
-                              await deleteProfile(prof.id);
-                            }
-                          }}
-                          className="p-1.5 text-stone-550 hover:text-rose-400 transition-all rounded hover:bg-stone-800 mr-1 shrink-0 cursor-pointer"
-                          title="Eliminar participante"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {activeProfile?.is_admin && (
-                <>
-                  <div className="h-px bg-stone-800 my-1" />
-                  {isAdding ? (
-                    <div className="px-2 py-1.5 space-y-1.5">
-                      <div className="flex gap-1 items-center">
-                        <input
-                          type="text"
-                          placeholder="Nombre..."
-                          value={newParticipantName}
-                          onChange={(e) => setNewParticipantName(e.target.value)}
-                          className="w-full bg-stone-850 border border-stone-800 rounded-lg px-2 py-1 text-xs text-white placeholder-stone-550 focus:outline-none focus:border-gold-500"
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              handleAddParticipant();
-                            }
-                          }}
-                          autoFocus
-                        />
-                        <button
-                          onClick={handleAddParticipant}
-                          className="p-1 bg-stone-800 hover:bg-stone-700 border border-stone-700 text-white rounded-lg flex items-center justify-center shrink-0 cursor-pointer"
-                          aria-label="Agregar"
-                        >
-                          <Plus className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                      {errorMsg && (
-                        <p className="text-[8px] font-bold text-rose-400 bg-rose-950/20 border border-rose-900/30 px-2 py-0.5 rounded text-center leading-none">
-                          {errorMsg}
-                        </p>
-                      )}
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => setIsAdding(true)}
-                      className="w-full flex items-center justify-center gap-1 py-1.5 text-[9px] uppercase font-extrabold tracking-wider text-gold-400 hover:bg-stone-800 rounded-lg transition-all cursor-pointer"
-                    >
-                      <span>+ Nuevo Participante</span>
-                    </button>
-                  )}
-                </>
-              )}
-            </div>
-          </>)}
-        </div>
       </div>
     </header>
   );

@@ -2,11 +2,13 @@
 
 import { useEffect, useRef } from 'react';
 import { useStore } from '@/lib/store';
+import LoginView from './LoginView';
 
 export default function StoreInitializer({ children }: { children: React.ReactNode }) {
   const initStore = useStore((state) => state.initStore);
   const matches = useStore((state) => state.matches);
   const isLoading = useStore((state) => state.isLoading);
+  const currentProfileId = useStore((state) => state.currentProfileId);
   const updateMatchScore = useStore((state) => state.updateMatchScore);
   const initialized = useRef(false);
   const matchesRef = useRef(matches);
@@ -124,6 +126,19 @@ export default function StoreInitializer({ children }: { children: React.ReactNo
       clearInterval(interval);
     };
   }, [isLoading]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3">
+        <div className="w-8 h-8 rounded-full border-2 border-cream-300 border-t-gold-500 animate-spin" />
+        <span className="text-[10px] uppercase tracking-widest text-stone-400 font-semibold">Cargando</span>
+      </div>
+    );
+  }
+
+  if (!currentProfileId) {
+    return <LoginView />;
+  }
 
   return <>{children}</>;
 }
