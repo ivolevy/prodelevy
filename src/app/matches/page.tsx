@@ -213,17 +213,7 @@ export default function MatchesPage() {
       </AnimatePresence>
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row justify-between items-center border-b border-cream-300 pb-4 gap-3">
-        {/* Desktop Header */}
-        <div className="hidden md:block text-center sm:text-left">
-          <h2 className="text-[10px] tracking-widest font-black uppercase text-stone-400">
-            PRONÓSTICOS DE PARTIDOS
-          </h2>
-          <h1 className="text-2xl font-extrabold tracking-tight text-stone-900 leading-none mt-1">
-            Fixture del Torneo.
-          </h1>
-        </div>
-        {/* Mobile Header */}
-        <div className="block md:hidden text-center w-full">
+        <div className="text-center sm:text-left w-full sm:w-auto">
           <h1 className="text-[10px] font-black tracking-widest text-stone-400 uppercase">
             fixture
           </h1>

@@ -13,22 +13,10 @@ export default function RulesPage() {
   return (
     <div className="space-y-6 text-stone-900 max-w-5xl mx-auto pt-2">
       {/* Page Header */}
-      <div className="border-b border-cream-300 pb-4 text-center sm:text-left">
-        {/* Desktop Header */}
-        <div className="hidden md:block">
-          <h2 className="text-[10px] tracking-widest font-black uppercase text-stone-400">
-            REGLAMENTO DEL JUEGO
-          </h2>
-          <h1 className="text-2xl font-extrabold tracking-tight text-stone-900 leading-none mt-1">
-            Reglas del Prode Mundial 2026.
-          </h1>
-        </div>
-        {/* Mobile Header */}
-        <div className="block md:hidden">
-          <h1 className="text-[10px] font-black tracking-widest text-stone-400 uppercase">
-            reglas
-          </h1>
-        </div>
+      <div className="border-b border-cream-300 pb-4 text-center">
+        <h1 className="text-[10px] font-black tracking-widest text-stone-400 uppercase">
+          reglas
+        </h1>
       </div>
 
       {/* Responsive Grid layout for rules cards */}

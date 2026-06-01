@@ -62,21 +62,9 @@ export default function Home() {
     <div className="space-y-8 text-stone-900 max-w-5xl mx-auto pt-2">
       {/* Editorial Title */}
       <div className="text-center pb-2 border-b border-cream-300">
-        {/* Desktop title */}
-        <div className="hidden md:block space-y-1.5">
-          <h2 className="text-[11px] tracking-widest font-black uppercase text-stone-400">
-            COPA MUNDIAL 2026
-          </h2>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-stone-900 leading-none uppercase">
-            PRODE MUNDIAL 2026
-          </h1>
-        </div>
-        {/* Mobile title */}
-        <div className="block md:hidden">
-          <h1 className="text-[10px] font-black tracking-widest text-stone-400 uppercase">
-            prode mundial usa-mex 26′
-          </h1>
-        </div>
+        <h1 className="text-[10px] font-black tracking-widest text-stone-400 uppercase">
+          prode mundial usa-mex 26′
+        </h1>
       </div>
 
       {/* Countdown Strip */}
