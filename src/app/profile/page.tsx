@@ -96,11 +96,19 @@ export default function ProfilePage() {
 
   const triggerTestNotification = () => {
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      const messages = [
+        '¿Vos tenés ganas de ganar, eh gordito? 😉 ¡Cargá tus pronósticos!',
+        'Terminó el partido. ¿Le pegaste al resultado o diste lástima? 😜',
+        '¡Ojo! Te quedan menos de 24hs para cargar tus resultados. No te duermas 🐑',
+        '¡Listo! Los recordatorios del Prode se enviarán 24 hs antes de cada partido. 🏆'
+      ];
+      const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+
       navigator.serviceWorker.controller.postMessage({
         type: 'SHOW_NOTIFICATION',
         payload: {
           title: '🏆 Prode Mundial 2026',
-          body: '¡Listo! Los recordatorios del Prode se enviarán 24 hs antes de cada partido.'
+          body: randomMsg
         }
       });
     }
