@@ -298,7 +298,7 @@ export default function BracketView() {
         ref={scrollContainerRef}
         className="w-full overflow-x-auto pb-12 select-none"
       >
-        <div className="flex gap-8 py-4 min-w-[920px] h-[780px]">
+        <div className="flex gap-0 py-4 min-w-[920px] h-[780px]">
           
           {/* Column 1: Octavos */}
           <div className="w-[190px] h-full flex flex-col justify-around shrink-0">
@@ -310,6 +310,16 @@ export default function BracketView() {
                 {renderMatchCard(m)}
               </div>
             ))}
+          </div>
+
+          {/* Connector 1: Octavos to Cuartos */}
+          <div className="w-[32px] h-full shrink-0 relative mt-4">
+            <svg className="w-full h-[95%] text-gold-500/40" stroke="currentColor" strokeWidth="1.5" fill="none">
+              <path d="M 0 6.25% L 50% 6.25% L 50% 18.75% L 0 18.75% M 50% 12.5% L 100% 12.5%" />
+              <path d="M 0 31.25% L 50% 31.25% L 50% 43.75% L 0 43.75% M 50% 37.5% L 100% 37.5%" />
+              <path d="M 0 56.25% L 50% 56.25% L 50% 68.75% L 0 68.75% M 50% 62.5% L 100% 62.5%" />
+              <path d="M 0 81.25% L 50% 81.25% L 50% 93.75% L 0 93.75% M 50% 87.5% L 100% 87.5%" />
+            </svg>
           </div>
 
           {/* Column 2: Cuartos */}
@@ -324,6 +334,14 @@ export default function BracketView() {
             ))}
           </div>
 
+          {/* Connector 2: Cuartos to Semis */}
+          <div className="w-[32px] h-full shrink-0 relative mt-4">
+            <svg className="w-full h-[95%] text-gold-500/40" stroke="currentColor" strokeWidth="1.5" fill="none">
+              <path d="M 0 12.5% L 50% 12.5% L 50% 37.5% L 0 37.5% M 50% 25% L 100% 25%" />
+              <path d="M 0 62.5% L 50% 62.5% L 50% 87.5% L 0 87.5% M 50% 75% L 100% 75%" />
+            </svg>
+          </div>
+
           {/* Column 3: Semis */}
           <div className="w-[190px] h-full flex flex-col justify-around shrink-0">
             <h4 className="text-[7.5px] font-black text-stone-400 uppercase tracking-widest text-center border-b border-cream-150 pb-1 shrink-0 mb-1">
@@ -334,6 +352,13 @@ export default function BracketView() {
                 {renderMatchCard(m)}
               </div>
             ))}
+          </div>
+
+          {/* Connector 3: Semis to Final */}
+          <div className="w-[32px] h-full shrink-0 relative mt-4">
+            <svg className="w-full h-[95%] text-gold-500/40" stroke="currentColor" strokeWidth="1.5" fill="none">
+              <path d="M 0 25% L 50% 25% L 50% 75% L 0 75% M 50% 50% L 100% 50%" />
+            </svg>
           </div>
 
           {/* Column 4: Final & Champion */}

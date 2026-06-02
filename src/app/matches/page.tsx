@@ -281,11 +281,31 @@ export default function MatchesPage() {
                 const prediction = predictions.find(p => p.participant_id === currentProfileId && p.match_id === match.id);
                 const isPredictable = isMatchPredictable(match);
                 const cutoffInfo = getPredictableStatusLabel(match);
+                let predictionHighlightClass = '';
+                let predictionPointsLabel = null;
+
+                if (match.status === 'finished' && prediction && match.home_score !== null && match.home_score !== undefined && match.away_score !== null && match.away_score !== undefined) {
+                  const actHome = match.home_score;
+                  const actAway = match.away_score;
+                  const predHome = prediction.home_score;
+                  const predAway = prediction.away_score;
+
+                  if (predHome === actHome && predAway === actAway) {
+                    predictionHighlightClass = 'prediction-exact';
+                    predictionPointsLabel = 'Exacto (+3)';
+                  } else if (Math.sign(actHome - actAway) === Math.sign(predHome - predAway)) {
+                    predictionHighlightClass = 'prediction-outcome';
+                    predictionPointsLabel = 'Resultado (+1)';
+                  } else {
+                    predictionHighlightClass = 'prediction-miss';
+                    predictionPointsLabel = 'Sin acierto (+0)';
+                  }
+                }
 
                 return (
                   <div 
                     key={match.id} 
-                    className={`glass-card border flex flex-col justify-between shadow-sm transition-all overflow-hidden bg-white ${
+                    className={`glass-card border flex flex-col justify-between shadow-sm transition-all overflow-hidden bg-white ${predictionHighlightClass} ${
                       match.status === 'live'
                         ? 'border-rose-450 bg-rose-50/10'
                         : 'border-cream-300 hover:border-cream-400'
@@ -314,9 +334,22 @@ export default function MatchesPage() {
                             VIVO
                           </span>
                         ) : match.status === 'finished' ? (
-                          <span className="text-[8px] font-bold bg-cream-200 text-stone-550 px-2 py-0.5 rounded uppercase tracking-wider">
-                            Finalizado
-                          </span>
+                          <div className="flex gap-1 items-center">
+                            {predictionPointsLabel && (
+                              <span className={`text-[7.5px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider ${
+                                predictionPointsLabel.includes('+3')
+                                  ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20'
+                                  : predictionPointsLabel.includes('+1')
+                                    ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
+                                    : 'bg-stone-100 text-stone-450 border border-stone-200/50'
+                              }`}>
+                                {predictionPointsLabel}
+                              </span>
+                            )}
+                            <span className="text-[8px] font-bold bg-cream-200 text-stone-550 px-2 py-0.5 rounded uppercase tracking-wider">
+                              Finalizado
+                            </span>
+                          </div>
                         ) : (
                           <span className="text-[8px] font-bold bg-white border border-cream-300 text-gold-650 px-2 py-0.5 rounded uppercase tracking-wider">
                             Próximo
