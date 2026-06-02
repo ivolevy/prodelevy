@@ -130,6 +130,31 @@ export default function StoreInitializer({ children }: { children: React.ReactNo
     };
   }, [isLoading]);
 
+  // Prompt for notification permission on first login/profile activation
+  useEffect(() => {
+    if (typeof window !== 'undefined' && currentProfileId && 'Notification' in window) {
+      if (Notification.permission === 'default') {
+        const timer = setTimeout(async () => {
+          try {
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted' && 'serviceWorker' in navigator && navigator.serviceWorker.controller) {
+              navigator.serviceWorker.controller.postMessage({
+                type: 'SHOW_NOTIFICATION',
+                payload: {
+                  title: '🏆 ¡Bienvenido al Prode Familiar!',
+                  body: '¡Notificaciones activadas! "¿Vos tenés ganas de ganar, eh gordito? 😉"'
+                }
+              });
+            }
+          } catch (err) {
+            console.error('Error requesting notifications:', err);
+          }
+        }, 1500);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [currentProfileId]);
+
   if (isLoading) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3">

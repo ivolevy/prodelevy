@@ -298,79 +298,137 @@ export default function BracketView() {
         ref={scrollContainerRef}
         className="w-full overflow-x-auto pb-12 select-none"
       >
-        <div className="flex gap-0 py-4 min-w-[920px] h-[780px]">
+        {/* Round Headers Row */}
+        <div className="flex gap-0 min-w-[920px] border-b border-cream-150 pb-2 mb-2">
+          <div className="w-[190px] text-center text-[7.5px] font-black text-stone-400 uppercase tracking-widest">Octavos de Final</div>
+          <div className="w-[32px] shrink-0"></div>
+          <div className="w-[190px] text-center text-[7.5px] font-black text-stone-400 uppercase tracking-widest">Cuartos de Final</div>
+          <div className="w-[32px] shrink-0"></div>
+          <div className="w-[190px] text-center text-[7.5px] font-black text-stone-400 uppercase tracking-widest">Semifinales</div>
+          <div className="w-[32px] shrink-0"></div>
+          <div className="w-[190px] text-center text-[7.5px] font-black text-stone-400 uppercase tracking-widest">Gran Final</div>
+        </div>
+
+        <div className="flex gap-0 min-w-[920px] h-[976px] items-stretch">
           
           {/* Column 1: Octavos */}
-          <div className="w-[190px] h-full flex flex-col justify-around shrink-0">
-            <h4 className="text-[7.5px] font-black text-stone-400 uppercase tracking-widest text-center border-b border-cream-150 pb-1 shrink-0 mb-1">
-              Octavos de Final
-            </h4>
-            {octavos.map(m => (
-              <div key={m.id} className="flex justify-center w-full">
-                {renderMatchCard(m)}
+          <div className="w-[190px] flex flex-col justify-between h-full py-0 shrink-0">
+            {/* Upper Half (Semis 1 group) */}
+            <div className="h-[464px] flex flex-col justify-between">
+              {/* Cuartos 1 group */}
+              <div className="h-[220px] flex flex-col justify-between">
+                {renderMatchCard(octavos[0])}
+                {renderMatchCard(octavos[1])}
               </div>
-            ))}
+              {/* Cuartos 2 group */}
+              <div className="h-[220px] flex flex-col justify-between">
+                {renderMatchCard(octavos[2])}
+                {renderMatchCard(octavos[3])}
+              </div>
+            </div>
+            {/* Lower Half (Semis 2 group) */}
+            <div className="h-[464px] flex flex-col justify-between">
+              {/* Cuartos 3 group */}
+              <div className="h-[220px] flex flex-col justify-between">
+                {renderMatchCard(octavos[4])}
+                {renderMatchCard(octavos[5])}
+              </div>
+              {/* Cuartos 4 group */}
+              <div className="h-[220px] flex flex-col justify-between">
+                {renderMatchCard(octavos[6])}
+                {renderMatchCard(octavos[7])}
+              </div>
+            </div>
           </div>
 
-          {/* Connector 1: Octavos to Cuartos */}
-          <div className="w-[32px] h-full shrink-0 relative mt-4">
-            <svg className="w-full h-[95%] text-gold-500/40" stroke="currentColor" strokeWidth="1.5" fill="none">
-              <path d="M 0 6.25% L 50% 6.25% L 50% 18.75% L 0 18.75% M 50% 12.5% L 100% 12.5%" />
-              <path d="M 0 31.25% L 50% 31.25% L 50% 43.75% L 0 43.75% M 50% 37.5% L 100% 37.5%" />
-              <path d="M 0 56.25% L 50% 56.25% L 50% 68.75% L 0 68.75% M 50% 62.5% L 100% 62.5%" />
-              <path d="M 0 81.25% L 50% 81.25% L 50% 93.75% L 0 93.75% M 50% 87.5% L 100% 87.5%" />
+          {/* Column 2: Connector 1 */}
+          <div className="w-[32px] flex flex-col justify-between h-full py-0 shrink-0">
+            <div className="h-[464px] flex flex-col justify-between">
+              <div className="h-[220px] w-full">
+                <svg viewBox="0 0 32 220" className="w-full h-full text-gold-500/40" stroke="currentColor" strokeWidth="1.5" fill="none">
+                  <path vectorEffect="non-scaling-stroke" d="M 0 48 L 16 48 L 16 172 L 0 172 M 16 110 L 32 110" />
+                </svg>
+              </div>
+              <div className="h-[220px] w-full">
+                <svg viewBox="0 0 32 220" className="w-full h-full text-gold-500/40" stroke="currentColor" strokeWidth="1.5" fill="none">
+                  <path vectorEffect="non-scaling-stroke" d="M 0 48 L 16 48 L 16 172 L 0 172 M 16 110 L 32 110" />
+                </svg>
+              </div>
+            </div>
+            <div className="h-[464px] flex flex-col justify-between">
+              <div className="h-[220px] w-full">
+                <svg viewBox="0 0 32 220" className="w-full h-full text-gold-500/40" stroke="currentColor" strokeWidth="1.5" fill="none">
+                  <path vectorEffect="non-scaling-stroke" d="M 0 48 L 16 48 L 16 172 L 0 172 M 16 110 L 32 110" />
+                </svg>
+              </div>
+              <div className="h-[220px] w-full">
+                <svg viewBox="0 0 32 220" className="w-full h-full text-gold-500/40" stroke="currentColor" strokeWidth="1.5" fill="none">
+                  <path vectorEffect="non-scaling-stroke" d="M 0 48 L 16 48 L 16 172 L 0 172 M 16 110 L 32 110" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          {/* Column 3: Cuartos */}
+          <div className="w-[190px] flex flex-col justify-between h-full py-0 shrink-0">
+            <div className="h-[464px] flex flex-col justify-between">
+              <div className="h-[220px] flex items-center justify-center">
+                {renderMatchCard(cuartos[0])}
+              </div>
+              <div className="h-[220px] flex items-center justify-center">
+                {renderMatchCard(cuartos[1])}
+              </div>
+            </div>
+            <div className="h-[464px] flex flex-col justify-between">
+              <div className="h-[220px] flex items-center justify-center">
+                {renderMatchCard(cuartos[2])}
+              </div>
+              <div className="h-[220px] flex items-center justify-center">
+                {renderMatchCard(cuartos[3])}
+              </div>
+            </div>
+          </div>
+
+          {/* Column 4: Connector 2 */}
+          <div className="w-[32px] flex flex-col justify-between h-full py-0 shrink-0">
+            <div className="h-[464px] w-full">
+              <svg viewBox="0 0 32 464" className="w-full h-full text-gold-500/40" stroke="currentColor" strokeWidth="1.5" fill="none">
+                <path vectorEffect="non-scaling-stroke" d="M 0 110 L 16 110 L 16 354 L 0 354 M 16 232 L 32 232" />
+              </svg>
+            </div>
+            <div className="h-[464px] w-full">
+              <svg viewBox="0 0 32 464" className="w-full h-full text-gold-500/40" stroke="currentColor" strokeWidth="1.5" fill="none">
+                <path vectorEffect="non-scaling-stroke" d="M 0 110 L 16 110 L 16 354 L 0 354 M 16 232 L 32 232" />
+              </svg>
+            </div>
+          </div>
+
+          {/* Column 5: Semis */}
+          <div className="w-[190px] flex flex-col justify-between h-full py-0 shrink-0">
+            <div className="h-[464px] flex items-center justify-center">
+              {renderMatchCard(semis[0])}
+            </div>
+            <div className="h-[464px] flex items-center justify-center">
+              {renderMatchCard(semis[1])}
+            </div>
+          </div>
+
+          {/* Column 6: Connector 3 */}
+          <div className="w-[32px] h-full shrink-0">
+            <svg viewBox="0 0 32 976" className="w-full h-full text-gold-500/40" stroke="currentColor" strokeWidth="1.5" fill="none">
+              <path vectorEffect="non-scaling-stroke" d="M 0 232 L 16 232 L 16 744 L 0 744 M 16 488 L 32 488" />
             </svg>
           </div>
 
-          {/* Column 2: Cuartos */}
-          <div className="w-[190px] h-full flex flex-col justify-around shrink-0">
-            <h4 className="text-[7.5px] font-black text-stone-400 uppercase tracking-widest text-center border-b border-cream-150 pb-1 shrink-0 mb-1">
-              Cuartos de Final
-            </h4>
-            {cuartos.map(m => (
-              <div key={m.id} className="flex justify-center w-full">
-                {renderMatchCard(m)}
-              </div>
-            ))}
-          </div>
-
-          {/* Connector 2: Cuartos to Semis */}
-          <div className="w-[32px] h-full shrink-0 relative mt-4">
-            <svg className="w-full h-[95%] text-gold-500/40" stroke="currentColor" strokeWidth="1.5" fill="none">
-              <path d="M 0 12.5% L 50% 12.5% L 50% 37.5% L 0 37.5% M 50% 25% L 100% 25%" />
-              <path d="M 0 62.5% L 50% 62.5% L 50% 87.5% L 0 87.5% M 50% 75% L 100% 75%" />
-            </svg>
-          </div>
-
-          {/* Column 3: Semis */}
-          <div className="w-[190px] h-full flex flex-col justify-around shrink-0">
-            <h4 className="text-[7.5px] font-black text-stone-400 uppercase tracking-widest text-center border-b border-cream-150 pb-1 shrink-0 mb-1">
-              Semifinales
-            </h4>
-            {semis.map(m => (
-              <div key={m.id} className="flex justify-center w-full">
-                {renderMatchCard(m)}
-              </div>
-            ))}
-          </div>
-
-          {/* Connector 3: Semis to Final */}
-          <div className="w-[32px] h-full shrink-0 relative mt-4">
-            <svg className="w-full h-[95%] text-gold-500/40" stroke="currentColor" strokeWidth="1.5" fill="none">
-              <path d="M 0 25% L 50% 25% L 50% 75% L 0 75% M 50% 50% L 100% 50%" />
-            </svg>
-          </div>
-
-          {/* Column 4: Final & Champion */}
-          <div className="w-[190px] h-full flex flex-col justify-around shrink-0">
-            <h4 className="text-[7.5px] font-black text-stone-400 uppercase tracking-widest text-center border-b border-cream-150 pb-1 shrink-0 mb-1">
-              Gran Final
-            </h4>
-            
-            <div className="flex flex-col items-center justify-center gap-12 w-full">
+          {/* Column 7: Final & Champion */}
+          <div className="w-[190px] h-full relative py-0 shrink-0">
+            {/* Final Match Card centered at Y = 488 */}
+            <div className="absolute top-[488px] -translate-y-1/2 left-0 right-0">
               {renderMatchCard(finalMatch)}
+            </div>
 
-              {/* Champion Visual Banner */}
+            {/* Champion Visual Banner at the bottom */}
+            <div className="absolute bottom-[36px] left-0 right-0">
               <div className={`w-full p-4 rounded-2xl border text-center transition-all shrink-0 ${
                 champion 
                   ? 'bg-gold-500/10 border-gold-500 shadow-sm animate-bounce' 

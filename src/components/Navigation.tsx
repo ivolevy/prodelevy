@@ -89,9 +89,9 @@ export default function Navigation() {
         {/* Right: Profile Link */}
         <Link 
           href="/profile"
-          className="w-8 h-8 rounded-full border border-cream-300 bg-white flex items-center justify-center text-[10px] font-black text-stone-700 hover:bg-cream-100 transition-all focus:outline-none cursor-pointer"
+          className="w-8 h-8 rounded-full border border-cream-300 bg-white flex items-center justify-center text-stone-700 hover:bg-cream-100 transition-all focus:outline-none cursor-pointer"
         >
-          <span>{getInitials(activeProfile?.display_name || 'US')}</span>
+          <User className="w-4 h-4" />
         </Link>
       </div>
 
@@ -137,11 +137,7 @@ export default function Navigation() {
             pathname === '/profile' ? 'text-white scale-105 font-black' : 'text-cream-200/55 hover:text-white'
           }`}
         >
-          <span className={`w-5.5 h-5.5 rounded-full border flex items-center justify-center text-[8px] font-black shrink-0 transition-all duration-200 ${
-            pathname === '/profile' ? 'border-white bg-white text-gold-650' : 'border-cream-100/40 bg-gold-700/30 text-cream-100'
-          }`}>
-            {getInitials(activeProfile?.display_name || 'US')}
-          </span>
+          <User className="w-5.5 h-5.5 transition-transform duration-200 ease-out" />
           <span className="text-[7.5px] uppercase tracking-widest font-black transition-colors duration-200">Perfil</span>
         </Link>
 

@@ -84,8 +84,7 @@ export const INITIAL_MATCHES: Match[] = [
 ];
 
 export const INITIAL_PROFILES: Profile[] = [
-  { id: 'user-ivan', display_name: 'Iván', username: 'ivan', password: '1234', is_admin: true, avatar_url: 'IV', created_at: '', updated_at: '' },
-  { id: 'user-catalina', display_name: 'Catalina', username: 'catalina', password: '1234', is_admin: false, avatar_url: 'CA', created_at: '', updated_at: '' }
+  { id: 'user-ivanlevy', display_name: 'ivanlevy', username: 'ivanlevy', password: 'catalina1804', is_admin: true, avatar_url: 'IL', created_at: '', updated_at: '' }
 ];
 
 // Helper to determine if a match is predictable (open to predictions)
@@ -103,8 +102,6 @@ export function isMatchPredictable(match: Match): boolean {
   const diffHours = (matchTime - now) / (1000 * 60 * 60);
   return diffHours >= 24;
 }
-
-// --- ZUSTAND STORE TYPE DECLARATION ---
 
 interface TournamentState {
   teams: Team[];
@@ -126,6 +123,7 @@ interface TournamentState {
   autoSeedPredictions: () => Promise<void>;
   addProfile: (displayName: string, username?: string, password?: string) => Promise<void>;
   deleteProfile: (id: string) => Promise<void>;
+  editProfile: (id: string, displayName: string, username: string, password?: string) => Promise<void>;
   saveChampionPrediction: (profileId: string, teamId: string) => Promise<void>;
 }
 
@@ -137,7 +135,7 @@ export const useStore = create<TournamentState>((set, get) => ({
   profiles: [],
   predictions: [],
   standings: [],
-  currentProfileId: 'user-ivan', // Iván is default active profile (admin)
+  currentProfileId: 'user-ivanlevy', // ivanlevy is default active profile (admin)
   isDemoMode: true,
   isLoading: true,
 
@@ -159,9 +157,38 @@ export const useStore = create<TournamentState>((set, get) => ({
         const { data: predictionsData } = await supabase.from('predictions').select('*');
 
         const storedLocalProfiles = typeof window !== 'undefined' ? localStorage.getItem('prode_profiles') : null;
-        const localProfiles = storedLocalProfiles ? JSON.parse(storedLocalProfiles) : [];
+        let localProfiles = storedLocalProfiles ? JSON.parse(storedLocalProfiles) : [];
         
-        const dbProfiles = profilesData || [];
+        let dbProfiles = profilesData || [];
+        
+        // Cleanup check: If ivanlevy is not in the profiles, we want to clear everything
+        const hasNewAdmin = dbProfiles.some(p => p.username === 'ivanlevy') || localProfiles.some((p: any) => p.username === 'ivanlevy');
+        if (!hasNewAdmin) {
+          try {
+            if (supabase) {
+              await supabase.from('profiles').delete().neq('username', 'ivanlevy');
+              await supabase.from('predictions').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+              await supabase.from('profiles').insert({
+                id: 'user-ivanlevy',
+                display_name: 'ivanlevy',
+                username: 'ivanlevy',
+                password: 'catalina1804',
+                avatar_url: 'IL',
+                is_admin: true
+              });
+            }
+          } catch (e) {
+            console.error('Failed db cleanup', e);
+          }
+          dbProfiles = INITIAL_PROFILES;
+          localProfiles = INITIAL_PROFILES;
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('prode_profiles', JSON.stringify(INITIAL_PROFILES));
+            localStorage.removeItem('prode_predictions');
+            localStorage.setItem('prode_active_profile', 'user-ivanlevy');
+          }
+        }
+
         const mergedProfiles = [...dbProfiles];
         localProfiles.forEach((lp: any) => {
           if (!mergedProfiles.some(dp => dp.id === lp.id)) {
@@ -170,9 +197,9 @@ export const useStore = create<TournamentState>((set, get) => ({
         });
 
         const storedLocalPredictions = typeof window !== 'undefined' ? localStorage.getItem('prode_predictions') : null;
-        const localPredictions = storedLocalPredictions ? JSON.parse(storedLocalPredictions) : [];
+        const localPredictions = !hasNewAdmin ? [] : (storedLocalPredictions ? JSON.parse(storedLocalPredictions) : []);
         
-        const dbPredictions = predictionsData || [];
+        const dbPredictions = !hasNewAdmin ? [] : (predictionsData || []);
         const mergedPredictions = [...dbPredictions];
         localPredictions.forEach((lp: any) => {
           if (!mergedPredictions.some(dp => dp.participant_id === lp.participant_id && dp.match_id === lp.match_id)) {
@@ -185,7 +212,7 @@ export const useStore = create<TournamentState>((set, get) => ({
         const profiles = mergedProfiles.length > 0 ? mergedProfiles : INITIAL_PROFILES;
         const predictions = mergedPredictions;
 
-        const currentUserId = storedActiveProfile !== null ? storedActiveProfile : (profiles[0]?.id || 'user-ivan');
+        const currentUserId = !hasNewAdmin ? 'user-ivanlevy' : (storedActiveProfile !== null ? storedActiveProfile : (profiles[0]?.id || 'user-ivanlevy'));
         const standings = updateStandings(matches, predictions, profiles, teams);
 
         set({
@@ -211,11 +238,21 @@ export const useStore = create<TournamentState>((set, get) => ({
       const storedProfiles = localStorage.getItem('prode_profiles');
       const storedPredictions = localStorage.getItem('prode_predictions');
 
+      let profiles = storedProfiles ? JSON.parse(storedProfiles) : INITIAL_PROFILES;
+      let predictions = storedPredictions ? JSON.parse(storedPredictions) : [];
+
+      // Cleanup check: If ivanlevy is not in the profiles, clear everything
+      if (!profiles.some((p: any) => p.username === 'ivanlevy')) {
+        profiles = INITIAL_PROFILES;
+        predictions = [];
+        localStorage.setItem('prode_profiles', JSON.stringify(INITIAL_PROFILES));
+        localStorage.removeItem('prode_predictions');
+        localStorage.setItem('prode_active_profile', 'user-ivanlevy');
+      }
+
       const teams = storedTeams ? JSON.parse(storedTeams) : INITIAL_TEAMS;
       const matches = storedMatches ? JSON.parse(storedMatches) : INITIAL_MATCHES;
-      const profiles = storedProfiles ? JSON.parse(storedProfiles) : INITIAL_PROFILES;
-      const predictions = storedPredictions ? JSON.parse(storedPredictions) : [];
-      const currentProfileId = storedActiveProfile !== null ? storedActiveProfile : 'user-ivan';
+      const currentProfileId = !profiles.some((p: any) => p.id === storedActiveProfile) ? 'user-ivanlevy' : (storedActiveProfile || 'user-ivanlevy');
 
       // Always save back to guarantee consistency
       localStorage.setItem('prode_teams', JSON.stringify(teams));
@@ -469,37 +506,93 @@ export const useStore = create<TournamentState>((set, get) => ({
 
   deleteProfile: async (id: string) => {
     const { isDemoMode, profiles, matches, predictions, currentProfileId } = get();
-
-    // Prevent deleting primary users
-    if (id === 'user-ivan' || id === 'user-catalina') return;
-
+ 
+    // Prevent deleting active user
+    if (id === currentProfileId) return;
+ 
     const updatedProfiles = profiles.filter(p => p.id !== id);
     const updatedPredictions = predictions.filter(p => p.participant_id !== id);
     const standings = updateStandings(matches, updatedPredictions, updatedProfiles, get().teams);
-
+ 
     let nextProfileId = currentProfileId;
     if (currentProfileId === id) {
-      nextProfileId = 'user-ivan';
+      nextProfileId = 'user-ivanlevy';
     }
-
+ 
     set({ 
       profiles: updatedProfiles, 
       predictions: updatedPredictions, 
       standings,
       currentProfileId: nextProfileId
     });
-
+ 
     if (typeof window !== 'undefined') {
       localStorage.setItem('prode_profiles', JSON.stringify(updatedProfiles));
       localStorage.setItem('prode_predictions', JSON.stringify(updatedPredictions));
       localStorage.setItem('prode_active_profile', nextProfileId);
     }
-
+ 
     if (!isDemoMode && supabase) {
       try {
         await supabase.from('profiles').delete().eq('id', id);
       } catch (e) {
         console.error('Failed to delete profile from Supabase:', e);
+      }
+    }
+  },
+ 
+  editProfile: async (id: string, displayName: string, username: string, password?: string) => {
+    const { isDemoMode, profiles, matches, predictions } = get();
+ 
+    const u = username.trim().toLowerCase();
+    const p = password?.trim();
+ 
+    if (u.length < 4 || u.length > 14) {
+      throw new Error('El nombre de usuario debe tener entre 4 y 14 caracteres.');
+    }
+    if (p && (p.length < 4 || p.length > 14)) {
+      throw new Error('La contraseña debe tener entre 4 y 14 caracteres.');
+    }
+ 
+    const isDuplicate = profiles.some(prof => prof.id !== id && prof.username?.toLowerCase() === u);
+    if (isDuplicate) {
+      throw new Error('El nombre de usuario ya está registrado.');
+    }
+ 
+    const updatedProfiles = profiles.map(prof => {
+      if (prof.id === id) {
+        return {
+          ...prof,
+          display_name: displayName.trim(),
+          username: u,
+          ...(p ? { password: p } : {}),
+          avatar_url: displayName.substring(0, 2).toUpperCase(),
+          updated_at: new Date().toISOString()
+        };
+      }
+      return prof;
+    });
+ 
+    const standings = updateStandings(matches, predictions, updatedProfiles, get().teams);
+    set({ profiles: updatedProfiles, standings });
+ 
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('prode_profiles', JSON.stringify(updatedProfiles));
+    }
+ 
+    if (!isDemoMode && supabase) {
+      try {
+        const updateData: any = {
+          display_name: displayName.trim(),
+          username: u,
+          avatar_url: displayName.substring(0, 2).toUpperCase()
+        };
+        if (p) {
+          updateData.password = p;
+        }
+        await supabase.from('profiles').update(updateData).eq('id', id);
+      } catch (e) {
+        console.error('Failed to sync updated profile to Supabase:', e);
       }
     }
   },
