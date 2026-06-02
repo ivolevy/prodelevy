@@ -68,6 +68,24 @@ export default function Home() {
     );
   }
 
+  if (activeProfile?.is_admin) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 text-center max-w-sm mx-auto animate-in fade-in duration-300">
+        <Trophy className="w-12 h-12 text-gold-500" />
+        <h1 className="text-xl font-extrabold tracking-tight text-stone-900 uppercase">Panel de Administración</h1>
+        <p className="text-xs text-stone-500 leading-relaxed">
+          Como administrador, tu cuenta no participa en los pronósticos ni los grupos. Dirigite a tu perfil para gestionar grupos y participantes.
+        </p>
+        <Link 
+          href="/profile"
+          className="mt-2 px-5 py-2.5 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+        >
+          Ir al Panel de Administración <ArrowRight className="w-3.5 h-3.5" />
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 text-stone-900 max-w-5xl mx-auto pt-2">
       {/* Editorial Title */}

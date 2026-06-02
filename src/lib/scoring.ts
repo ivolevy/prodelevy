@@ -10,7 +10,7 @@ export function updateStandings(
   teams?: Team[]
 ): Standing[] {
   const championTeam = teams?.find(t => t.stage_reached === 'champion');
-  const activeProfiles = profiles.filter(p => p.username !== 'test123');
+  const activeProfiles = profiles.filter(p => p.username !== 'test123' && !p.is_admin);
 
   const standingsList: Standing[] = activeProfiles.map(profile => {
     // Find all predictions for this participant

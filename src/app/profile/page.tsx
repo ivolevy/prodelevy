@@ -238,9 +238,11 @@ export default function ProfilePage() {
         </button>
       </div>
 
-      {/* Main Profile Info Card */}
-      <div className="glass-card p-6 border border-cream-300 shadow-sm bg-white relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-cream-150 to-transparent rounded-full -mr-12 -mt-12 pointer-events-none" />
+      {!activeProfile.is_admin && (
+        <>
+          {/* Main Profile Info Card */}
+          <div className="glass-card p-6 border border-cream-300 shadow-sm bg-white relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-cream-150 to-transparent rounded-full -mr-12 -mt-12 pointer-events-none" />
         
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 pb-6 border-b border-cream-200">
           <div className="w-16 h-16 rounded-full bg-stone-900 flex items-center justify-center text-xl font-black text-white shrink-0 shadow-md">
@@ -444,6 +446,8 @@ export default function ProfilePage() {
           );
         })()}
       </div>
+        </>
+      )}
 
       {/* Admin Panel Card */}
       {activeProfile.is_admin && (

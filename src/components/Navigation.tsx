@@ -24,7 +24,7 @@ export default function Navigation() {
     return team ? `${team.flag_emoji} ${team.name}` : null;
   };
 
-  const navItems = [
+  const navItems = activeProfile?.is_admin ? [] : [
     { name: 'Inicio', path: '/' },
     { name: 'Fixture', path: '/matches' },
     { name: 'Reglas', path: '/rules' },
@@ -97,49 +97,61 @@ export default function Navigation() {
 
       {/* ───────────────── MOBILE LAYOUT ───────────────── */}
       <div className="flex md:hidden items-center justify-around w-full h-full text-cream-100">
-        {/* Tab 1: Inicio */}
-        <Link 
-          href="/" 
-          className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-1 transition-all duration-200 ease-out transform-gpu active:scale-95 min-h-[48px] ${
-            pathname === '/' ? 'text-white scale-105 font-black' : 'text-cream-200/55 hover:text-white'
-          }`}
-        >
-          <Home className="w-5.5 h-5.5 transition-transform duration-200 ease-out" />
-          <span className="text-[7.5px] uppercase tracking-widest font-black transition-colors duration-200">Inicio</span>
-        </Link>
+        {activeProfile?.is_admin ? (
+          <Link 
+            href="/profile" 
+            className="flex-1 flex flex-col items-center justify-center gap-0.5 py-1 text-white font-black scale-105"
+          >
+            <User className="w-5.5 h-5.5" />
+            <span className="text-[7.5px] uppercase tracking-widest font-black">Panel Admin</span>
+          </Link>
+        ) : (
+          <>
+            {/* Tab 1: Inicio */}
+            <Link 
+              href="/" 
+              className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-1 transition-all duration-200 ease-out transform-gpu active:scale-95 min-h-[48px] ${
+                pathname === '/' ? 'text-white scale-105 font-black' : 'text-cream-200/55 hover:text-white'
+              }`}
+            >
+              <Home className="w-5.5 h-5.5 transition-transform duration-200 ease-out" />
+              <span className="text-[7.5px] uppercase tracking-widest font-black transition-colors duration-200">Inicio</span>
+            </Link>
 
-        {/* Tab 2: Fixture */}
-        <Link 
-          href="/matches" 
-          className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-1 transition-all duration-200 ease-out transform-gpu active:scale-95 min-h-[48px] ${
-            pathname === '/matches' ? 'text-white scale-105 font-black' : 'text-cream-200/55 hover:text-white'
-          }`}
-        >
-          <Calendar className="w-5.5 h-5.5 transition-transform duration-200 ease-out" />
-          <span className="text-[7.5px] uppercase tracking-widest font-black transition-colors duration-200">Fixture</span>
-        </Link>
+            {/* Tab 2: Fixture */}
+            <Link 
+              href="/matches" 
+              className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-1 transition-all duration-200 ease-out transform-gpu active:scale-95 min-h-[48px] ${
+                pathname === '/matches' ? 'text-white scale-105 font-black' : 'text-cream-200/55 hover:text-white'
+              }`}
+            >
+              <Calendar className="w-5.5 h-5.5 transition-transform duration-200 ease-out" />
+              <span className="text-[7.5px] uppercase tracking-widest font-black transition-colors duration-200">Fixture</span>
+            </Link>
 
-        {/* Tab 3: Reglas */}
-        <Link 
-          href="/rules" 
-          className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-1 transition-all duration-200 ease-out transform-gpu active:scale-95 min-h-[48px] ${
-            pathname === '/rules' ? 'text-white scale-105 font-black' : 'text-cream-200/55 hover:text-white'
-          }`}
-        >
-          <FileText className="w-5.5 h-5.5 transition-transform duration-200 ease-out" />
-          <span className="text-[7.5px] uppercase tracking-widest font-black transition-colors duration-200">Reglas</span>
-        </Link>
+            {/* Tab 3: Reglas */}
+            <Link 
+              href="/rules" 
+              className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-1 transition-all duration-200 ease-out transform-gpu active:scale-95 min-h-[48px] ${
+                pathname === '/rules' ? 'text-white scale-105 font-black' : 'text-cream-200/55 hover:text-white'
+              }`}
+            >
+              <FileText className="w-5.5 h-5.5 transition-transform duration-200 ease-out" />
+              <span className="text-[7.5px] uppercase tracking-widest font-black transition-colors duration-200">Reglas</span>
+            </Link>
 
-        {/* Tab 4: Perfil Link */}
-        <Link 
-          href="/profile" 
-          className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-1 transition-all duration-200 ease-out transform-gpu active:scale-95 min-h-[48px] ${
-            pathname === '/profile' ? 'text-white scale-105 font-black' : 'text-cream-200/55 hover:text-white'
-          }`}
-        >
-          <User className="w-5.5 h-5.5 transition-transform duration-200 ease-out" />
-          <span className="text-[7.5px] uppercase tracking-widest font-black transition-colors duration-200">Perfil</span>
-        </Link>
+            {/* Tab 4: Perfil Link */}
+            <Link 
+              href="/profile" 
+              className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-1 transition-all duration-200 ease-out transform-gpu active:scale-95 min-h-[48px] ${
+                pathname === '/profile' ? 'text-white scale-105 font-black' : 'text-cream-200/55 hover:text-white'
+              }`}
+            >
+              <User className="w-5.5 h-5.5 transition-transform duration-200 ease-out" />
+              <span className="text-[7.5px] uppercase tracking-widest font-black transition-colors duration-200">Perfil</span>
+            </Link>
+          </>
+        )}
 
       </div>
     </header>

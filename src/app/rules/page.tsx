@@ -1,8 +1,30 @@
 'use client';
 
-import { Trophy, Clock, HelpCircle, CheckSquare } from 'lucide-react';
+import { useStore } from '@/lib/store';
+import Link from 'next/link';
+import { Trophy, Clock, HelpCircle, CheckSquare, ArrowRight } from 'lucide-react';
 
 export default function RulesPage() {
+  const { profiles, currentProfileId } = useStore();
+  const activeProfile = profiles.find(p => p.id === currentProfileId);
+
+  if (activeProfile?.is_admin) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 text-center max-w-sm mx-auto animate-in fade-in duration-300">
+        <Trophy className="w-12 h-12 text-gold-500" />
+        <h1 className="text-xl font-extrabold tracking-tight text-stone-900 uppercase">Panel de Administración</h1>
+        <p className="text-xs text-stone-500 leading-relaxed">
+          Como administrador, tu cuenta no participa en los pronósticos ni los grupos. Dirigite a tu perfil para gestionar grupos y participantes.
+        </p>
+        <Link 
+          href="/profile"
+          className="mt-2 px-5 py-2.5 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+        >
+          Ir al Panel de Administración <ArrowRight className="w-3.5 h-3.5" />
+        </Link>
+      </div>
+    );
+  }
   const pointsList = [
     { type: 'Acierto Exacto', desc: 'Acertar el resultado exacto (ej. pronóstico: 2-1, resultado: 2-1)', pts: 3, color: 'text-gold-650 font-bold' },
     { type: 'Acierto de Resultado', desc: 'Acertar el ganador o el empate con marcador diferente (ej. pronóstico: 1-0, resultado: 3-1)', pts: 1, color: 'text-stone-700' },

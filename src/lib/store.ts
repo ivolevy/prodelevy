@@ -84,7 +84,7 @@ export const INITIAL_MATCHES: Match[] = [
 ];
 
 export const INITIAL_PROFILES: Profile[] = [
-  { id: 'user-ivanlevy', display_name: 'ivanlevy', username: 'ivanlevy', password: 'catalina1804', is_admin: true, avatar_url: 'IL', created_at: '', updated_at: '' },
+  { id: 'user-ivanlevy', display_name: 'ivanlevy', username: 'ivanlevy', password: 'cata1804', is_admin: true, avatar_url: 'IL', created_at: '', updated_at: '' },
   { id: 'user-test123', display_name: 'test123', username: 'test123', password: 'test123', is_admin: false, avatar_url: 'TE', created_at: '', updated_at: '' },
   { id: 'user-alan', display_name: 'alan', username: 'alan', password: 'alan123', is_admin: false, avatar_url: 'AL', created_at: '', updated_at: '' },
   { id: 'user-betu', display_name: 'betu', username: 'betu', password: 'betu123', is_admin: false, avatar_url: 'BE', created_at: '', updated_at: '' },
@@ -108,7 +108,6 @@ export const INITIAL_GROUPS: Group[] = [
 ];
 
 export const INITIAL_GROUP_MEMBERS: GroupMember[] = [
-  { group_id: 'group-familia', profile_id: 'user-ivanlevy', joined_at: '2026-06-02T00:00:00Z' },
   { group_id: 'group-familia', profile_id: 'user-test123', joined_at: '2026-06-02T00:00:00Z' },
   { group_id: 'group-familia', profile_id: 'user-alan', joined_at: '2026-06-02T00:00:00Z' },
   { group_id: 'group-familia', profile_id: 'user-betu', joined_at: '2026-06-02T00:00:00Z' },
@@ -238,6 +237,19 @@ export const useStore = create<TournamentState>((set, get) => ({
           }
         }
         
+        // Force admin password to cata1804 if it exists in database but has different password
+        const dbAdmin = dbProfiles.find(p => p.username === 'ivanlevy');
+        if (dbAdmin && dbAdmin.password !== 'cata1804') {
+          if (supabase) {
+            try {
+              await supabase.from('profiles').update({ password: 'cata1804' }).eq('username', 'ivanlevy');
+              dbAdmin.password = 'cata1804';
+            } catch (e) {
+              console.error('Failed to update admin password to cata1804:', e);
+            }
+          }
+        }
+
         // Cleanup check: If ivanlevy is not in the profiles, we want to clear everything
         const hasNewAdmin = dbProfiles.some(p => p.username === 'ivanlevy') || localProfiles.some((p: any) => p.username === 'ivanlevy');
         if (!hasNewAdmin) {
@@ -249,7 +261,7 @@ export const useStore = create<TournamentState>((set, get) => ({
                 id: 'user-ivanlevy',
                 display_name: 'ivanlevy',
                 username: 'ivanlevy',
-                password: 'catalina1804',
+                password: 'cata1804',
                 avatar_url: 'IL',
                 is_admin: true
               });
