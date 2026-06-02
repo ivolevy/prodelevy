@@ -68,3 +68,18 @@ export interface TournamentPhase {
   name: string;
   is_active: boolean;
 }
+
+export interface Group {
+  id: string;
+  name: string;
+  invite_code: string;
+  created_at: string;
+  created_by?: string;
+}
+
+export interface GroupMember {
+  group_id: string;
+  profile_id: string;
+  joined_at: string;
+}
+

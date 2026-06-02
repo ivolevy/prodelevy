@@ -194,6 +194,64 @@ ON public.admin_logs FOR SELECT USING (
 );
 
 
+-- 10. GROUPS Table (Admin-created groups)
+CREATE TABLE IF NOT EXISTS public.groups (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    name TEXT NOT NULL,
+    invite_code TEXT UNIQUE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, now()) NOT NULL,
+    created_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL
+);
+
+-- Enable RLS for groups
+ALTER TABLE public.groups ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone authenticated can view groups" 
+ON public.groups FOR SELECT USING (true);
+
+CREATE POLICY "Admins can create groups" 
+ON public.groups FOR INSERT WITH CHECK (
+    EXISTS (
+        SELECT 1 FROM public.profiles 
+        WHERE profiles.id = auth.uid() AND profiles.is_admin = TRUE
+    )
+);
+
+CREATE POLICY "Admins can update groups" 
+ON public.groups FOR UPDATE USING (
+    EXISTS (
+        SELECT 1 FROM public.profiles 
+        WHERE profiles.id = auth.uid() AND profiles.is_admin = TRUE
+    )
+);
+
+
+-- 11. GROUP_MEMBERS Table (Many-to-many relationship)
+CREATE TABLE IF NOT EXISTS public.group_members (
+    group_id UUID REFERENCES public.groups(id) ON DELETE CASCADE,
+    profile_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+    joined_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, now()) NOT NULL,
+    PRIMARY KEY (group_id, profile_id)
+);
+
+-- Enable RLS for group members
+ALTER TABLE public.group_members ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone authenticated can view group members" 
+ON public.group_members FOR SELECT USING (true);
+
+CREATE POLICY "Users can join groups" 
+ON public.group_members FOR INSERT WITH CHECK (auth.uid() = profile_id);
+
+CREATE POLICY "Admins can manage group members" 
+ON public.group_members FOR ALL USING (
+    EXISTS (
+        SELECT 1 FROM public.profiles 
+        WHERE profiles.id = auth.uid() AND profiles.is_admin = TRUE
+    )
+);
+
+
 -- =========================================================================
 -- SEED DATA
 -- =========================================================================

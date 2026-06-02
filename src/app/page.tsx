@@ -10,12 +10,15 @@ import confetti from 'canvas-confetti';
 
 export default function Home() {
   const [showPwaGuide, setShowPwaGuide] = useState(false);
+  const [selectedGroupId, setSelectedGroupId] = useState<string>('all');
   const { 
     standings, 
     matches, 
     predictions,
     teams,
     profiles,
+    groups,
+    groupMembers,
     currentProfileId, 
     autoSeedPredictions, 
     saveChampionPrediction,
@@ -39,6 +42,13 @@ export default function Home() {
   const currentChampionPred = activeProfile?.champion_prediction;
   const deadline = new Date('2026-06-10T16:00:00-03:00').getTime();
   const isChampionOpen = new Date().getTime() < deadline;
+
+  const myGroupMemberships = groupMembers.filter(gm => gm.profile_id === currentProfileId);
+  const myGroups = groups.filter(g => myGroupMemberships.some(gm => gm.group_id === g.id));
+
+  const filteredStandings = selectedGroupId === 'all'
+    ? standings
+    : standings.filter(s => groupMembers.some(gm => gm.group_id === selectedGroupId && gm.profile_id === s.profile_id));
 
   const triggerConfetti = () => {
     confetti({
@@ -232,7 +242,7 @@ export default function Home() {
                       <h4 className="font-bold text-stone-850">Tocá compartir</h4>
                     </div>
                     <p className="pl-7 text-[11px] leading-relaxed text-stone-500">
-                      Presioná el botón de <strong>Compartir</strong> (el ícono de la caja con flecha hacia arriba en la barra inferior de iPhone, o los tres puntos arriba a la derecha en Android).
+                      Presioná el botón de <strong>Compartir</strong> (el ícono de la caja con flecha hacia arriba o los tres puntos y luego en compartir).
                     </p>
                   </div>
 
@@ -257,20 +267,36 @@ export default function Home() {
         
         {/* Left Column: Standings */}
         <div className="lg:col-span-2 space-y-3">
-          <div className="border-b border-cream-200 pb-1.5 flex justify-between items-center">
-            <h3 className="text-[10px] text-stone-450 uppercase tracking-widest font-black">TABLA DE POSICIONES</h3>
-            <Link 
-              href="/matches?tab=prode" 
-              className="text-[9px] text-gold-650 font-bold uppercase tracking-widest hover:underline flex items-center gap-0.5"
-            >
-              <span>Ver posiciones</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
+          <div className="border-b border-cream-200 pb-1.5 flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+            <div>
+              <h3 className="text-[10px] text-stone-450 uppercase tracking-widest font-black">TABLA DE POSICIONES</h3>
+            </div>
+            
+            {/* Group Selector Dropdown */}
+            {myGroups.length > 0 && (
+              <div className="relative inline-block text-left self-start sm:self-auto">
+                <select
+                  value={selectedGroupId}
+                  onChange={(e) => setSelectedGroupId(e.target.value)}
+                  className="appearance-none bg-white border border-cream-300 rounded-lg px-3 py-1 pr-8 text-[10px] font-bold text-stone-750 uppercase tracking-wider focus:outline-none focus:border-gold-500 cursor-pointer shadow-2xs"
+                >
+                  <option value="all">General (Todos)</option>
+                  {myGroups.map(g => (
+                    <option key={g.id} value={g.id}>
+                      Grupo: {g.name}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
+                  <ChevronDown className="w-3 h-3" />
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="space-y-3">
             <AnimatePresence initial={false}>
-              {standings.map((standing, index) => {
+              {filteredStandings.map((standing, index) => {
                 const isCurrentUser = standing.profile_id === currentProfileId;
                 const initials = standing.display_name ? standing.display_name.substring(0, 2).toUpperCase() : 'US';
                 

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Team, Match, Standing, Profile, Prediction } from './types';
+import { Team, Match, Standing, Profile, Prediction, Group, GroupMember } from './types';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 import { updateStandings } from './scoring';
 
@@ -85,7 +85,29 @@ export const INITIAL_MATCHES: Match[] = [
 
 export const INITIAL_PROFILES: Profile[] = [
   { id: 'user-ivanlevy', display_name: 'ivanlevy', username: 'ivanlevy', password: 'catalina1804', is_admin: true, avatar_url: 'IL', created_at: '', updated_at: '' },
-  { id: 'user-test123', display_name: 'test123', username: 'test123', password: 'test123', is_admin: false, avatar_url: 'TE', created_at: '', updated_at: '' }
+  { id: 'user-test123', display_name: 'test123', username: 'test123', password: 'test123', is_admin: false, avatar_url: 'TE', created_at: '', updated_at: '' },
+  { id: 'user-alan', display_name: 'alan', username: 'alan', password: 'alan123', is_admin: false, avatar_url: 'AL', created_at: '', updated_at: '' },
+  { id: 'user-betu', display_name: 'betu', username: 'betu', password: 'betu123', is_admin: false, avatar_url: 'BE', created_at: '', updated_at: '' },
+  { id: 'user-simon', display_name: 'simon', username: 'simon', password: 'simon123', is_admin: false, avatar_url: 'SI', created_at: '', updated_at: '' },
+  { id: 'user-valen', display_name: 'valen', username: 'valen', password: 'valen123', is_admin: false, avatar_url: 'VA', created_at: '', updated_at: '' },
+  { id: 'user-sofi', display_name: 'sofi', username: 'sofi', password: 'sofi123', is_admin: false, avatar_url: 'SO', created_at: '', updated_at: '' },
+  { id: 'user-lionel', display_name: 'lionel', username: 'lionel', password: 'lionel123', is_admin: false, avatar_url: 'LI', created_at: '', updated_at: '' },
+  { id: 'user-pochi', display_name: 'pochi', username: 'pochi', password: 'pochi123', is_admin: false, avatar_url: 'PO', created_at: '', updated_at: '' },
+  { id: 'user-santi', display_name: 'santi', username: 'santi', password: 'santi123', is_admin: false, avatar_url: 'SA', created_at: '', updated_at: '' },
+  { id: 'user-feli', display_name: 'feli', username: 'feli', password: 'feli123', is_admin: false, avatar_url: 'FE', created_at: '', updated_at: '' },
+  { id: 'user-fabio', display_name: 'fabio', username: 'fabio', password: 'fabio123', is_admin: false, avatar_url: 'FA', created_at: '', updated_at: '' },
+  { id: 'user-denise', display_name: 'denise', username: 'denise', password: 'denise123', is_admin: false, avatar_url: 'DE', created_at: '', updated_at: '' },
+  { id: 'user-lucas', display_name: 'lucas', username: 'lucas', password: 'lucas123', is_admin: false, avatar_url: 'LU', created_at: '', updated_at: '' },
+  { id: 'user-mati', display_name: 'mati', username: 'mati', password: 'mati123', is_admin: false, avatar_url: 'MA', created_at: '', updated_at: '' },
+  { id: 'user-latota', display_name: 'la tota', username: 'la tota', password: 'la tota123', is_admin: false, avatar_url: 'LT', created_at: '', updated_at: '' },
+];
+
+export const INITIAL_GROUPS: Group[] = [
+  { id: 'group-familia', name: 'familia', invite_code: '3103', created_at: '2026-06-02T00:00:00Z', created_by: 'user-ivanlevy' }
+];
+
+export const INITIAL_GROUP_MEMBERS: GroupMember[] = [
+  { group_id: 'group-familia', profile_id: 'user-ivanlevy', joined_at: '2026-06-02T00:00:00Z' }
 ];
 
 // Helper to determine if a match is predictable (open to predictions)
@@ -110,6 +132,8 @@ interface TournamentState {
   profiles: Profile[];
   predictions: Prediction[];
   standings: Standing[];
+  groups: Group[];
+  groupMembers: GroupMember[];
   currentProfileId: string;
   isDemoMode: boolean;
   isLoading: boolean;
@@ -126,6 +150,9 @@ interface TournamentState {
   deleteProfile: (id: string) => Promise<void>;
   editProfile: (id: string, displayName: string, username: string, password?: string) => Promise<void>;
   saveChampionPrediction: (profileId: string, teamId: string) => Promise<void>;
+  createGroup: (name: string, inviteCode: string) => Promise<void>;
+  joinGroup: (inviteCode: string) => Promise<void>;
+  leaveGroup: (groupId: string) => Promise<void>;
 }
 
 // --- ZUSTAND STORE IMPLEMENTATION ---
@@ -136,6 +163,8 @@ export const useStore = create<TournamentState>((set, get) => ({
   profiles: [],
   predictions: [],
   standings: [],
+  groups: [],
+  groupMembers: [],
   currentProfileId: '', // Default to empty string (logged out)
   isDemoMode: true,
   isLoading: true,
@@ -156,6 +185,17 @@ export const useStore = create<TournamentState>((set, get) => ({
         const { data: matchesData } = await supabase.from('matches').select('*').order('id', { ascending: true });
         const { data: profilesData } = await supabase.from('profiles').select('*');
         const { data: predictionsData } = await supabase.from('predictions').select('*');
+        
+        let groupsData: any[] = [];
+        let groupMembersData: any[] = [];
+        try {
+          const { data: g } = await supabase.from('groups').select('*');
+          if (g) groupsData = g;
+          const { data: gm } = await supabase.from('group_members').select('*');
+          if (gm) groupMembersData = gm;
+        } catch (e) {
+          console.warn('Failed to fetch groups from Supabase, possibly tables not created yet. Falling back to local storage.', e);
+        }
 
         const storedLocalProfiles = typeof window !== 'undefined' ? localStorage.getItem('prode_profiles') : null;
         let localProfiles = storedLocalProfiles ? JSON.parse(storedLocalProfiles) : [];
@@ -216,6 +256,13 @@ export const useStore = create<TournamentState>((set, get) => ({
           }
         });
 
+        // Ensure all INITIAL_PROFILES exist in the merged profiles list
+        INITIAL_PROFILES.forEach(ip => {
+          if (!mergedProfiles.some(p => p.username === ip.username)) {
+            mergedProfiles.push(ip);
+          }
+        });
+
         const storedLocalPredictions = typeof window !== 'undefined' ? localStorage.getItem('prode_predictions') : null;
         const localPredictions = !hasNewAdmin ? [] : (storedLocalPredictions ? JSON.parse(storedLocalPredictions) : []);
         
@@ -227,10 +274,40 @@ export const useStore = create<TournamentState>((set, get) => ({
           }
         });
 
+        const storedLocalGroups = typeof window !== 'undefined' ? localStorage.getItem('prode_groups') : null;
+        const localGroups: Group[] = storedLocalGroups ? JSON.parse(storedLocalGroups) : [];
+        const mergedGroups = [...groupsData];
+        localGroups.forEach((lg) => {
+          if (!mergedGroups.some(dg => dg.id === lg.id)) {
+            mergedGroups.push(lg);
+          }
+        });
+        INITIAL_GROUPS.forEach(ig => {
+          if (!mergedGroups.some(g => g.invite_code.toUpperCase() === ig.invite_code.toUpperCase())) {
+            mergedGroups.push(ig);
+          }
+        });
+
+        const storedLocalGroupMembers = typeof window !== 'undefined' ? localStorage.getItem('prode_group_members') : null;
+        const localGroupMembers: GroupMember[] = storedLocalGroupMembers ? JSON.parse(storedLocalGroupMembers) : [];
+        const mergedGroupMembers = [...groupMembersData];
+        localGroupMembers.forEach((lgm) => {
+          if (!mergedGroupMembers.some(dgm => dgm.group_id === lgm.group_id && dgm.profile_id === lgm.profile_id)) {
+            mergedGroupMembers.push(lgm);
+          }
+        });
+        INITIAL_GROUP_MEMBERS.forEach(igm => {
+          if (!mergedGroupMembers.some(gm => gm.group_id === igm.group_id && gm.profile_id === igm.profile_id)) {
+            mergedGroupMembers.push(igm);
+          }
+        });
+
         const teams = (teamsData && teamsData.length > 0) ? teamsData : INITIAL_TEAMS;
         const matches = (matchesData && matchesData.length > 0) ? matchesData : INITIAL_MATCHES;
         const profiles = mergedProfiles.length > 0 ? mergedProfiles : INITIAL_PROFILES;
         const predictions = mergedPredictions;
+        const groups = mergedGroups;
+        const groupMembers = mergedGroupMembers;
 
         const currentUserId = storedActiveProfile !== null ? storedActiveProfile : '';
         const standings = updateStandings(matches, predictions, profiles, teams);
@@ -241,6 +318,8 @@ export const useStore = create<TournamentState>((set, get) => ({
           profiles,
           predictions,
           standings,
+          groups,
+          groupMembers,
           currentProfileId: currentUserId,
           isLoading: false
         });
@@ -257,18 +336,47 @@ export const useStore = create<TournamentState>((set, get) => ({
       const storedMatches = localStorage.getItem('prode_matches');
       const storedProfiles = localStorage.getItem('prode_profiles');
       const storedPredictions = localStorage.getItem('prode_predictions');
+      const storedGroups = localStorage.getItem('prode_groups');
+      const storedGroupMembers = localStorage.getItem('prode_group_members');
 
       let profiles = storedProfiles ? JSON.parse(storedProfiles) : INITIAL_PROFILES;
       let predictions = storedPredictions ? JSON.parse(storedPredictions) : [];
+      let groups = storedGroups ? JSON.parse(storedGroups) : [];
+      let groupMembers = storedGroupMembers ? JSON.parse(storedGroupMembers) : [];
 
       // Cleanup check: If ivanlevy is not in the profiles, clear everything
       if (!profiles.some((p: any) => p.username === 'ivanlevy')) {
         profiles = INITIAL_PROFILES;
         predictions = [];
+        groups = [];
+        groupMembers = [];
         localStorage.setItem('prode_profiles', JSON.stringify(INITIAL_PROFILES));
         localStorage.removeItem('prode_predictions');
+        localStorage.setItem('prode_groups', JSON.stringify([]));
+        localStorage.setItem('prode_group_members', JSON.stringify([]));
         localStorage.setItem('prode_active_profile', '');
       }
+
+      // Ensure all INITIAL_PROFILES exist in the profiles list
+      INITIAL_PROFILES.forEach(ip => {
+        if (!profiles.some((p: any) => p.username === ip.username)) {
+          profiles.push(ip);
+        }
+      });
+
+      // Ensure all INITIAL_GROUPS exist in the groups list
+      INITIAL_GROUPS.forEach(ig => {
+        if (!groups.some((g: any) => g.invite_code.toUpperCase() === ig.invite_code.toUpperCase())) {
+          groups.push(ig);
+        }
+      });
+
+      // Ensure all INITIAL_GROUP_MEMBERS exist in groupMembers list
+      INITIAL_GROUP_MEMBERS.forEach(igm => {
+        if (!groupMembers.some((gm: any) => gm.group_id === igm.group_id && gm.profile_id === igm.profile_id)) {
+          groupMembers.push(igm);
+        }
+      });
 
       const teams = storedTeams ? JSON.parse(storedTeams) : INITIAL_TEAMS;
       const matches = storedMatches ? JSON.parse(storedMatches) : INITIAL_MATCHES;
@@ -279,6 +387,8 @@ export const useStore = create<TournamentState>((set, get) => ({
       localStorage.setItem('prode_matches', JSON.stringify(matches));
       localStorage.setItem('prode_profiles', JSON.stringify(profiles));
       localStorage.setItem('prode_predictions', JSON.stringify(predictions));
+      localStorage.setItem('prode_groups', JSON.stringify(groups));
+      localStorage.setItem('prode_group_members', JSON.stringify(groupMembers));
       localStorage.setItem('prode_active_profile', currentProfileId);
 
       const standings = updateStandings(matches, predictions, profiles, teams);
@@ -289,6 +399,8 @@ export const useStore = create<TournamentState>((set, get) => ({
         profiles,
         predictions,
         standings,
+        groups,
+        groupMembers,
         currentProfileId,
         isLoading: false
       });
@@ -298,6 +410,8 @@ export const useStore = create<TournamentState>((set, get) => ({
         matches: INITIAL_MATCHES,
         profiles: INITIAL_PROFILES,
         predictions: [],
+        groups: [],
+        groupMembers: [],
         standings: updateStandings(INITIAL_MATCHES, [], INITIAL_PROFILES, INITIAL_TEAMS),
         isLoading: false
       });
@@ -661,6 +775,130 @@ export const useStore = create<TournamentState>((set, get) => ({
         }
       } catch (e) {
         console.error('Failed to sync champion prediction to Supabase:', e);
+      }
+    }
+  },
+
+  createGroup: async (name: string, inviteCode: string) => {
+    const { isDemoMode, groups, groupMembers, currentProfileId } = get();
+    const cleanName = name.trim();
+    const cleanCode = inviteCode.trim().toUpperCase();
+
+    if (!cleanName || !cleanCode) {
+      throw new Error('El nombre y el código de invitación son obligatorios.');
+    }
+    if (cleanCode.length < 3 || cleanCode.length > 10) {
+      throw new Error('El código debe tener entre 3 y 10 caracteres.');
+    }
+
+    const isCodeDuplicate = groups.some(g => g.invite_code.toUpperCase() === cleanCode);
+    if (isCodeDuplicate) {
+      throw new Error('Ya existe un grupo con ese código de invitación.');
+    }
+
+    const newGroupId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'g0000000-0000-0000-0000-000000000000'.replace(/0/g, () => Math.floor(Math.random() * 16).toString(16));
+    const nowStr = new Date().toISOString();
+
+    const newGroup: Group = {
+      id: newGroupId,
+      name: cleanName,
+      invite_code: cleanCode,
+      created_at: nowStr,
+      created_by: currentProfileId
+    };
+
+    const newMember: GroupMember = {
+      group_id: newGroupId,
+      profile_id: currentProfileId,
+      joined_at: nowStr
+    };
+
+    const updatedGroups = [...groups, newGroup];
+    const updatedMembers = [...groupMembers, newMember];
+
+    set({ groups: updatedGroups, groupMembers: updatedMembers });
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('prode_groups', JSON.stringify(updatedGroups));
+      localStorage.setItem('prode_group_members', JSON.stringify(updatedMembers));
+    }
+
+    if (!isDemoMode && supabase) {
+      try {
+        await supabase.from('groups').insert({
+          id: newGroupId,
+          name: cleanName,
+          invite_code: cleanCode,
+          created_by: currentProfileId
+        });
+        await supabase.from('group_members').insert({
+          group_id: newGroupId,
+          profile_id: currentProfileId
+        });
+      } catch (e) {
+        console.error('Failed to save group to Supabase:', e);
+      }
+    }
+  },
+
+  joinGroup: async (inviteCode: string) => {
+    const { isDemoMode, groups, groupMembers, currentProfileId } = get();
+    const cleanCode = inviteCode.trim().toUpperCase();
+
+    if (!cleanCode) {
+      throw new Error('El código de invitación es obligatorio.');
+    }
+
+    const group = groups.find(g => g.invite_code.toUpperCase() === cleanCode);
+    if (!group) {
+      throw new Error('Código de invitación inválido o el grupo no existe.');
+    }
+
+    const isAlreadyMember = groupMembers.some(gm => gm.group_id === group.id && gm.profile_id === currentProfileId);
+    if (isAlreadyMember) {
+      throw new Error('Ya perteneces a este grupo.');
+    }
+
+    const newMember: GroupMember = {
+      group_id: group.id,
+      profile_id: currentProfileId,
+      joined_at: new Date().toISOString()
+    };
+
+    const updatedMembers = [...groupMembers, newMember];
+    set({ groupMembers: updatedMembers });
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('prode_group_members', JSON.stringify(updatedMembers));
+    }
+
+    if (!isDemoMode && supabase) {
+      try {
+        await supabase.from('group_members').insert({
+          group_id: group.id,
+          profile_id: currentProfileId
+        });
+      } catch (e) {
+        console.error('Failed to join group in Supabase:', e);
+      }
+    }
+  },
+
+  leaveGroup: async (groupId: string) => {
+    const { isDemoMode, groupMembers, currentProfileId } = get();
+    const updatedMembers = groupMembers.filter(gm => !(gm.group_id === groupId && gm.profile_id === currentProfileId));
+
+    set({ groupMembers: updatedMembers });
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('prode_group_members', JSON.stringify(updatedMembers));
+    }
+
+    if (!isDemoMode && supabase) {
+      try {
+        await supabase.from('group_members').delete().eq('group_id', groupId).eq('profile_id', currentProfileId);
+      } catch (e) {
+        console.error('Failed to leave group in Supabase:', e);
       }
     }
   }
