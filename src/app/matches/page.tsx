@@ -224,7 +224,7 @@ export default function MatchesPage() {
         <div className="flex bg-cream-100/50 p-1 rounded-2xl border border-cream-300 gap-1 shrink-0 w-full sm:w-auto">
           {[
             { id: 'fixture', label: 'Partidos' },
-            { id: 'standings', label: 'Tablas' },
+            { id: 'standings', label: 'Tabla' },
             { id: 'bracket', label: 'Cuadro' },
             { id: 'prode', label: 'Posiciones' }
           ].map(tab => (
