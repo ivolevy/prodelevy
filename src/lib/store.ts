@@ -101,6 +101,7 @@ export const INITIAL_PROFILES: Profile[] = [
   { id: 'user-mati', display_name: 'mati', username: 'mati', password: 'mati123', is_admin: false, avatar_url: 'MA', created_at: '', updated_at: '' },
   { id: 'user-latota', display_name: 'la tota', username: 'la tota', password: 'la tota123', is_admin: false, avatar_url: 'LT', created_at: '', updated_at: '' },
   { id: 'user-ivan', display_name: 'ivan', username: 'ivan', password: 'ivan123', is_admin: false, avatar_url: 'IV', created_at: '', updated_at: '' },
+  { id: 'user-barbie', display_name: 'barbie', username: 'barbie', password: 'barbie123', is_admin: false, avatar_url: 'BA', created_at: '', updated_at: '' },
 ];
 
 export const INITIAL_GROUPS: Group[] = [
@@ -124,6 +125,7 @@ export const INITIAL_GROUP_MEMBERS: GroupMember[] = [
   { group_id: 'group-familia', profile_id: 'user-mati', joined_at: '2026-06-02T00:00:00Z' },
   { group_id: 'group-familia', profile_id: 'user-latota', joined_at: '2026-06-02T00:00:00Z' },
   { group_id: 'group-familia', profile_id: 'user-ivan', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'group-familia', profile_id: 'user-barbie', joined_at: '2026-06-02T00:00:00Z' },
 ];
 
 // Helper to determine if a match is predictable (open to predictions)
