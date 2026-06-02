@@ -136,7 +136,7 @@ export const useStore = create<TournamentState>((set, get) => ({
   profiles: [],
   predictions: [],
   standings: [],
-  currentProfileId: 'user-ivanlevy', // ivanlevy is default active profile (admin)
+  currentProfileId: '', // Default to empty string (logged out)
   isDemoMode: true,
   isLoading: true,
 
@@ -205,7 +205,7 @@ export const useStore = create<TournamentState>((set, get) => ({
           if (typeof window !== 'undefined') {
             localStorage.setItem('prode_profiles', JSON.stringify(INITIAL_PROFILES));
             localStorage.removeItem('prode_predictions');
-            localStorage.setItem('prode_active_profile', 'user-ivanlevy');
+            localStorage.setItem('prode_active_profile', '');
           }
         }
 
@@ -232,7 +232,7 @@ export const useStore = create<TournamentState>((set, get) => ({
         const profiles = mergedProfiles.length > 0 ? mergedProfiles : INITIAL_PROFILES;
         const predictions = mergedPredictions;
 
-        const currentUserId = !hasNewAdmin ? 'user-ivanlevy' : (storedActiveProfile !== null ? storedActiveProfile : (profiles[0]?.id || 'user-ivanlevy'));
+        const currentUserId = storedActiveProfile !== null ? storedActiveProfile : '';
         const standings = updateStandings(matches, predictions, profiles, teams);
 
         set({
@@ -267,12 +267,12 @@ export const useStore = create<TournamentState>((set, get) => ({
         predictions = [];
         localStorage.setItem('prode_profiles', JSON.stringify(INITIAL_PROFILES));
         localStorage.removeItem('prode_predictions');
-        localStorage.setItem('prode_active_profile', 'user-ivanlevy');
+        localStorage.setItem('prode_active_profile', '');
       }
 
       const teams = storedTeams ? JSON.parse(storedTeams) : INITIAL_TEAMS;
       const matches = storedMatches ? JSON.parse(storedMatches) : INITIAL_MATCHES;
-      const currentProfileId = !profiles.some((p: any) => p.id === storedActiveProfile) ? 'user-ivanlevy' : (storedActiveProfile || 'user-ivanlevy');
+      const currentProfileId = !profiles.some((p: any) => p.id === storedActiveProfile) ? '' : (storedActiveProfile || '');
 
       // Always save back to guarantee consistency
       localStorage.setItem('prode_teams', JSON.stringify(teams));
