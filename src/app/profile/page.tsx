@@ -54,6 +54,10 @@ export default function ProfilePage() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showEditPassword, setShowEditPassword] = useState(false);
 
+  // Expanded lists in admin panel
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
+  const [expandedGroupParticipants, setExpandedGroupParticipants] = useState<Record<string, boolean>>({});
+
   useEffect(() => {
     if (typeof window !== 'undefined' && 'Notification' in window) {
       setNotificationStatus(Notification.permission);
@@ -742,8 +746,9 @@ export default function ProfilePage() {
                 <p className="p-4 text-xs text-stone-400 italic text-center">No hay grupos creados.</p>
               ) : (
                 groups.map(g => {
-                  const membersOfGroup = groupMembers
-                    .filter(gm => gm.group_id === g.id)
+                  const isExpanded = !!expandedGroups[g.id];
+                  const groupMembersData = groupMembers.filter(gm => gm.group_id === g.id);
+                  const membersOfGroup = groupMembersData
                     .map(gm => {
                       const profile = profiles.find(p => p.id === gm.profile_id);
                       return profile?.display_name || 'Desconocido';
@@ -757,16 +762,116 @@ export default function ProfilePage() {
                           <div className="flex gap-2 mt-1 text-[8.5px] text-stone-440 font-semibold uppercase tracking-wider">
                             <span>Código: <strong className="text-gold-650 font-bold select-all">{g.invite_code}</strong></span>
                             <span>•</span>
-                            <span>{membersOfGroup.length} miembros</span>
+                            <span>{groupMembersData.length} miembros</span>
                           </div>
                         </div>
+                        <button
+                          type="button"
+                          onClick={() => setExpandedGroups(prev => ({ ...prev, [g.id]: !prev[g.id] }))}
+                          className="px-2.5 py-1 border border-cream-300 bg-white hover:bg-cream-100/30 text-stone-700 font-bold text-[8px] uppercase tracking-widest rounded-lg transition-all cursor-pointer"
+                        >
+                          {isExpanded ? 'Ocultar Detalle' : 'Ver Detalle'}
+                        </button>
                       </div>
                       
-                      {/* Members sublist */}
-                      <div className="mt-2 text-[9px] text-stone-500">
-                        <strong className="text-[8.5px] text-stone-450 uppercase font-bold tracking-wider">Miembros: </strong>
-                        {membersOfGroup.join(', ')}
-                      </div>
+                      {/* Members list preview when not expanded */}
+                      {!isExpanded && membersOfGroup.length > 0 && (
+                        <div className="mt-2 text-[9px] text-stone-500">
+                          <strong className="text-[8.5px] text-stone-450 uppercase font-bold tracking-wider">Miembros: </strong>
+                          {membersOfGroup.join(', ')}
+                        </div>
+                      )}
+
+                      {/* Expanded View: List members, their selected champion and their predictions */}
+                      {isExpanded && (
+                        <div className="mt-4 pt-3 border-t border-cream-200 space-y-4">
+                          <h5 className="text-[9px] font-black tracking-widest text-stone-450 uppercase mb-2">Miembros y Pronósticos:</h5>
+                          {groupMembersData.length === 0 ? (
+                            <p className="text-[10px] text-stone-400 italic">No hay miembros en este grupo.</p>
+                          ) : (
+                            <div className="space-y-3">
+                              {groupMembersData.map(gm => {
+                                const p = profiles.find(prof => prof.id === gm.profile_id);
+                                if (!p) return null;
+                                const initials = p.display_name.substring(0, 2).toUpperCase();
+                                
+                                const pChamp = p.champion_prediction
+                                  ? teams.find(t => t.id === p.champion_prediction)
+                                  : null;
+                                  
+                                const userPreds = predictions.filter(pred => pred.participant_id === p.id);
+                                const isUserExpanded = !!expandedGroupParticipants[`${g.id}-${p.id}`];
+
+                                return (
+                                  <div key={p.id} className="p-3 border border-cream-200 bg-cream-50/10 rounded-xl space-y-2 text-left">
+                                    <div className="flex justify-between items-center">
+                                      <div className="flex items-center gap-2">
+                                        <span className="w-5 h-5 rounded-full bg-cream-200 flex items-center justify-center text-[8.5px] font-bold text-stone-600">
+                                          {initials}
+                                        </span>
+                                        <div>
+                                          <h4 className="text-xs font-bold text-stone-800">{p.display_name}</h4>
+                                          <span className="text-[8px] text-gold-650 font-black tracking-wider uppercase block">
+                                            Campeón Favorito: {pChamp ? `${pChamp.flag_emoji} ${pChamp.name}` : 'Ninguno'}
+                                          </span>
+                                        </div>
+                                      </div>
+                                      
+                                      <button
+                                        type="button"
+                                        onClick={() => setExpandedGroupParticipants(prev => ({ 
+                                          ...prev, 
+                                          [`${g.id}-${p.id}`]: !prev[`${g.id}-${p.id}`] 
+                                        }))}
+                                        className="text-[8px] text-stone-500 hover:text-stone-850 font-bold uppercase tracking-wider underline cursor-pointer"
+                                      >
+                                        {isUserExpanded ? `Ocultar Pronósticos (${userPreds.length})` : `Ver Pronósticos (${userPreds.length})`}
+                                      </button>
+                                    </div>
+                                    
+                                    {isUserExpanded && (
+                                      <div className="mt-2 pt-2 border-t border-cream-150 grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
+                                        {userPreds.length === 0 ? (
+                                          <p className="text-[9px] text-stone-400 italic col-span-2">Sin pronósticos cargados.</p>
+                                        ) : (
+                                          userPreds.map(pred => {
+                                            const m = matches.find(match => match.id === pred.match_id);
+                                            if (!m) return null;
+                                            const home = teams.find(t => t.id === m.home_team_id);
+                                            const away = teams.find(t => t.id === m.away_team_id);
+                                            
+                                            return (
+                                              <div key={pred.id} className="flex justify-between items-center p-1.5 bg-white border border-cream-150 rounded-lg text-[10px]">
+                                                <div className="flex items-center gap-1 truncate max-w-[130px]">
+                                                  <span className="shrink-0">{home?.flag_emoji || '🏳️'}</span>
+                                                  <span className="truncate font-semibold text-stone-700">{home?.name || m.home_team_id}</span>
+                                                  <span className="text-stone-400 font-normal mx-0.5">vs</span>
+                                                  <span className="shrink-0">{away?.flag_emoji || '🏳️'}</span>
+                                                  <span className="truncate font-semibold text-stone-700">{away?.name || m.away_team_id}</span>
+                                                </div>
+                                                <div className="text-right shrink-0">
+                                                  <span className="font-extrabold text-stone-900 bg-cream-50 px-1.5 py-0.5 border border-cream-200 rounded font-mono">
+                                                    {pred.home_score} - {pred.away_score}
+                                                  </span>
+                                                  {m.status === 'finished' && (
+                                                    <span className="block text-[6.5px] font-black uppercase text-stone-400 mt-0.5">
+                                                      Real: {m.home_score}-{m.away_score}
+                                                    </span>
+                                                  )}
+                                                </div>
+                                              </div>
+                                            );
+                                          })
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   );
                 })
