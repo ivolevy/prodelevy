@@ -231,7 +231,7 @@ export default function MatchesPage() {
             <button
               key={tab.id}
               onClick={() => setActiveSubTab(tab.id as any)}
-              className={`flex-1 sm:flex-initial px-4 py-2 rounded-xl text-[10px] uppercase tracking-widest font-black transition-all shrink-0 cursor-pointer ${
+              className={`flex-1 sm:flex-initial px-2 sm:px-4 py-2 rounded-xl text-[8.5px] sm:text-[10px] uppercase tracking-wider sm:tracking-widest font-black transition-all shrink-0 cursor-pointer ${
                 activeSubTab === tab.id
                   ? 'bg-stone-900 text-white shadow-sm'
                   : 'text-stone-500 hover:text-stone-850'
