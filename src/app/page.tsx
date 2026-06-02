@@ -259,7 +259,13 @@ export default function Home() {
         <div className="lg:col-span-2 space-y-3">
           <div className="border-b border-cream-200 pb-1.5 flex justify-between items-center">
             <h3 className="text-[10px] text-stone-450 uppercase tracking-widest font-black">TABLA DE POSICIONES</h3>
-            <span className="text-[8px] font-bold text-stone-400 uppercase tracking-wider">Pronósticos Oficiales</span>
+            <Link 
+              href="/matches?tab=prode" 
+              className="text-[9px] text-gold-650 font-bold uppercase tracking-widest hover:underline flex items-center gap-0.5"
+            >
+              <span>Ver posiciones</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
 
           <div className="space-y-3">

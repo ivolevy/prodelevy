@@ -84,7 +84,8 @@ export const INITIAL_MATCHES: Match[] = [
 ];
 
 export const INITIAL_PROFILES: Profile[] = [
-  { id: 'user-ivanlevy', display_name: 'ivanlevy', username: 'ivanlevy', password: 'catalina1804', is_admin: true, avatar_url: 'IL', created_at: '', updated_at: '' }
+  { id: 'user-ivanlevy', display_name: 'ivanlevy', username: 'ivanlevy', password: 'catalina1804', is_admin: true, avatar_url: 'IL', created_at: '', updated_at: '' },
+  { id: 'user-test123', display_name: 'test123', username: 'test123', password: 'test123', is_admin: false, avatar_url: 'TE', created_at: '', updated_at: '' }
 ];
 
 // Helper to determine if a match is predictable (open to predictions)
@@ -160,6 +161,25 @@ export const useStore = create<TournamentState>((set, get) => ({
         let localProfiles = storedLocalProfiles ? JSON.parse(storedLocalProfiles) : [];
         
         let dbProfiles = profilesData || [];
+        
+        // Ensure test123 user is in database
+        const hasTestUser = dbProfiles.some(p => p.username === 'test123');
+        if (!hasTestUser && supabase) {
+          try {
+            await supabase.from('profiles').insert({
+              id: 'user-test123',
+              display_name: 'test123',
+              username: 'test123',
+              password: 'test123',
+              avatar_url: 'TE',
+              is_admin: false
+            });
+            const { data: refreshedProfiles } = await supabase.from('profiles').select('*');
+            if (refreshedProfiles) dbProfiles = refreshedProfiles;
+          } catch (e) {
+            console.error('Failed to auto-insert test123 user:', e);
+          }
+        }
         
         // Cleanup check: If ivanlevy is not in the profiles, we want to clear everything
         const hasNewAdmin = dbProfiles.some(p => p.username === 'ivanlevy') || localProfiles.some((p: any) => p.username === 'ivanlevy');
@@ -341,6 +361,12 @@ export const useStore = create<TournamentState>((set, get) => ({
 
   savePrediction: async (profileId: string, matchId: number, homeScore: number, awayScore: number) => {
     const { isDemoMode, predictions, matches, profiles } = get();
+
+    // Prevent test user from saving predictions
+    const activeProfile = profiles.find(p => p.id === profileId);
+    if (activeProfile?.username === 'test123') {
+      throw new Error('El usuario de prueba no puede guardar pronósticos.');
+    }
 
     // Enforce the 24 hours lock
     const match = matches.find(m => m.id === matchId);
@@ -599,6 +625,12 @@ export const useStore = create<TournamentState>((set, get) => ({
 
   saveChampionPrediction: async (profileId: string, teamId: string) => {
     const { isDemoMode, profiles, teams, matches, predictions } = get();
+
+    // Prevent test user from saving champion prediction
+    const activeProfile = profiles.find(p => p.id === profileId);
+    if (activeProfile?.username === 'test123') {
+      throw new Error('El usuario de prueba no puede elegir un campeón.');
+    }
 
     // Check 24 hours lock before tournament starts (June 11, 2026 16:00:00 UTC-3)
     const deadline = new Date('2026-06-10T16:00:00-03:00').getTime();

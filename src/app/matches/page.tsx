@@ -1,16 +1,21 @@
 'use client';
 
 import { useStore, isMatchPredictable } from '@/lib/store';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Calendar, MapPin, Check, ChevronDown, ChevronUp, Lock, Unlock, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Match } from '@/lib/types';
 import BracketView from '@/components/BracketView';
 
-export default function MatchesPage() {
+function MatchesPageContent() {
   const { matches, teams, currentProfileId, predictions, savePrediction, profiles, standings } = useStore();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get('tab');
   const [activeFilter, setActiveFilter] = useState<'ALL' | 'upcoming' | 'live' | 'finished'>('ALL');
-  const [activeSubTab, setActiveSubTab] = useState<'fixture' | 'standings' | 'bracket' | 'prode'>('fixture');
+  const [activeSubTab, setActiveSubTab] = useState<'fixture' | 'standings' | 'bracket' | 'prode'>(
+    (tabParam === 'standings' || tabParam === 'bracket' || tabParam === 'prode') ? tabParam : 'fixture'
+  );
   const [predictingMatchId, setPredictingMatchId] = useState<number | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
@@ -400,13 +405,13 @@ export default function MatchesPage() {
                     {/* Details & Predict Actions Footer */}
                     <div className="px-4 py-2 bg-cream-100/10 border-t border-cream-200 flex justify-between items-center text-[9px] text-stone-450 font-medium">
                       <div className="flex items-center gap-3">
-                        <span className="flex items-center gap-1 text-stone-500">
-                          <Calendar className="w-3.5 h-3.5 text-stone-405" />
+                        <span className="flex items-center gap-1 text-stone-500 whitespace-nowrap shrink-0">
+                          <Calendar className="w-3.5 h-3.5 text-stone-405 shrink-0" />
                           {match.fecha}
                         </span>
-                        <span className="flex items-center gap-1 max-w-[120px] sm:max-w-[160px] truncate text-stone-500">
-                          <MapPin className="w-3.5 h-3.5 text-stone-405" />
-                          {match.ciudad}, {match.pais}
+                        <span className="flex items-center gap-1 min-w-0 max-w-[120px] sm:max-w-[160px] text-stone-500">
+                          <MapPin className="w-3.5 h-3.5 text-stone-405 shrink-0" />
+                          <span className="truncate">{match.ciudad}, {match.pais}</span>
                         </span>
                       </div>
 
@@ -697,5 +702,18 @@ export default function MatchesPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function MatchesPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3">
+        <div className="w-8 h-8 rounded-full border-2 border-cream-300 border-t-gold-500 animate-spin" />
+        <span className="text-[10px] uppercase tracking-widest text-stone-450 font-semibold">Cargando</span>
+      </div>
+    }>
+      <MatchesPageContent />
+    </Suspense>
   );
 }
