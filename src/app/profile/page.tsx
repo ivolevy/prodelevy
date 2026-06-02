@@ -362,90 +362,92 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Groups Card */}
-      <div className="glass-card p-6 border border-cream-300 shadow-sm bg-white text-left space-y-6">
-        <div className="border-b border-cream-200 pb-3 flex justify-between items-center">
-          <h3 className="text-xs font-black text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
-            <Users className="w-4 h-4 text-gold-500" /> Mis Grupos de Prode
-          </h3>
-        </div>
+      {/* Groups Card (Temporarily Hidden) */}
+      {false && (
+        <div className="glass-card p-6 border border-cream-300 shadow-sm bg-white text-left space-y-6">
+          <div className="border-b border-cream-200 pb-3 flex justify-between items-center">
+            <h3 className="text-xs font-black text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
+              <Users className="w-4 h-4 text-gold-500" /> Mis Grupos de Prode
+            </h3>
+          </div>
 
-        {groupError && (
-          <p className="text-[9px] font-bold text-rose-650 bg-rose-50 border border-rose-200 p-2 rounded-lg text-center leading-tight">
-            {groupError}
-          </p>
-        )}
-        {groupSuccess && (
-          <p className="text-[9px] font-bold text-emerald-650 bg-emerald-50 border border-emerald-200 p-2 rounded-lg text-center leading-tight">
-            {groupSuccess}
-          </p>
-        )}
+          {groupError && (
+            <p className="text-[9px] font-bold text-rose-650 bg-rose-50 border border-rose-200 p-2 rounded-lg text-center leading-tight">
+              {groupError}
+            </p>
+          )}
+          {groupSuccess && (
+            <p className="text-[9px] font-bold text-emerald-650 bg-emerald-50 border border-emerald-200 p-2 rounded-lg text-center leading-tight">
+              {groupSuccess}
+            </p>
+          )}
 
-        {/* Join Group Form */}
-        <form onSubmit={handleJoinGroupSubmit} className="flex gap-2">
-          <input
-            type="text"
-            placeholder="CÓDIGO DE GRUPO (ej: LEVY26)"
-            value={inviteCodeToJoin}
-            onChange={e => setInviteCodeToJoin(e.target.value)}
-            className="flex-1 bg-cream-50/30 border border-cream-300 rounded-xl px-3.5 py-2 text-xs text-stone-850 placeholder-stone-400 focus:outline-none focus:border-gold-500 transition-all uppercase font-bold"
-          />
-          <button
-            type="submit"
-            className="px-4 py-2 bg-stone-900 hover:bg-stone-800 text-white font-bold text-[9px] uppercase tracking-widest rounded-xl transition-all shadow-xs cursor-pointer shrink-0"
-          >
-            Unirse
-          </button>
-        </form>
+          {/* Join Group Form */}
+          <form onSubmit={handleJoinGroupSubmit} className="flex gap-2">
+            <input
+              type="text"
+              placeholder="CÓDIGO DE GRUPO (ej: LEVY26)"
+              value={inviteCodeToJoin}
+              onChange={e => setInviteCodeToJoin(e.target.value)}
+              className="flex-1 bg-cream-50/30 border border-cream-300 rounded-xl px-3.5 py-2 text-xs text-stone-850 placeholder-stone-400 focus:outline-none focus:border-gold-500 transition-all uppercase font-bold"
+            />
+            <button
+              type="submit"
+              className="px-4 py-2 bg-stone-900 hover:bg-stone-800 text-white font-bold text-[9px] uppercase tracking-widest rounded-xl transition-all shadow-xs cursor-pointer shrink-0"
+            >
+              Unirse
+            </button>
+          </form>
 
-        {/* List of My Groups */}
-        {(() => {
-          const myGroupMemberships = groupMembers.filter(gm => gm.profile_id === currentProfileId);
-          if (myGroupMemberships.length === 0) {
+          {/* List of My Groups */}
+          {(() => {
+            const myGroupMemberships = groupMembers.filter(gm => gm.profile_id === currentProfileId);
+            if (myGroupMemberships.length === 0) {
+              return (
+                <div className="p-4 border border-dashed border-cream-300 rounded-2xl text-center">
+                  <p className="text-xs text-stone-400 italic">No perteneces a ningún grupo de Prode.</p>
+                  <p className="text-[10px] text-stone-400 mt-1">Ingresá un código arriba para unirte a un grupo familiar o de amigos.</p>
+                </div>
+              );
+            }
+
             return (
-              <div className="p-4 border border-dashed border-cream-300 rounded-2xl text-center">
-                <p className="text-xs text-stone-400 italic">No perteneces a ningún grupo de Prode.</p>
-                <p className="text-[10px] text-stone-400 mt-1">Ingresá un código arriba para unirte a un grupo familiar o de amigos.</p>
+              <div className="divide-y divide-cream-150 border border-cream-200 rounded-2xl overflow-hidden bg-cream-50/5">
+                {myGroupMemberships.map(membership => {
+                  const group = groups.find(g => g.id === membership.group_id);
+                  if (!group) return null;
+                  const memberCount = groupMembers.filter(gm => gm.group_id === group.id).length;
+
+                  return (
+                    <div key={group.id} className="flex justify-between items-center p-3.5 hover:bg-cream-50/30 transition-colors">
+                      <div>
+                        <h4 className="text-xs font-bold text-stone-850 uppercase">{group.name}</h4>
+                        <div className="flex gap-2 mt-1 text-[8.5px] text-stone-440 font-semibold uppercase tracking-wider">
+                          <span>Código: <strong className="text-gold-650 font-bold select-all">{group.invite_code}</strong></span>
+                          <span>•</span>
+                          <span>{memberCount} {memberCount === 1 ? 'miembro' : 'miembros'}</span>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={async () => {
+                          if (confirm(`¿Estás seguro de salir del grupo "${group.name}"?`)) {
+                            await leaveGroup(group.id);
+                            showGroupSuccess(`Saliste del grupo ${group.name}`);
+                          }
+                        }}
+                        className="px-2.5 py-1 border border-rose-250 bg-rose-50/50 hover:bg-rose-50 text-rose-650 hover:text-rose-700 font-bold text-[8px] uppercase tracking-widest rounded-lg transition-all cursor-pointer"
+                      >
+                        Salir
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             );
-          }
-
-          return (
-            <div className="divide-y divide-cream-150 border border-cream-200 rounded-2xl overflow-hidden bg-cream-50/5">
-              {myGroupMemberships.map(membership => {
-                const group = groups.find(g => g.id === membership.group_id);
-                if (!group) return null;
-                const memberCount = groupMembers.filter(gm => gm.group_id === group.id).length;
-
-                return (
-                  <div key={group.id} className="flex justify-between items-center p-3.5 hover:bg-cream-50/30 transition-colors">
-                    <div>
-                      <h4 className="text-xs font-bold text-stone-850 uppercase">{group.name}</h4>
-                      <div className="flex gap-2 mt-1 text-[8.5px] text-stone-440 font-semibold uppercase tracking-wider">
-                        <span>Código: <strong className="text-gold-650 font-bold select-all">{group.invite_code}</strong></span>
-                        <span>•</span>
-                        <span>{memberCount} {memberCount === 1 ? 'miembro' : 'miembros'}</span>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={async () => {
-                        if (confirm(`¿Estás seguro de salir del grupo "${group.name}"?`)) {
-                          await leaveGroup(group.id);
-                          showGroupSuccess(`Saliste del grupo ${group.name}`);
-                        }
-                      }}
-                      className="px-2.5 py-1 border border-rose-250 bg-rose-50/50 hover:bg-rose-50 text-rose-650 hover:text-rose-700 font-bold text-[8px] uppercase tracking-widest rounded-lg transition-all cursor-pointer"
-                    >
-                      Salir
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          );
-        })()}
-      </div>
+          })()}
+        </div>
+      )}
         </>
       )}
 

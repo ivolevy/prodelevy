@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useStore } from '@/lib/store';
+import { supabase } from '@/lib/supabaseClient';
 import LoginView from './LoginView';
 
 export default function StoreInitializer({ children }: { children: React.ReactNode }) {
@@ -70,6 +71,50 @@ export default function StoreInitializer({ children }: { children: React.ReactNo
         });
       }
     }
+  }, [initStore]);
+
+  // ── Supabase Realtime Synchronization ───────────────────
+  useEffect(() => {
+    if (!supabase) return;
+
+    // Listen to changes in profiles, predictions, groups, group_members
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'profiles' },
+        () => {
+          initStore();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'predictions' },
+        () => {
+          initStore();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'groups' },
+        () => {
+          initStore();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'group_members' },
+        () => {
+          initStore();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      if (supabase) {
+        supabase.removeChannel(channel);
+      }
+    };
   }, [initStore]);
 
   // ── Background Auto-Sync (Gemini polling) ───────────────
