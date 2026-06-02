@@ -108,7 +108,23 @@ export const INITIAL_GROUPS: Group[] = [
 ];
 
 export const INITIAL_GROUP_MEMBERS: GroupMember[] = [
-  { group_id: 'group-familia', profile_id: 'user-ivanlevy', joined_at: '2026-06-02T00:00:00Z' }
+  { group_id: 'group-familia', profile_id: 'user-ivanlevy', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'group-familia', profile_id: 'user-test123', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'group-familia', profile_id: 'user-alan', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'group-familia', profile_id: 'user-betu', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'group-familia', profile_id: 'user-simon', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'group-familia', profile_id: 'user-valen', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'group-familia', profile_id: 'user-sofi', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'group-familia', profile_id: 'user-lionel', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'group-familia', profile_id: 'user-pochi', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'group-familia', profile_id: 'user-santi', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'group-familia', profile_id: 'user-feli', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'group-familia', profile_id: 'user-fabio', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'group-familia', profile_id: 'user-denise', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'group-familia', profile_id: 'user-lucas', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'group-familia', profile_id: 'user-mati', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'group-familia', profile_id: 'user-latota', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'group-familia', profile_id: 'user-ivan', joined_at: '2026-06-02T00:00:00Z' },
 ];
 
 // Helper to determine if a match is predictable (open to predictions)
@@ -297,11 +313,24 @@ export const useStore = create<TournamentState>((set, get) => ({
             mergedGroups.push(lg);
           }
         });
-        INITIAL_GROUPS.forEach(ig => {
+        // Ensure all INITIAL_GROUPS exist in database
+        for (const ig of INITIAL_GROUPS) {
           if (!mergedGroups.some(g => g.invite_code.toUpperCase() === ig.invite_code.toUpperCase())) {
             mergedGroups.push(ig);
           }
-        });
+          if (supabase && !groupsData.some(g => g.invite_code.toUpperCase() === ig.invite_code.toUpperCase())) {
+            try {
+              await supabase.from('groups').insert({
+                id: ig.id,
+                name: ig.name,
+                invite_code: ig.invite_code,
+                created_by: ig.created_by
+              });
+            } catch (e) {
+              console.warn('Failed to insert initial group into Supabase:', e);
+            }
+          }
+        }
 
         const storedLocalGroupMembers = typeof window !== 'undefined' ? localStorage.getItem('prode_group_members') : null;
         const localGroupMembers: GroupMember[] = storedLocalGroupMembers ? JSON.parse(storedLocalGroupMembers) : [];
@@ -311,11 +340,23 @@ export const useStore = create<TournamentState>((set, get) => ({
             mergedGroupMembers.push(lgm);
           }
         });
-        INITIAL_GROUP_MEMBERS.forEach(igm => {
+        
+        // Ensure all INITIAL_GROUP_MEMBERS exist in database
+        for (const igm of INITIAL_GROUP_MEMBERS) {
           if (!mergedGroupMembers.some(gm => gm.group_id === igm.group_id && gm.profile_id === igm.profile_id)) {
             mergedGroupMembers.push(igm);
           }
-        });
+          if (supabase && !groupMembersData.some(gm => gm.group_id === igm.group_id && gm.profile_id === igm.profile_id)) {
+            try {
+              await supabase.from('group_members').insert({
+                group_id: igm.group_id,
+                profile_id: igm.profile_id
+              });
+            } catch (e) {
+              console.warn('Failed to insert initial group member into Supabase:', e);
+            }
+          }
+        }
 
         const teams = (teamsData && teamsData.length > 0) ? teamsData : INITIAL_TEAMS;
         const matches = (matchesData && matchesData.length > 0) ? matchesData : INITIAL_MATCHES;
