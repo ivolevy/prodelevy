@@ -10,8 +10,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://wc2026prode.vercel.app'),
   title: "Prode Mundial 2026",
-  description: "El torneo familiar más importante del planeta.",
+  description: "Pronostica los partidos del mundial, jugá con amigos y ganá premios increíbles. ¡El torneo más importante del planeta!",
   manifest: "/manifest.json",
   icons: {
     icon: "/favicon.png",
@@ -21,6 +22,28 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "Prode 2026",
+  },
+  openGraph: {
+    title: "Prode Mundial 2026",
+    description: "Pronostica los partidos del mundial, jugá con amigos y ganá premios increíbles. ¡El torneo más importante del planeta!",
+    url: "https://wc2026prode.vercel.app",
+    siteName: "Prode Mundial 2026",
+    images: [
+      {
+        url: "/icons/icon-512x512.png",
+        width: 512,
+        height: 512,
+        alt: "Prode Mundial 2026",
+      },
+    ],
+    locale: "es_AR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Prode Mundial 2026",
+    description: "Pronostica los partidos del mundial, jugá con amigos y ganá premios increíbles. ¡El torneo más importante del planeta!",
+    images: ["/icons/icon-512x512.png"],
   },
 };
 

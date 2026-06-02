@@ -2,12 +2,12 @@
 
 import { useStore } from '@/lib/store';
 import { useRouter } from 'next/navigation';
-import { Trophy, LogOut, ArrowRight, User, Award, Shield, CheckCircle, HelpCircle, Users, Bell, Plus, Trash2 } from 'lucide-react';
+import { Trophy, LogOut, ArrowRight, User, Award, Shield, CheckCircle, HelpCircle, Users, Bell, Plus, Trash2, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 
 export default function ProfilePage() {
-  const { currentProfileId, setCurrentProfile, profiles, standings, teams, addProfile, deleteProfile, editProfile } = useStore();
+  const { currentProfileId, setCurrentProfile, profiles, standings, teams, addProfile, deleteProfile, editProfile, predictions, matches } = useStore();
   const router = useRouter();
   const [notificationStatus, setNotificationStatus] = useState<string>('default');
 
@@ -24,6 +24,11 @@ export default function ProfilePage() {
   
   const [adminError, setAdminError] = useState<string | null>(null);
   const [adminSuccess, setAdminSuccess] = useState<string | null>(null);
+
+  // Password visibility visibility states
+  const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showEditPassword, setShowEditPassword] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && 'Notification' in window) {
@@ -45,12 +50,13 @@ export default function ProfilePage() {
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newDisplayName.trim() || !newUsername.trim() || !newPassword.trim()) {
+    if (!newUsername.trim() || !newPassword.trim()) {
       showError('Por favor completa todos los campos.');
       return;
     }
+    const cleanUsername = newUsername.trim();
     try {
-      await addProfile(newDisplayName, newUsername, newPassword);
+      await addProfile(cleanUsername, cleanUsername, newPassword);
       setIsCreatingNew(false);
       setNewDisplayName('');
       setNewUsername('');
@@ -63,12 +69,13 @@ export default function ProfilePage() {
 
   const handleEditUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editDisplayName.trim() || !editUsername.trim()) {
+    if (!editUsername.trim()) {
       showError('Por favor completa los campos requeridos.');
       return;
     }
+    const cleanUsername = editUsername.trim();
     try {
-      await editProfile(editingProfileId!, editDisplayName, editUsername, editPassword || undefined);
+      await editProfile(editingProfileId!, cleanUsername, cleanUsername, editPassword || undefined);
       setEditingProfileId(null);
       setEditDisplayName('');
       setEditUsername('');
@@ -242,6 +249,15 @@ export default function ProfilePage() {
                 </button>
               )}
             </div>
+
+            {notificationStatus === 'denied' && (
+              <div className="mt-2.5 p-2.5 bg-amber-50 border border-amber-200 rounded-lg text-[9.5px] text-amber-800 font-medium leading-normal flex items-start gap-2">
+                <HelpCircle className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+                <span>
+                  <strong>Notificaciones bloqueadas por el navegador.</strong> Para activarlas, debés hacer clic en los ajustes de tu sitio en la barra de direcciones del navegador (haciendo clic en el ícono a la izquierda de la URL) y cambiar el permiso a "Permitir".
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -314,17 +330,7 @@ export default function ProfilePage() {
           {isCreatingNew && (
             <form onSubmit={handleCreateUser} className="p-4 border border-cream-250 bg-cream-50/15 rounded-2xl space-y-3">
               <h4 className="text-[9.5px] font-black tracking-widest text-stone-450 uppercase mb-2">Crear Nuevo Participante</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-[8px] font-black uppercase tracking-wider text-stone-450 mb-1">Nombre</label>
-                  <input
-                    type="text"
-                    placeholder="ej: Juan P."
-                    value={newDisplayName}
-                    onChange={e => setNewDisplayName(e.target.value)}
-                    className="w-full bg-white border border-cream-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-gold-500"
-                  />
-                </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[8px] font-black uppercase tracking-wider text-stone-450 mb-1">Usuario</label>
                   <input
@@ -337,13 +343,23 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <label className="block text-[8px] font-black uppercase tracking-wider text-stone-450 mb-1">Contraseña</label>
-                  <input
-                    type="text"
-                    placeholder="ej: 1234"
-                    value={newPassword}
-                    onChange={e => setNewPassword(e.target.value)}
-                    className="w-full bg-white border border-cream-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-gold-500"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showNewPassword ? "text" : "password"}
+                      placeholder="ej: 1234"
+                      value={newPassword}
+                      onChange={e => setNewPassword(e.target.value)}
+                      className="w-full bg-white border border-cream-300 rounded-lg pl-2.5 pr-8 py-1.5 text-xs focus:outline-none focus:border-gold-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-650 cursor-pointer"
+                      title={showNewPassword ? "Ocultar" : "Mostrar"}
+                    >
+                      {showNewPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
                 </div>
               </div>
               <div className="flex justify-end gap-2 pt-2">
@@ -356,7 +372,7 @@ export default function ProfilePage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-3 py-1 bg-emerald-650 hover:bg-emerald-700 text-white font-bold text-[8.5px] uppercase tracking-widest rounded-lg transition-all"
+                  className="px-3 py-1 bg-stone-900 hover:bg-stone-850 text-white font-bold text-[8.5px] uppercase tracking-widest rounded-lg transition-all cursor-pointer"
                 >
                   Crear
                 </button>
@@ -368,16 +384,7 @@ export default function ProfilePage() {
           {editingProfileId && (
             <form onSubmit={handleEditUser} className="p-4 border border-gold-500/30 bg-gold-500/5 rounded-2xl space-y-3">
               <h4 className="text-[9.5px] font-black tracking-widest text-gold-650 uppercase mb-2">Editar Participante</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-[8px] font-black uppercase tracking-wider text-stone-450 mb-1">Nombre</label>
-                  <input
-                    type="text"
-                    value={editDisplayName}
-                    onChange={e => setEditDisplayName(e.target.value)}
-                    className="w-full bg-white border border-cream-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-gold-500"
-                  />
-                </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[8px] font-black uppercase tracking-wider text-stone-450 mb-1">Usuario</label>
                   <input
@@ -388,14 +395,24 @@ export default function ProfilePage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[8px] font-black uppercase tracking-wider text-stone-450 mb-1">Contraseña (opcional)</label>
-                  <input
-                    type="text"
-                    placeholder="Nueva contraseña"
-                    value={editPassword}
-                    onChange={e => setEditPassword(e.target.value)}
-                    className="w-full bg-white border border-cream-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-gold-500"
-                  />
+                  <label className="block text-[8px] font-black uppercase tracking-wider text-stone-450 mb-1">Contraseña</label>
+                  <div className="relative">
+                    <input
+                      type={showEditPassword ? "text" : "password"}
+                      placeholder="Nueva contraseña"
+                      value={editPassword}
+                      onChange={e => setEditPassword(e.target.value)}
+                      className="w-full bg-white border border-cream-300 rounded-lg pl-2.5 pr-8 py-1.5 text-xs focus:outline-none focus:border-gold-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowEditPassword(!showEditPassword)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-650 cursor-pointer"
+                      title={showEditPassword ? "Ocultar" : "Mostrar"}
+                    >
+                      {showEditPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
                 </div>
               </div>
               <div className="flex justify-end gap-2 pt-2">
@@ -418,59 +435,80 @@ export default function ProfilePage() {
 
           {/* User List */}
           <div className="divide-y divide-cream-150 border border-cream-200 rounded-2xl overflow-hidden bg-cream-50/5">
-            {profiles.map(p => (
-              <div key={p.id} className="flex justify-between items-center p-3.5 hover:bg-cream-50/30 transition-colors">
-                <div className="flex items-center gap-3">
-                  <span className="w-8 h-8 rounded-full bg-stone-900 flex items-center justify-center text-xs font-black text-white uppercase shrink-0">
-                    {p.display_name.substring(0, 2).toUpperCase()}
-                  </span>
-                  <div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-bold text-stone-850">{p.display_name}</span>
-                      {p.is_admin && (
-                        <span className="text-[6.5px] bg-stone-900 text-white px-1 py-0.2 rounded font-black uppercase tracking-wider">Admin</span>
-                      )}
-                      {p.id === currentProfileId && (
-                        <span className="text-[6.5px] bg-emerald-500/10 border border-emerald-500/25 text-emerald-650 px-1 py-0.2 rounded font-black uppercase tracking-wider">Tú</span>
-                      )}
-                    </div>
-                    <span className="block text-[8.5px] text-stone-450 font-semibold uppercase leading-none mt-1">
-                      User: <strong className="text-stone-700 font-bold">{p.username || p.display_name.toLowerCase()}</strong> | Pass: <strong className="text-stone-700 font-bold">{p.password}</strong>
+            {profiles.map(p => {
+              return (
+                <div key={p.id} className="flex justify-between items-center p-3.5 hover:bg-cream-50/30 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <span className="w-8 h-8 rounded-full bg-stone-900 flex items-center justify-center text-xs font-black text-white uppercase shrink-0">
+                      {p.display_name.substring(0, 2).toUpperCase()}
                     </span>
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-bold text-stone-850">{p.display_name}</span>
+                        {p.is_admin && (
+                          <span className="text-[6.5px] bg-stone-900 text-white px-1 py-0.2 rounded font-black uppercase tracking-wider">Admin</span>
+                        )}
+                        {p.id === currentProfileId && (
+                          <span className="text-[6.5px] bg-emerald-500/10 border border-emerald-500/25 text-emerald-650 px-1 py-0.2 rounded font-black uppercase tracking-wider">Tú</span>
+                        )}
+                      </div>
+                      
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-x-2 gap-y-1 mt-1 text-[8.5px] text-stone-450 font-semibold uppercase">
+                        <span>User: <strong className="text-stone-700 font-bold">{p.username || p.display_name.toLowerCase()}</strong></span>
+                        <span className="hidden sm:inline text-stone-300">|</span>
+                        <span className="flex items-center gap-1">
+                          Pass: <strong className="text-stone-700 font-bold font-mono">{showPasswords[p.id] ? p.password : '••••••••'}</strong>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowPasswords(prev => ({
+                                ...prev,
+                                [p.id]: !prev[p.id]
+                              }));
+                            }}
+                            className="p-0.5 hover:bg-cream-150 rounded transition-colors text-stone-400 hover:text-stone-650 cursor-pointer"
+                            title={showPasswords[p.id] ? "Ocultar contraseña" : "Mostrar contraseña"}
+                          >
+                            {showPasswords[p.id] ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                          </button>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => {
+                        setEditingProfileId(p.id);
+                        setIsCreatingNew(false);
+                        setEditDisplayName(p.display_name);
+                        setEditUsername(p.username || p.display_name.toLowerCase());
+                        setEditPassword(p.password || '');
+                        setShowEditPassword(false);
+                        setAdminError(null);
+                      }}
+                      className="p-1.5 border border-cream-300 bg-white hover:bg-cream-100/30 text-stone-750 font-bold text-[8px] uppercase tracking-widest rounded-lg transition-all cursor-pointer"
+                    >
+                      Editar
+                    </button>
+                    {p.id !== currentProfileId && (
+                      <button
+                        onClick={async () => {
+                          if (confirm(`¿Estás seguro de eliminar a ${p.display_name}?`)) {
+                            await deleteProfile(p.id);
+                            showSuccess('Usuario eliminado correctamente.');
+                          }
+                        }}
+                        className="p-1.5 border border-rose-250 bg-rose-50/50 hover:bg-rose-50 text-rose-650 hover:text-rose-700 font-bold text-[8px] uppercase tracking-widest rounded-lg transition-all cursor-pointer animate-none"
+                        title="Eliminar usuario"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                 </div>
-
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={() => {
-                      setEditingProfileId(p.id);
-                      setIsCreatingNew(false);
-                      setEditDisplayName(p.display_name);
-                      setEditUsername(p.username || p.display_name.toLowerCase());
-                      setEditPassword('');
-                      setAdminError(null);
-                    }}
-                    className="p-1.5 border border-cream-300 bg-white hover:bg-cream-100/30 text-stone-750 font-bold text-[8px] uppercase tracking-widest rounded-lg transition-all cursor-pointer"
-                  >
-                    Editar
-                  </button>
-                  {p.id !== currentProfileId && (
-                    <button
-                      onClick={async () => {
-                        if (confirm(`¿Estás seguro de eliminar a ${p.display_name}?`)) {
-                          await deleteProfile(p.id);
-                          showSuccess('Usuario eliminado correctamente.');
-                        }
-                      }}
-                      className="p-1.5 border border-rose-250 bg-rose-50/50 hover:bg-rose-50 text-rose-650 hover:text-rose-700 font-bold text-[8px] uppercase tracking-widest rounded-lg transition-all cursor-pointer animate-none"
-                      title="Eliminar usuario"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
