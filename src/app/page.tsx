@@ -15,8 +15,10 @@ export default function Home() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const standalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
-      setIsStandalone(!!standalone);
+      setIsStandalone(
+        window.matchMedia('(display-mode: standalone)').matches ||
+        (window.navigator as any).standalone === true
+      );
     }
   }, []);
   const { 
@@ -54,9 +56,12 @@ export default function Home() {
   const myGroupMemberships = groupMembers.filter(gm => gm.profile_id === currentProfileId);
   const myGroups = groups.filter(g => myGroupMemberships.some(gm => gm.group_id === g.id));
 
-  const filteredStandings = selectedGroupId === 'all'
-    ? standings
-    : standings.filter(s => groupMembers.some(gm => gm.group_id === selectedGroupId && gm.profile_id === s.profile_id));
+  const myGroupIds = myGroups.map(g => g.id);
+  const filteredStandings = standings.filter(s => 
+    myGroupIds.length === 0 
+      ? true 
+      : groupMembers.some(gm => myGroupIds.includes(gm.group_id) && gm.profile_id === s.profile_id)
+  );
 
   const triggerConfetti = () => {
     confetti({
@@ -220,74 +225,74 @@ export default function Home() {
       {!isStandalone && (
         <div className="glass-card border border-cream-300 shadow-sm bg-white relative overflow-hidden max-w-5xl mx-auto text-left transition-all duration-300">
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-cream-200/20 to-transparent rounded-full -mr-12 -mt-12 pointer-events-none" />
-          
-          {/* Toggle Button Header */}
-          <button 
-            onClick={() => setShowPwaGuide(!showPwaGuide)}
-            className="w-full flex items-center justify-between p-5 focus:outline-none hover:bg-stone-50/50 transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              <Smartphone className="w-5 h-5 text-stone-700 shrink-0" />
-              <div className="text-left">
-                <h4 className="text-[9.5px] font-extrabold text-stone-450 uppercase leading-none mb-1">Cómo instalar el Prode en tu celular</h4>
-                <h3 className="text-xs font-black text-stone-900 uppercase">Instalar App Móvil</h3>
-              </div>
+        
+        {/* Toggle Button Header */}
+        <button 
+          onClick={() => setShowPwaGuide(!showPwaGuide)}
+          className="w-full flex items-center justify-between p-5 focus:outline-none hover:bg-stone-50/50 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <Smartphone className="w-5 h-5 text-stone-700 shrink-0" />
+            <div className="text-left">
+              <h4 className="text-[9.5px] font-extrabold text-stone-450 uppercase leading-none mb-1">Cómo instalar el Prode en tu celular</h4>
+              <h3 className="text-xs font-black text-stone-900 uppercase">Instalar App Móvil</h3>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="hidden sm:inline-block text-[8px] bg-stone-100 border border-stone-250 text-stone-550 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
-                Sin Descargas
-              </span>
-              <ChevronDown className={`w-4 h-4 text-stone-400 transition-transform duration-300 ${showPwaGuide ? 'rotate-180' : ''}`} />
-            </div>
-          </button>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="hidden sm:inline-block text-[8px] bg-stone-100 border border-stone-250 text-stone-550 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+              Sin Descargas
+            </span>
+            <ChevronDown className={`w-4 h-4 text-stone-400 transition-transform duration-300 ${showPwaGuide ? 'rotate-180' : ''}`} />
+          </div>
+        </button>
 
-          {/* Collapsible Content */}
-          <AnimatePresence initial={false}>
-            {showPwaGuide && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.25, ease: 'easeInOut' }}
-                className="overflow-hidden"
-              >
-                <div className="px-5 pb-6 border-t border-cream-200 pt-5">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs text-stone-600">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <span className="w-5 h-5 rounded-full bg-stone-900 text-white font-extrabold text-[10px] flex items-center justify-center">1</span>
-                        <h4 className="font-bold text-stone-850">Abrí el enlace</h4>
-                      </div>
-                      <p className="pl-7 text-[11px] leading-relaxed text-stone-500">
-                        Abrí este sitio web desde el navegador de tu celular (preferentemente Safari en iPhone, Chrome en Android).
-                      </p>
+        {/* Collapsible Content */}
+        <AnimatePresence initial={false}>
+          {showPwaGuide && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25, ease: 'easeInOut' }}
+              className="overflow-hidden"
+            >
+              <div className="px-5 pb-6 border-t border-cream-200 pt-5">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs text-stone-600">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-stone-900 text-white font-extrabold text-[10px] flex items-center justify-center">1</span>
+                      <h4 className="font-bold text-stone-850">Abrí el enlace</h4>
                     </div>
+                    <p className="pl-7 text-[11px] leading-relaxed text-stone-500">
+                      Ingresá a la web del Prode desde el navegador de tu celular (preferentemente <strong>Safari</strong> en iPhone o <strong>Chrome</strong> en Android).
+                    </p>
+                  </div>
 
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <span className="w-5 h-5 rounded-full bg-stone-900 text-white font-extrabold text-[10px] flex items-center justify-center">2</span>
-                        <h4 className="font-bold text-stone-850">Compartir</h4>
-                      </div>
-                      <p className="pl-7 text-[11px] leading-relaxed text-stone-500">
-                        Presioná el botón de <strong>Compartir</strong> (el ícono de la caja con flecha hacia arriba o los tres puntos y luego en compartir).
-                      </p>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-stone-900 text-white font-extrabold text-[10px] flex items-center justify-center">2</span>
+                      <h4 className="font-bold text-stone-850">Tocá compartir</h4>
                     </div>
+                    <p className="pl-7 text-[11px] leading-relaxed text-stone-500">
+                      Presioná el botón de <strong>Compartir</strong> (el ícono de la caja con flecha hacia arriba o los tres puntos y luego en compartir).
+                    </p>
+                  </div>
 
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <span className="w-5 h-5 rounded-full bg-stone-900 text-white font-extrabold text-[10px] flex items-center justify-center">3</span>
-                        <h4 className="font-bold text-stone-850">Añadir a Inicio</h4>
-                      </div>
-                      <p className="pl-7 text-[11px] leading-relaxed text-stone-500">
-                        Buscá y presioná la opción <strong>Añadir a pantalla de inicio</strong> (en iOS tocá "Compartir", luego bajá y tocá "Añadir a pantalla de inicio"). ¡Y listo!
-                      </p>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-stone-900 text-white font-extrabold text-[10px] flex items-center justify-center">3</span>
+                      <h4 className="font-bold text-stone-850">Añadir a Inicio</h4>
                     </div>
+                    <p className="pl-7 text-[11px] leading-relaxed text-stone-500">
+                      Buscá y presioná la opción <strong>Añadir a pantalla de inicio</strong> (en iOS tocá "Compartir", luego bajá y tocá "Añadir a pantalla de inicio"). ¡Y listo!
+                    </p>
                   </div>
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
       )}
 
       {/* Responsive Columns */}
@@ -300,8 +305,8 @@ export default function Home() {
               <h3 className="text-[10px] text-stone-450 uppercase tracking-widest font-black">TABLA DE POSICIONES</h3>
             </div>
             
-            {/* Group Selector Dropdown */}
-            {myGroups.length > 0 && (
+            {/* Group Selector Dropdown (Hidden) */}
+            {false && myGroups.length > 0 && (
               <div className="relative inline-block text-left self-start sm:self-auto">
                 <select
                   value={selectedGroupId}
@@ -386,6 +391,14 @@ export default function Home() {
                 );
               })}
             </AnimatePresence>
+            <div className="pt-4 text-center">
+              <Link 
+                href="/matches?tab=prode"
+                className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-gold-650 hover:text-gold-700 transition-all hover:translate-x-0.5"
+              >
+                Ver Posiciones <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
           </div>
         </div>
 

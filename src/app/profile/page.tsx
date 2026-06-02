@@ -243,10 +243,8 @@ export default function ProfilePage() {
       </div>
 
       {!activeProfile.is_admin && (
-        <>
-          {/* Main Profile Info Card */}
-          <div className="glass-card p-6 border border-cream-300 shadow-sm bg-white relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-cream-150 to-transparent rounded-full -mr-12 -mt-12 pointer-events-none" />
+        <div className="glass-card p-6 border border-cream-300 shadow-sm bg-white relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-cream-150 to-transparent rounded-full -mr-12 -mt-12 pointer-events-none" />
         
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 pb-6 border-b border-cream-200">
           <div className="w-16 h-16 rounded-full bg-stone-900 flex items-center justify-center text-xl font-black text-white shrink-0 shadow-md">
@@ -261,10 +259,6 @@ export default function ProfilePage() {
                   <Shield className="w-2 h-2" /> Admin
                 </span>
               )}
-            </div>
-            <p className="text-[10px] text-stone-450 uppercase tracking-widest font-bold">
-              ID: {activeProfile.id}
-            </p>
           </div>
         </div>
 
@@ -365,6 +359,8 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+    </div>
+  )}
 
       {/* Groups Card (Temporarily Hidden) */}
       {false && (
@@ -451,8 +447,6 @@ export default function ProfilePage() {
             );
           })()}
         </div>
-      )}
-        </>
       )}
 
       {/* Admin Panel Card */}
@@ -746,130 +740,109 @@ export default function ProfilePage() {
                 <p className="p-4 text-xs text-stone-400 italic text-center">No hay grupos creados.</p>
               ) : (
                 groups.map(g => {
-                  const isExpanded = !!expandedGroups[g.id];
-                  const groupMembersData = groupMembers.filter(gm => gm.group_id === g.id);
-                  const membersOfGroup = groupMembersData
+                  const isGroupExpanded = !!expandedGroups[g.id];
+                  const members = groupMembers
+                    .filter(gm => gm.group_id === g.id)
                     .map(gm => {
                       const profile = profiles.find(p => p.id === gm.profile_id);
-                      return profile?.display_name || 'Desconocido';
-                    });
+                      return profile;
+                    })
+                    .filter(Boolean) as typeof profiles;
 
                   return (
-                    <div key={g.id} className="p-3.5 hover:bg-cream-50/30 transition-colors">
-                      <div className="flex justify-between items-start">
+                    <div key={g.id} className="p-4 hover:bg-cream-50/10 transition-colors">
+                      <div className="flex justify-between items-center">
                         <div>
-                          <h4 className="text-xs font-bold text-stone-850 uppercase">{g.name}</h4>
-                          <div className="flex gap-2 mt-1 text-[8.5px] text-stone-440 font-semibold uppercase tracking-wider">
-                            <span>Código: <strong className="text-gold-650 font-bold select-all">{g.invite_code}</strong></span>
+                          <h4 className="text-xs font-black text-stone-900 uppercase">{g.name}</h4>
+                          <div className="flex gap-2 mt-1 text-[8.5px] text-stone-440 font-bold uppercase tracking-wider">
+                            <span>Código: <strong className="text-gold-650 font-black select-all">{g.invite_code}</strong></span>
                             <span>•</span>
-                            <span>{groupMembersData.length} miembros</span>
+                            <span>{members.length} miembros</span>
                           </div>
                         </div>
+
                         <button
-                          type="button"
                           onClick={() => setExpandedGroups(prev => ({ ...prev, [g.id]: !prev[g.id] }))}
-                          className="px-2.5 py-1 border border-cream-300 bg-white hover:bg-cream-100/30 text-stone-700 font-bold text-[8px] uppercase tracking-widest rounded-lg transition-all cursor-pointer"
+                          className="px-2.5 py-1 border border-cream-300 bg-white hover:bg-cream-100 text-stone-750 font-bold text-[8px] uppercase tracking-widest rounded-lg transition-all cursor-pointer"
                         >
-                          {isExpanded ? 'Ocultar Detalle' : 'Ver Detalle'}
+                          {isGroupExpanded ? 'Ocultar Detalle' : 'Ver Detalle'}
                         </button>
                       </div>
                       
-                      {/* Members list preview when not expanded */}
-                      {!isExpanded && membersOfGroup.length > 0 && (
+                      {/* Members sublist (Simple inline list) */}
+                      {!isGroupExpanded && (
                         <div className="mt-2 text-[9px] text-stone-500">
                           <strong className="text-[8.5px] text-stone-450 uppercase font-bold tracking-wider">Miembros: </strong>
-                          {membersOfGroup.join(', ')}
+                          {members.map(m => m.display_name).join(', ')}
                         </div>
                       )}
 
-                      {/* Expanded View: List members, their selected champion and their predictions */}
-                      {isExpanded && (
-                        <div className="mt-4 pt-3 border-t border-cream-200 space-y-4">
-                          <h5 className="text-[9px] font-black tracking-widest text-stone-450 uppercase mb-2">Miembros y Pronósticos:</h5>
-                          {groupMembersData.length === 0 ? (
-                            <p className="text-[10px] text-stone-400 italic">No hay miembros en este grupo.</p>
-                          ) : (
-                            <div className="space-y-3">
-                              {groupMembersData.map(gm => {
-                                const p = profiles.find(prof => prof.id === gm.profile_id);
-                                if (!p) return null;
-                                const initials = p.display_name.substring(0, 2).toUpperCase();
-                                
-                                const pChamp = p.champion_prediction
-                                  ? teams.find(t => t.id === p.champion_prediction)
-                                  : null;
-                                  
-                                const userPreds = predictions.filter(pred => pred.participant_id === p.id);
-                                const isUserExpanded = !!expandedGroupParticipants[`${g.id}-${p.id}`];
+                      {/* Expanded Group Details */}
+                      {isGroupExpanded && (
+                        <div className="mt-4 pt-4 border-t border-cream-200 space-y-4">
+                          <h5 className="text-[8.5px] font-black uppercase tracking-widest text-stone-450">Participantes del Grupo</h5>
+                          
+                          <div className="space-y-3">
+                            {members.length === 0 ? (
+                              <p className="text-[10px] text-stone-450 italic">El grupo no tiene miembros.</p>
+                            ) : (
+                              members.map(m => {
+                                const favoriteTeam = m.champion_prediction ? teams.find(t => t.id === m.champion_prediction) : null;
+                                const userPreds = predictions.filter(p => p.participant_id === m.id);
+                                const isMemberExpanded = !!expandedGroupParticipants[`${g.id}-${m.id}`];
 
                                 return (
-                                  <div key={p.id} className="p-3 border border-cream-200 bg-cream-50/10 rounded-xl space-y-2 text-left">
+                                  <div key={m.id} className="p-3 border border-cream-250 bg-white rounded-2xl space-y-2.5">
                                     <div className="flex justify-between items-center">
-                                      <div className="flex items-center gap-2">
-                                        <span className="w-5 h-5 rounded-full bg-cream-200 flex items-center justify-center text-[8.5px] font-bold text-stone-600">
-                                          {initials}
-                                        </span>
-                                        <div>
-                                          <h4 className="text-xs font-bold text-stone-800">{p.display_name}</h4>
-                                          <span className="text-[8px] text-gold-650 font-black tracking-wider uppercase block">
-                                            Campeón Favorito: {pChamp ? `${pChamp.flag_emoji} ${pChamp.name}` : 'Ninguno'}
+                                      <div>
+                                        <h6 className="text-xs font-bold text-stone-850 uppercase flex items-center gap-1.5">
+                                          <span className="w-5 h-5 rounded-full bg-cream-150 flex items-center justify-center text-[7.5px] font-extrabold text-stone-600 shrink-0">
+                                            {m.display_name.substring(0,2).toUpperCase()}
                                           </span>
+                                          {m.display_name}
+                                        </h6>
+                                        <div className="flex items-center gap-2 mt-1 text-[8.5px] font-bold text-stone-450 uppercase tracking-wider">
+                                          <span>Favorito: <strong className="text-gold-650 font-black">{favoriteTeam ? `${favoriteTeam.flag_emoji} ${favoriteTeam.name}` : 'Ninguno'}</strong></span>
+                                          <span>•</span>
+                                          <span>Pronósticos: <strong className="text-stone-750 font-black">{userPreds.length}</strong></span>
                                         </div>
                                       </div>
-                                      
+
                                       <button
-                                        type="button"
-                                        onClick={() => setExpandedGroupParticipants(prev => ({ 
-                                          ...prev, 
-                                          [`${g.id}-${p.id}`]: !prev[`${g.id}-${p.id}`] 
-                                        }))}
-                                        className="text-[8px] text-stone-500 hover:text-stone-850 font-bold uppercase tracking-wider underline cursor-pointer"
+                                        onClick={() => setExpandedGroupParticipants(prev => ({ ...prev, [`${g.id}-${m.id}`]: !prev[`${g.id}-${m.id}`] }))}
+                                        className="px-2 py-0.5 border border-cream-300 hover:bg-cream-50 text-stone-600 font-bold text-[8px] uppercase tracking-wider rounded-md transition-all cursor-pointer"
                                       >
-                                        {isUserExpanded ? `Ocultar Pronósticos (${userPreds.length})` : `Ver Pronósticos (${userPreds.length})`}
+                                        {isMemberExpanded ? 'Ocultar Pronósticos' : 'Ver Pronósticos'}
                                       </button>
                                     </div>
-                                    
-                                    {isUserExpanded && (
-                                      <div className="mt-2 pt-2 border-t border-cream-150 grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
-                                        {userPreds.length === 0 ? (
-                                          <p className="text-[9px] text-stone-400 italic col-span-2">Sin pronósticos cargados.</p>
-                                        ) : (
-                                          userPreds.map(pred => {
-                                            const m = matches.find(match => match.id === pred.match_id);
-                                            if (!m) return null;
-                                            const home = teams.find(t => t.id === m.home_team_id);
-                                            const away = teams.find(t => t.id === m.away_team_id);
-                                            
+
+                                    {/* Member predictions grid */}
+                                    {isMemberExpanded && (
+                                      <div className="pt-2 border-t border-cream-150">
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-56 overflow-y-auto pr-1">
+                                          {matches.map(match => {
+                                            const p = userPreds.find(pred => pred.match_id === match.id);
+                                            const homeT = teams.find(t => t.id === match.home_team_id);
+                                            const awayT = teams.find(t => t.id === match.away_team_id);
                                             return (
-                                              <div key={pred.id} className="flex justify-between items-center p-1.5 bg-white border border-cream-150 rounded-lg text-[10px]">
-                                                <div className="flex items-center gap-1 truncate max-w-[130px]">
-                                                  <span className="shrink-0">{home?.flag_emoji || '🏳️'}</span>
-                                                  <span className="truncate font-semibold text-stone-700">{home?.name || m.home_team_id}</span>
-                                                  <span className="text-stone-400 font-normal mx-0.5">vs</span>
-                                                  <span className="shrink-0">{away?.flag_emoji || '🏳️'}</span>
-                                                  <span className="truncate font-semibold text-stone-700">{away?.name || m.away_team_id}</span>
-                                                </div>
-                                                <div className="text-right shrink-0">
-                                                  <span className="font-extrabold text-stone-900 bg-cream-50 px-1.5 py-0.5 border border-cream-200 rounded font-mono">
-                                                    {pred.home_score} - {pred.away_score}
-                                                  </span>
-                                                  {m.status === 'finished' && (
-                                                    <span className="block text-[6.5px] font-black uppercase text-stone-400 mt-0.5">
-                                                      Real: {m.home_score}-{m.away_score}
-                                                    </span>
-                                                  )}
-                                                </div>
+                                              <div key={match.id} className="flex justify-between items-center text-[9px] p-1.5 bg-cream-50/50 rounded-lg border border-cream-200">
+                                                <span className="truncate max-w-[80px] font-bold text-stone-500">
+                                                  {homeT?.flag_emoji} {homeT?.id} vs {awayT?.id} {awayT?.flag_emoji}
+                                                </span>
+                                                <span className="font-mono font-black text-stone-900 bg-cream-200/60 px-1 py-0.2 rounded shrink-0">
+                                                  {p ? `${p.home_score}-${p.away_score}` : '-'}
+                                                </span>
                                               </div>
                                             );
-                                          })
-                                        )}
+                                          })}
+                                        </div>
                                       </div>
                                     )}
                                   </div>
                                 );
-                              })}
-                            </div>
-                          )}
+                              })
+                            )}
+                          </div>
                         </div>
                       )}
                     </div>
