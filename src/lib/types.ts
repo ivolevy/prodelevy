@@ -1,6 +1,8 @@
 export interface Profile {
   id: string;
   display_name: string;
+  username?: string;
+  password?: string;
   avatar_url?: string;
   is_admin: boolean;
   created_at: string;

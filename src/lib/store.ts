@@ -84,8 +84,8 @@ export const INITIAL_MATCHES: Match[] = [
 ];
 
 export const INITIAL_PROFILES: Profile[] = [
-  { id: 'user-ivan', display_name: 'Iván', is_admin: true, avatar_url: 'IV', created_at: '', updated_at: '' },
-  { id: 'user-catalina', display_name: 'Catalina', is_admin: false, avatar_url: 'CA', created_at: '', updated_at: '' }
+  { id: 'user-ivan', display_name: 'Iván', username: 'ivan', password: '1234', is_admin: true, avatar_url: 'IV', created_at: '', updated_at: '' },
+  { id: 'user-catalina', display_name: 'Catalina', username: 'catalina', password: '1234', is_admin: false, avatar_url: 'CA', created_at: '', updated_at: '' }
 ];
 
 // Helper to determine if a match is predictable (open to predictions)
@@ -124,7 +124,7 @@ interface TournamentState {
   savePrediction: (profileId: string, matchId: number, homeScore: number, awayScore: number) => Promise<void>;
   resetToDefaults: () => Promise<void>;
   autoSeedPredictions: () => Promise<void>;
-  addProfile: (displayName: string) => Promise<void>;
+  addProfile: (displayName: string, username?: string, password?: string) => Promise<void>;
   deleteProfile: (id: string) => Promise<void>;
   saveChampionPrediction: (profileId: string, teamId: string) => Promise<void>;
 }
@@ -410,13 +410,32 @@ export const useStore = create<TournamentState>((set, get) => ({
     }
   },
 
-  addProfile: async (displayName: string) => {
+  addProfile: async (displayName: string, username?: string, password?: string) => {
     const { isDemoMode, profiles, matches, predictions } = get();
 
-    const newId = `user-${Math.random().toString(36).substring(7)}`;
+    const u = (username || displayName).trim().toLowerCase();
+    const p = (password || '1234').trim();
+
+    if (u.length < 4 || u.length > 14) {
+      throw new Error('El nombre de usuario debe tener entre 4 y 14 caracteres.');
+    }
+    if (p.length < 4 || p.length > 14) {
+      throw new Error('La contraseña debe tener entre 4 y 14 caracteres.');
+    }
+
+    const isDuplicate = profiles.some(prof => prof.username?.toLowerCase() === u);
+    if (isDuplicate) {
+      throw new Error('El nombre de usuario ya está registrado.');
+    }
+
+    // Generate a valid UUID
+    const newId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'f0000000-0000-0000-0000-000000000000'.replace(/0/g, () => Math.floor(Math.random() * 16).toString(16));
+
     const newProfile: Profile = {
       id: newId,
-      display_name: displayName,
+      display_name: displayName.trim(),
+      username: u,
+      password: p,
       is_admin: false,
       avatar_url: displayName.substring(0, 2).toUpperCase(),
       created_at: new Date().toISOString(),
@@ -436,7 +455,9 @@ export const useStore = create<TournamentState>((set, get) => ({
       try {
         await supabase.from('profiles').insert({
           id: newId,
-          display_name: displayName,
+          display_name: newProfile.display_name,
+          username: u,
+          password: p,
           avatar_url: newProfile.avatar_url,
           is_admin: false
         });

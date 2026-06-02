@@ -5,11 +5,12 @@ import { useState } from 'react';
 import { Calendar, MapPin, Check, ChevronDown, ChevronUp, Lock, Unlock, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Match } from '@/lib/types';
+import BracketView from '@/components/BracketView';
 
 export default function MatchesPage() {
   const { matches, teams, currentProfileId, predictions, savePrediction, profiles, standings } = useStore();
   const [activeFilter, setActiveFilter] = useState<'ALL' | 'upcoming' | 'live' | 'finished'>('ALL');
-  const [activeSubTab, setActiveSubTab] = useState<'fixture' | 'standings' | 'prode'>('fixture');
+  const [activeSubTab, setActiveSubTab] = useState<'fixture' | 'standings' | 'bracket' | 'prode'>('fixture');
   const [predictingMatchId, setPredictingMatchId] = useState<number | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
@@ -212,7 +213,7 @@ export default function MatchesPage() {
         )}
       </AnimatePresence>
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-center border-b border-cream-300 pb-4 gap-3">
+      <div className="sticky top-0 md:top-[72px] bg-sports-bg/95 backdrop-blur-xs pt-2 pb-4 border-b border-cream-300 z-30 flex flex-col sm:flex-row justify-between items-center gap-3 transition-all">
         <div className="text-center sm:text-left w-full sm:w-auto">
           <h1 className="text-[10px] font-black tracking-widest text-stone-400 uppercase">
             fixture
@@ -224,6 +225,7 @@ export default function MatchesPage() {
           {[
             { id: 'fixture', label: 'Partidos' },
             { id: 'standings', label: 'Tablas' },
+            { id: 'bracket', label: 'Cuadro' },
             { id: 'prode', label: 'Posiciones' }
           ].map(tab => (
             <button
@@ -566,6 +568,13 @@ export default function MatchesPage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Bracket Tree Tab */}
+      {activeSubTab === 'bracket' && (
+        <div className="animate-in fade-in duration-200">
+          <BracketView />
         </div>
       )}
 

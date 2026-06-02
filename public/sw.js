@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'prode-mundial-v3';
+const CACHE_VERSION = 'prode-mundial-v5';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const DYNAMIC_CACHE = `${CACHE_VERSION}-dynamic`;
 
@@ -99,10 +99,67 @@ async function staleWhileRevalidate(request) {
   return cached || fetchPromise;
 }
 
-// ─── Background Sync (optional future enhancement) ─────────
-// Listen for messages from the app (e.g., force update)
+// ─── Background Sync & Notifications ───────────────────────
+// Listen for messages from the app (e.g., force update or mock notifications)
 self.addEventListener('message', (event) => {
   if (event.data === 'SKIP_WAITING') {
     self.skipWaiting();
   }
+  if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
+    const { title, body } = event.data.payload;
+    self.registration.showNotification(title, {
+      body,
+      icon: '/favicon.png',
+      badge: '/favicon.png',
+      vibrate: [200, 100, 200],
+      data: {
+        url: '/'
+      }
+    });
+  }
+});
+
+// Listen for push events
+self.addEventListener('push', (event) => {
+  let data = { title: 'Prode Mundial 2026', body: '¡No te olvides de cargar tus pronósticos!' };
+  if (event.data) {
+    try {
+      data = event.data.json();
+    } catch {
+      data = { title: 'Prode Mundial 2026', body: event.data.text() };
+    }
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: '/favicon.png',
+      badge: '/favicon.png',
+      vibrate: [200, 100, 200],
+      data: {
+        url: data.url || '/'
+      }
+    })
+  );
+});
+
+// Handle notification click to focus or open window
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const urlToOpen = event.notification.data?.url || '/';
+
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      // If a window is already open, focus it
+      for (const client of windowClients) {
+        if (client.url.includes(urlToOpen) && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      // Otherwise open a new window
+      if (self.clients.openWindow) {
+        return self.clients.openWindow(urlToOpen);
+      }
+    })
+  );
 });

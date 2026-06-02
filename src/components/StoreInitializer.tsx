@@ -30,6 +30,9 @@ export default function StoreInitializer({ children }: { children: React.ReactNo
           .then((registration) => {
             console.log('Service Worker registrado:', registration.scope);
 
+            // Force update check immediately when app opens
+            registration.update();
+
             // Check for updates every 60 seconds
             setInterval(() => {
               registration.update();

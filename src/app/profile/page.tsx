@@ -2,12 +2,47 @@
 
 import { useStore } from '@/lib/store';
 import { useRouter } from 'next/navigation';
-import { Trophy, LogOut, ArrowRight, User, Award, Shield, CheckCircle, HelpCircle, Users } from 'lucide-react';
+import { Trophy, LogOut, ArrowRight, User, Award, Shield, CheckCircle, HelpCircle, Users, Bell } from 'lucide-react';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 
 export default function ProfilePage() {
   const { currentProfileId, setCurrentProfile, profiles, standings, teams } = useStore();
   const router = useRouter();
+  const [notificationStatus, setNotificationStatus] = useState<string>('default');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      setNotificationStatus(Notification.permission);
+    }
+  }, []);
+
+  const handleRequestPermission = async () => {
+    if (typeof window === 'undefined' || !('Notification' in window)) return;
+    
+    try {
+      const permission = await Notification.requestPermission();
+      setNotificationStatus(permission);
+      
+      if (permission === 'granted') {
+        triggerTestNotification();
+      }
+    } catch (err) {
+      console.error('Error requesting notification permission:', err);
+    }
+  };
+
+  const triggerTestNotification = () => {
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({
+        type: 'SHOW_NOTIFICATION',
+        payload: {
+          title: '🏆 Prode Mundial 2026',
+          body: '¡Listo! Los recordatorios del Prode se enviarán 24 hs antes de cada partido.'
+        }
+      });
+    }
+  };
 
   const activeProfile = profiles.find(p => p.id === currentProfileId);
   const activeStanding = standings.find(s => s.profile_id === currentProfileId);
@@ -110,6 +145,48 @@ export default function ProfilePage() {
               </Link>
             </div>
           )}
+        </div>
+
+        {/* Notification Settings */}
+        <div className="py-4 border-b border-cream-200 text-left">
+          <h4 className="text-[9.5px] font-black tracking-widest text-stone-450 uppercase mb-2.5 flex items-center gap-1.5">
+            <Bell className="w-3.5 h-3.5 text-gold-500 shrink-0" /> Recordatorios y Alertas (24 hs)
+          </h4>
+          <div className="p-3.5 border border-cream-250 bg-cream-50/10 rounded-xl space-y-3">
+            <div className="flex justify-between items-center">
+              <div>
+                <span className="block text-xs font-bold text-stone-850">Alertas de Cierre</span>
+                <span className="block text-[9px] text-stone-500 mt-0.5 leading-tight">
+                  Recibí recordatorios en tu celular si tenés pronósticos de fase de grupos pendientes de carga.
+                </span>
+              </div>
+              
+              {notificationStatus === 'granted' ? (
+                <span className="text-[8px] bg-emerald-500/10 border border-emerald-500/25 text-emerald-650 px-2.5 py-1 rounded font-black uppercase tracking-wider">
+                  Activadas
+                </span>
+              ) : (
+                <button
+                  onClick={handleRequestPermission}
+                  className="px-3.5 py-1.5 bg-stone-900 hover:bg-stone-800 text-white font-bold text-[9px] uppercase tracking-widest rounded-xl transition-all cursor-pointer shadow-xs"
+                >
+                  Activar
+                </button>
+              )}
+            </div>
+
+            {notificationStatus === 'granted' && (
+              <div className="pt-2 border-t border-cream-200 flex justify-between items-center">
+                <span className="text-[9px] text-stone-450 uppercase tracking-wider font-bold">Verificar funcionalidad:</span>
+                <button
+                  onClick={triggerTestNotification}
+                  className="px-2.5 py-1 border border-cream-300 bg-white hover:bg-cream-100/30 text-stone-750 font-bold text-[8.5px] uppercase tracking-widest rounded-lg transition-all cursor-pointer"
+                >
+                  Probar Notificación
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Scoring & Stats */}
