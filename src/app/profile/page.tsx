@@ -242,18 +242,6 @@ export default function ProfilePage() {
                 </button>
               )}
             </div>
-
-            {notificationStatus === 'granted' && (
-              <div className="pt-2 border-t border-cream-200 flex justify-between items-center">
-                <span className="text-[9px] text-stone-450 uppercase tracking-wider font-bold">Verificar funcionalidad:</span>
-                <button
-                  onClick={triggerTestNotification}
-                  className="px-2.5 py-1 border border-cream-300 bg-white hover:bg-cream-100/30 text-stone-750 font-bold text-[8.5px] uppercase tracking-widest rounded-lg transition-all cursor-pointer"
-                >
-                  Probar Notificación
-                </button>
-              </div>
-            )}
           </div>
         </div>
 
