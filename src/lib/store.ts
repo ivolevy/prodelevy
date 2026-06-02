@@ -100,6 +100,7 @@ export const INITIAL_PROFILES: Profile[] = [
   { id: 'user-lucas', display_name: 'lucas', username: 'lucas', password: 'lucas123', is_admin: false, avatar_url: 'LU', created_at: '', updated_at: '' },
   { id: 'user-mati', display_name: 'mati', username: 'mati', password: 'mati123', is_admin: false, avatar_url: 'MA', created_at: '', updated_at: '' },
   { id: 'user-latota', display_name: 'la tota', username: 'la tota', password: 'la tota123', is_admin: false, avatar_url: 'LT', created_at: '', updated_at: '' },
+  { id: 'user-ivan', display_name: 'ivan', username: 'ivan', password: 'ivan123', is_admin: false, avatar_url: 'IV', created_at: '', updated_at: '' },
 ];
 
 export const INITIAL_GROUPS: Group[] = [
@@ -256,12 +257,26 @@ export const useStore = create<TournamentState>((set, get) => ({
           }
         });
 
-        // Ensure all INITIAL_PROFILES exist in the merged profiles list
-        INITIAL_PROFILES.forEach(ip => {
+        // Ensure all INITIAL_PROFILES exist in the merged profiles list and database
+        for (const ip of INITIAL_PROFILES) {
           if (!mergedProfiles.some(p => p.username === ip.username)) {
             mergedProfiles.push(ip);
           }
-        });
+          if (supabase && !dbProfiles.some(p => p.username === ip.username)) {
+            try {
+              await supabase.from('profiles').insert({
+                id: ip.id,
+                display_name: ip.display_name,
+                username: ip.username,
+                password: ip.password,
+                avatar_url: ip.avatar_url,
+                is_admin: ip.is_admin
+              });
+            } catch (e) {
+              console.error(`Failed to auto-insert profile ${ip.username}:`, e);
+            }
+          }
+        }
 
         const storedLocalPredictions = typeof window !== 'undefined' ? localStorage.getItem('prode_predictions') : null;
         const localPredictions = !hasNewAdmin ? [] : (storedLocalPredictions ? JSON.parse(storedLocalPredictions) : []);
