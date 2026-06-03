@@ -160,8 +160,8 @@ export default function Home() {
                 (() => {
                   const team = teams.find(t => t.id === currentChampionPred);
                   return (
-                    <span className="text-xs font-bold text-stone-750 flex items-center justify-center gap-1.5">
-                      Tu elegido: <span className="text-stone-900">{team?.flag_emoji} {team?.name}</span> 🔒
+                    <span className="text-xs font-bold text-stone-900 flex items-center justify-center gap-1.5">
+                      {team?.flag_emoji} {team?.name}
                     </span>
                   );
                 })()
