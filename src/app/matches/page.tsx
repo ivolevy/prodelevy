@@ -331,7 +331,15 @@ function MatchesPageContent() {
             </div>
           </div>
 
-          {filteredMatches.length === 0 ? (
+          {(activeDateFilter === 'FECHA_2' || activeDateFilter === 'FECHA_3') ? (
+            <div className="text-center py-20 bg-cream-50/20 border border-dashed border-cream-300 rounded-3xl p-6 shadow-2xs">
+              <Calendar className="w-8 h-8 text-stone-300 mx-auto mb-3" />
+              <h4 className="text-xs font-black uppercase text-stone-800 tracking-wider">Próximamente</h4>
+              <p className="text-[11px] text-stone-500 mt-1 leading-relaxed max-w-xs mx-auto">
+                Los partidos e información oficial para la {activeDateFilter === 'FECHA_2' ? 'Fecha 2' : 'Fecha 3'} estarán disponibles una vez finalizada la fecha anterior.
+              </p>
+            </div>
+          ) : filteredMatches.length === 0 ? (
             <div className="text-center py-16 text-stone-400 text-xs font-semibold uppercase tracking-wider">
               No se encontraron partidos para este filtro.
             </div>
