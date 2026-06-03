@@ -300,36 +300,22 @@ export default function Home() {
         
         {/* Left Column: Standings */}
         <div className="lg:col-span-2 space-y-3">
-          <div className="border-b border-cream-200 pb-1.5 flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+          <div className="border-b border-cream-200 pb-1.5 flex justify-between items-center gap-2">
             <div>
               <h3 className="text-[10px] text-stone-450 uppercase tracking-widest font-black">TABLA DE POSICIONES</h3>
             </div>
             
-            {/* Group Selector Dropdown (Hidden) */}
-            {false && myGroups.length > 0 && (
-              <div className="relative inline-block text-left self-start sm:self-auto">
-                <select
-                  value={selectedGroupId}
-                  onChange={(e) => setSelectedGroupId(e.target.value)}
-                  className="appearance-none bg-white border border-cream-300 rounded-lg px-3 py-1 pr-8 text-[10px] font-bold text-stone-750 uppercase tracking-wider focus:outline-none focus:border-gold-500 cursor-pointer shadow-2xs"
-                >
-                  <option value="all">General (Todos)</option>
-                  {myGroups.map(g => (
-                    <option key={g.id} value={g.id}>
-                      Grupo: {g.name}
-                    </option>
-                  ))}
-                </select>
-                <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
-                  <ChevronDown className="w-3 h-3" />
-                </div>
-              </div>
-            )}
+            <Link 
+              href="/matches?tab=prode"
+              className="inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-gold-650 hover:text-gold-700 transition-all hover:translate-x-0.5"
+            >
+              Ver Posiciones <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
 
           <div className="space-y-3">
             <AnimatePresence initial={false}>
-              {filteredStandings.map((standing, index) => {
+              {filteredStandings.slice(0, 3).map((standing, index) => {
                 const isCurrentUser = standing.profile_id === currentProfileId;
                 const initials = standing.display_name ? standing.display_name.substring(0, 2).toUpperCase() : 'US';
                 
@@ -373,7 +359,7 @@ export default function Home() {
                           <span>
                             Exactos: <strong className="text-stone-700">{standing.exact_guesses}</strong> (3 pts)
                           </span>
-                          <span className="w-1 h-1 rounded-full bg-cream-300" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-cream-300" />
                           <span>
                             Resultados: <strong className="text-stone-700">{standing.outcome_guesses}</strong> (1 pt)
                           </span>
@@ -391,14 +377,6 @@ export default function Home() {
                 );
               })}
             </AnimatePresence>
-            <div className="pt-4 text-center">
-              <Link 
-                href="/matches?tab=prode"
-                className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-gold-650 hover:text-gold-700 transition-all hover:translate-x-0.5"
-              >
-                Ver Posiciones <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
           </div>
         </div>
 

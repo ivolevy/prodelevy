@@ -207,17 +207,32 @@ function MatchesPageContent() {
   };
 
   const groups = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
+  const [activeDateFilter, setActiveDateFilter] = useState<'ALL' | 'FECHA_1' | 'FECHA_2' | 'FECHA_3'>('ALL');
 
   const filteredMatches = matches.filter(match => {
-    if (activeFilter === 'upcoming') {
-      return match.status === 'upcoming';
+    // 1. Status Filter
+    if (activeFilter === 'upcoming' && match.status !== 'upcoming') {
+      return false;
     }
-    if (activeFilter === 'live') {
-      return match.status === 'live';
+    if (activeFilter === 'live' && match.status !== 'live') {
+      return false;
     }
-    if (activeFilter === 'finished') {
-      return match.status === 'finished';
+    if (activeFilter === 'finished' && match.status !== 'finished') {
+      return false;
     }
+
+    // 2. Date/Fecha Round Filter
+    // In WC 2026, Matchday 1 corresponds to Matches 1 to 24 (Groups A-L first matches)
+    if (activeDateFilter === 'FECHA_1') {
+      return match.id >= 1 && match.id <= 24;
+    }
+    if (activeDateFilter === 'FECHA_2') {
+      return match.id >= 25 && match.id <= 48; // placeholder range for next matches
+    }
+    if (activeDateFilter === 'FECHA_3') {
+      return match.id >= 49 && match.id <= 72; // placeholder range
+    }
+
     return true;
   });
 
@@ -268,10 +283,11 @@ function MatchesPageContent() {
       </div>
 
       {activeSubTab === 'fixture' && (
-        <div className="space-y-6 animate-in fade-in duration-200">
+        <div className="space-y-4 animate-in fade-in duration-200">
           {/* Filter Tabs inside matches view */}
-          <div className="flex justify-center sm:justify-start">
-            <div className="flex gap-1 bg-white border border-cream-300 p-1 rounded-full shadow-sm">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            {/* Status filters */}
+            <div className="flex gap-1 bg-white border border-cream-300 p-1 rounded-full shadow-sm self-center sm:self-auto overflow-x-auto">
               {[
                 { id: 'ALL', label: 'Todos' },
                 { id: 'upcoming', label: 'Próximos' },
@@ -285,6 +301,28 @@ function MatchesPageContent() {
                     activeFilter === tab.id
                       ? 'bg-stone-900 text-white shadow-sm'
                       : 'bg-white text-stone-500 hover:text-stone-750'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Fecha (Round) filters */}
+            <div className="flex gap-1 bg-cream-100/40 border border-cream-250 p-1 rounded-full shadow-2xs self-center sm:self-auto overflow-x-auto">
+              {[
+                { id: 'ALL', label: 'Todas las Fechas' },
+                { id: 'FECHA_1', label: 'Fecha 1' },
+                { id: 'FECHA_2', label: 'Fecha 2' },
+                { id: 'FECHA_3', label: 'Fecha 3' },
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveDateFilter(tab.id as any)}
+                  className={`px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider transition-all shrink-0 ${
+                    activeDateFilter === tab.id
+                      ? 'bg-gold-650 text-white shadow-2xs'
+                      : 'text-stone-500 hover:text-stone-850'
                   }`}
                 >
                   {tab.label}

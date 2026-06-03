@@ -341,20 +341,32 @@ ON CONFLICT (id) DO UPDATE SET
     group_letter = EXCLUDED.group_letter, 
     flag_emoji = EXCLUDED.flag_emoji;
 
--- Seed Initial Fixture (Matches 1 to 12)
+-- Seed Initial Fixture (Matches 1 to 24)
 INSERT INTO public.matches (id, group_letter, home_team_id, away_team_id, fecha, hora_arg, estadio, ciudad, pais, status, phase) VALUES
 (1, 'A', 'MEX', 'RSA', '2026-06-11', '16:00:00-03:00', 'Mexico City Stadium', 'Ciudad de México', 'México', 'upcoming', 'Fase de Grupos'),
 (2, 'A', 'KOR', 'CZE', '2026-06-11', '23:00:00-03:00', 'Estadio Guadalajara', 'Guadalajara', 'México', 'upcoming', 'Fase de Grupos'),
 (3, 'B', 'CAN', 'BIH', '2026-06-12', '16:00:00-03:00', 'Toronto Stadium', 'Toronto', 'Canadá', 'upcoming', 'Fase de Grupos'),
-(4, 'D', 'USA', 'PAR', '2026-06-12', '22:00:00-03:00', 'Los Angeles Stadium', 'Los Ángeles', 'Estados Unidos', 'upcoming', 'Fase de Grupos'),
-(5, 'B', 'QAT', 'SUI', '2026-06-13', '16:00:00-03:00', 'San Francisco Bay Area Stadium', 'San Francisco', 'Estados Unidos', 'upcoming', 'Fase de Grupos'),
-(6, 'C', 'BRA', 'MAR', '2026-06-13', '19:00:00-03:00', 'New York New Jersey Stadium', 'New York / New Jersey', 'Estados Unidos', 'upcoming', 'Fase de Grupos'),
-(7, 'C', 'HAI', 'SCO', '2026-06-13', '22:00:00-03:00', 'Boston Stadium', 'Boston', 'Estados Unidos', 'upcoming', 'Fase de Grupos'),
+(4, 'B', 'QAT', 'SUI', '2026-06-13', '16:00:00-03:00', 'San Francisco Bay Area Stadium', 'San Francisco', 'Estados Unidos', 'upcoming', 'Fase de Grupos'),
+(5, 'C', 'BRA', 'MAR', '2026-06-13', '19:00:00-03:00', 'New York New Jersey Stadium', 'New York / New Jersey', 'Estados Unidos', 'upcoming', 'Fase de Grupos'),
+(6, 'C', 'HAI', 'SCO', '2026-06-13', '22:00:00-03:00', 'Boston Stadium', 'Boston', 'Estados Unidos', 'upcoming', 'Fase de Grupos'),
+(7, 'D', 'USA', 'PAR', '2026-06-12', '22:00:00-03:00', 'Los Angeles Stadium', 'Los Ángeles', 'Estados Unidos', 'upcoming', 'Fase de Grupos'),
 (8, 'D', 'AUS', 'TUR', '2026-06-14', '01:00:00-03:00', 'BC Place', 'Vancouver', 'Canadá', 'upcoming', 'Fase de Grupos'),
 (9, 'E', 'GER', 'CUW', '2026-06-14', '14:00:00-03:00', 'Houston Stadium', 'Houston', 'Estados Unidos', 'upcoming', 'Fase de Grupos'),
-(10, 'F', 'NED', 'JPN', '2026-06-14', '17:00:00-03:00', 'Dallas Stadium', 'Dallas', 'Estados Unidos', 'upcoming', 'Fase de Grupos'),
-(11, 'E', 'CIV', 'ECU', '2026-06-14', '20:00:00-03:00', 'Philadelphia Stadium', 'Philadelphia', 'Estados Unidos', 'upcoming', 'Fase de Grupos'),
-(12, 'F', 'SWE', 'TUN', '2026-06-14', '23:00:00-03:00', 'Estadio Monterrey', 'Monterrey', 'México', 'upcoming', 'Fase de Grupos')
+(10, 'E', 'CIV', 'ECU', '2026-06-14', '20:00:00-03:00', 'Philadelphia Stadium', 'Philadelphia', 'Estados Unidos', 'upcoming', 'Fase de Grupos'),
+(11, 'F', 'NED', 'JPN', '2026-06-14', '17:00:00-03:00', 'Dallas Stadium', 'Dallas', 'Estados Unidos', 'upcoming', 'Fase de Grupos'),
+(12, 'F', 'SWE', 'TUN', '2026-06-14', '23:00:00-03:00', 'Estadio Monterrey', 'Monterrey', 'México', 'upcoming', 'Fase de Grupos'),
+(13, 'G', 'BEL', 'EGY', '2026-06-15', '14:00:00-03:00', 'Dallas Stadium', 'Dallas', 'Estados Unidos', 'upcoming', 'Fase de Grupos'),
+(14, 'G', 'IRN', 'NZL', '2026-06-15', '17:00:00-03:00', 'Estadio Guadalajara', 'Guadalajara', 'México', 'upcoming', 'Fase de Grupos'),
+(15, 'H', 'ESP', 'CPV', '2026-06-15', '20:00:00-03:00', 'Mexico City Stadium', 'Ciudad de México', 'México', 'upcoming', 'Fase de Grupos'),
+(16, 'H', 'KSA', 'URU', '2026-06-15', '23:00:00-03:00', 'Los Angeles Stadium', 'Los Ángeles', 'Estados Unidos', 'upcoming', 'Fase de Grupos'),
+(17, 'I', 'FRA', 'SEN', '2026-06-16', '14:00:00-03:00', 'Boston Stadium', 'Boston', 'Estados Unidos', 'upcoming', 'Fase de Grupos'),
+(18, 'I', 'IRQ', 'NOR', '2026-06-16', '17:00:00-03:00', 'Toronto Stadium', 'Toronto', 'Canadá', 'upcoming', 'Fase de Grupos'),
+(19, 'J', 'ARG', 'ALG', '2026-06-16', '20:00:00-03:00', 'New York New Jersey Stadium', 'New York / New Jersey', 'Estados Unidos', 'upcoming', 'Fase de Grupos'),
+(20, 'J', 'AUT', 'JOR', '2026-06-16', '23:00:00-03:00', 'Estadio Monterrey', 'Monterrey', 'México', 'upcoming', 'Fase de Grupos'),
+(21, 'K', 'POR', 'COD', '2026-06-17', '14:00:00-03:00', 'San Francisco Bay Area Stadium', 'San Francisco', 'Estados Unidos', 'upcoming', 'Fase de Grupos'),
+(22, 'K', 'UZB', 'COL', '2026-06-17', '17:00:00-03:00', 'Houston Stadium', 'Houston', 'Estados Unidos', 'upcoming', 'Fase de Grupos'),
+(23, 'L', 'ENG', 'CRO', '2026-06-17', '20:00:00-03:00', 'Philadelphia Stadium', 'Philadelphia', 'Estados Unidos', 'upcoming', 'Fase de Grupos'),
+(24, 'L', 'GHA', 'PAN', '2026-06-17', '23:00:00-03:00', 'BC Place', 'Vancouver', 'Canadá', 'upcoming', 'Fase de Grupos')
 ON CONFLICT (id) DO UPDATE SET
     home_team_id = EXCLUDED.home_team_id,
     away_team_id = EXCLUDED.away_team_id,
