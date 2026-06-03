@@ -273,9 +273,6 @@ export default function ProfilePage() {
                 <span className="text-base">{championTeam.flag_emoji}</span>
                 <span className="text-xs font-bold text-stone-850">{championTeam.name}</span>
               </div>
-              <span className="text-[8px] bg-gold-500/10 border border-gold-500/25 text-gold-650 px-2 py-0.5 rounded font-black uppercase tracking-wider">
-                Predicción Activa
-              </span>
             </div>
           ) : (
             <div className="p-3 border border-dashed border-cream-300 rounded-xl text-center">
