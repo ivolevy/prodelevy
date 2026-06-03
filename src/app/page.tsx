@@ -353,17 +353,6 @@ export default function Home() {
                             <span className="text-[7px] font-bold uppercase tracking-widest text-gold-650 bg-gold-500/10 px-1.5 rounded border border-gold-500/25">Tú</span>
                           )}
                         </div>
-                        
-                        {/* Prediction Stats Detail */}
-                        <div className="flex gap-3 mt-2 items-center text-[8px] font-bold text-stone-450 uppercase tracking-wider">
-                          <span>
-                            Exactos: <strong className="text-stone-700">{standing.exact_guesses}</strong> (3 pts)
-                          </span>
-                          <span className="w-1.5 h-1.5 rounded-full bg-cream-300" />
-                          <span>
-                            Resultados: <strong className="text-stone-700">{standing.outcome_guesses}</strong> (1 pt)
-                          </span>
-                        </div>
                       </div>
                     </div>
 

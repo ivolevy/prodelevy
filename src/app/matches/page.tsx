@@ -285,9 +285,9 @@ function MatchesPageContent() {
       {activeSubTab === 'fixture' && (
         <div className="space-y-4 animate-in fade-in duration-200">
           {/* Filter Tabs inside matches view */}
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            {/* Status filters */}
-            <div className="flex gap-1 bg-white border border-cream-300 p-1 rounded-full shadow-sm self-center sm:self-auto overflow-x-auto">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-cream-200 pb-3">
+            {/* Status filters (Clean modern outline tabs) */}
+            <div className="flex bg-cream-50/50 p-0.5 rounded-xl border border-cream-250 gap-0.5 self-center sm:self-auto overflow-x-auto">
               {[
                 { id: 'ALL', label: 'Todos' },
                 { id: 'upcoming', label: 'Próximos' },
@@ -297,10 +297,10 @@ function MatchesPageContent() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveFilter(tab.id as any)}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 ${
+                  className={`px-3.5 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest transition-all shrink-0 cursor-pointer ${
                     activeFilter === tab.id
-                      ? 'bg-stone-900 text-white shadow-sm'
-                      : 'bg-white text-stone-500 hover:text-stone-750'
+                      ? 'bg-stone-900 text-white shadow-2xs'
+                      : 'text-stone-500 hover:text-stone-850'
                   }`}
                 >
                   {tab.label}
@@ -308,10 +308,10 @@ function MatchesPageContent() {
               ))}
             </div>
 
-            {/* Fecha (Round) filters */}
-            <div className="flex gap-1 bg-cream-100/40 border border-cream-250 p-1 rounded-full shadow-2xs self-center sm:self-auto overflow-x-auto">
+            {/* Fecha (Round) filters (Premium text pill rows) */}
+            <div className="flex gap-2 self-center sm:self-auto overflow-x-auto py-1">
               {[
-                { id: 'ALL', label: 'Todas las Fechas' },
+                { id: 'ALL', label: 'Ver Todo' },
                 { id: 'FECHA_1', label: 'Fecha 1' },
                 { id: 'FECHA_2', label: 'Fecha 2' },
                 { id: 'FECHA_3', label: 'Fecha 3' },
@@ -319,10 +319,10 @@ function MatchesPageContent() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveDateFilter(tab.id as any)}
-                  className={`px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider transition-all shrink-0 ${
+                  className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all shrink-0 border cursor-pointer ${
                     activeDateFilter === tab.id
-                      ? 'bg-gold-650 text-white shadow-2xs'
-                      : 'text-stone-500 hover:text-stone-850'
+                      ? 'bg-gold-500/10 border-gold-500/30 text-gold-650 font-black'
+                      : 'bg-white border-cream-300 text-stone-500 hover:text-stone-800'
                   }`}
                 >
                   {tab.label}
