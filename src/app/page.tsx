@@ -786,10 +786,20 @@ export default function Home() {
       </AnimatePresence>
 
       {/* Editorial Title */}
-      <div className="text-center pb-2 border-b border-cream-300">
+      <div className="relative text-center pb-2 border-b border-cream-300 flex items-center justify-center gap-2">
         <h1 className="text-[10px] font-black tracking-widest text-stone-400 uppercase">
           prode mundial usa-mex 26′
         </h1>
+        <button 
+          onClick={() => {
+            setTourStep(0);
+            setShowTour(true);
+          }}
+          className="w-5 h-5 rounded-full hover:bg-cream-100/50 flex items-center justify-center text-stone-400 hover:text-stone-750 transition-all cursor-pointer"
+          title="Ver tutorial de onboarding"
+        >
+          <HelpCircle className="w-3.5 h-3.5" />
+        </button>
       </div>
 
       {/* Countdown Strip */}
