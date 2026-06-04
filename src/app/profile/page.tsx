@@ -246,21 +246,22 @@ export default function ProfilePage() {
         <div className="glass-card p-6 border border-cream-300 shadow-sm bg-white relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-cream-150 to-transparent rounded-full -mr-12 -mt-12 pointer-events-none" />
         
-        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 pb-6 border-b border-cream-200">
-          <div className="w-16 h-16 rounded-full bg-stone-900 flex items-center justify-center text-xl font-black text-white shrink-0 shadow-md">
-            {initials}
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 pb-6 border-b border-cream-200">
+            <div className="w-16 h-16 rounded-full bg-stone-900 flex items-center justify-center text-xl font-black text-white shrink-0 shadow-md">
+              {initials}
+            </div>
+            
+            <div className="text-center sm:text-left space-y-1 mt-2 sm:mt-0">
+              <div className="flex items-center justify-center sm:justify-start gap-2">
+                <h2 className="text-lg font-black text-stone-900 uppercase leading-none">{activeProfile.display_name}</h2>
+                {activeProfile.is_admin && (
+                  <span className="text-[7.5px] bg-stone-900 text-white px-1.5 py-0.5 rounded font-bold uppercase tracking-wider flex items-center gap-0.5">
+                    <Shield className="w-2 h-2" /> Admin
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
-          
-          <div className="text-center sm:text-left space-y-1 mt-2 sm:mt-0">
-            <div className="flex items-center justify-center sm:justify-start gap-2">
-              <h2 className="text-lg font-black text-stone-900 uppercase leading-none">{activeProfile.display_name}</h2>
-              {activeProfile.is_admin && (
-                <span className="text-[7.5px] bg-stone-900 text-white px-1.5 py-0.5 rounded font-bold uppercase tracking-wider flex items-center gap-0.5">
-                  <Shield className="w-2 h-2" /> Admin
-                </span>
-              )}
-          </div>
-        </div>
 
         {/* Selected Champion Info */}
         <div className="py-4 border-b border-cream-200">
@@ -356,7 +357,6 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
-    </div>
   )}
 
       {/* Groups Card (Temporarily Hidden) */}
