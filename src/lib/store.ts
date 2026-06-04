@@ -382,7 +382,6 @@ export const useStore = create<TournamentState>((set, get) => ({
 
         // Deduplicate profiles by username and build ID mapping to unify duplicate profiles
         const uniqueProfiles: Profile[] = [];
-        const seenUsernames = new Set<string>();
         const profileIdMapping = new Map<string, string>();
 
         const rawProfiles = mergedProfiles.length > 0 ? mergedProfiles : INITIAL_PROFILES;
@@ -398,12 +397,20 @@ export const useStore = create<TournamentState>((set, get) => ({
             // Keep the one that doesn't start with 'user-' (database UUID) if possible, or just the existing one
             if (existing.id.startsWith('user-') && !p.id.startsWith('user-')) {
               const oldKeptId = existing.id;
+              const savedUsername = existing.username;
+              const savedPassword = existing.password;
+              
               existing.id = p.id;
               existing.display_name = p.display_name;
               existing.avatar_url = p.avatar_url;
+              existing.username = savedUsername || p.username;
+              existing.password = savedPassword || p.password;
+              
               profileIdMapping.set(oldKeptId, p.id);
               profileIdMapping.set(p.id, p.id);
             } else {
+              if (p.username) existing.username = p.username;
+              if (p.password) existing.password = p.password;
               profileIdMapping.set(p.id, existing.id);
             }
           }
@@ -530,6 +537,8 @@ export const useStore = create<TournamentState>((set, get) => ({
           uniqueProfiles.push(p);
           profileIdMapping.set(p.id, p.id);
         } else {
+          if (p.username) existing.username = p.username;
+          if (p.password) existing.password = p.password;
           profileIdMapping.set(p.id, existing.id);
         }
       }
