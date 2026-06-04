@@ -1037,23 +1037,6 @@ export default function Home() {
           <div className="border-b border-cream-200 pb-1.5 flex justify-between items-center gap-2">
             <div className="flex items-center gap-2.5">
               <h3 className="text-[10px] text-stone-450 uppercase tracking-widest font-black shrink-0">TABLA DE POSICIONES</h3>
-              
-              {/* Group filter dropdown */}
-              {myGroups.length > 0 && (
-                <div className="relative shrink-0">
-                  <select
-                    value={selectedGroupId}
-                    onChange={(e) => setSelectedGroupId(e.target.value)}
-                    className="appearance-none bg-cream-50/50 border border-cream-300 rounded-lg px-2 py-0.5 pr-6 text-[9.5px] font-bold text-stone-650 focus:outline-none focus:border-gold-500 cursor-pointer transition-all"
-                  >
-                    <option value="all">Ver General</option>
-                    {myGroups.map(g => (
-                      <option key={g.id} value={g.id}>{g.name}</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="w-3 h-3 text-stone-400 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                </div>
-              )}
             </div>
             
             <Link 
