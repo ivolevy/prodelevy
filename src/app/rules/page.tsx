@@ -33,7 +33,7 @@ export default function RulesPage() {
   ];
 
   return (
-    <div className="space-y-6 text-stone-900 max-w-5xl mx-auto pt-2">
+    <div id="rules-container" className="space-y-6 text-stone-900 max-w-5xl mx-auto pt-2">
       {/* Page Header */}
       <div className="border-b border-cream-300 pb-4 text-center">
         <h1 className="text-[10px] font-black tracking-widest text-stone-400 uppercase">

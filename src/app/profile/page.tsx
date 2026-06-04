@@ -288,7 +288,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Notification Settings */}
-        <div className="py-4 border-b border-cream-200 text-left">
+        <div id="notifications-card" className="py-4 border-b border-cream-200 text-left">
           <h4 className="text-[9.5px] font-black tracking-widest text-stone-450 uppercase mb-2.5 flex items-center gap-1.5">
             <Bell className="w-3.5 h-3.5 text-gold-500 shrink-0" /> Recordatorios y Alertas (24 hs)
           </h4>

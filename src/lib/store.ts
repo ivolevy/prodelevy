@@ -195,6 +195,10 @@ interface TournamentState {
   currentProfileId: string;
   isDemoMode: boolean;
   isLoading: boolean;
+  showTour: boolean;
+  tourStep: number;
+  setShowTour: (show: boolean) => void;
+  setTourStep: (step: number) => void;
   
   // Actions
   initStore: () => Promise<void>;
@@ -226,6 +230,10 @@ export const useStore = create<TournamentState>((set, get) => ({
   currentProfileId: '', // Default to empty string (logged out)
   isDemoMode: true,
   isLoading: true,
+  showTour: false,
+  tourStep: 0,
+  setShowTour: (show) => set({ showTour: show }),
+  setTourStep: (step) => set({ tourStep: step }),
 
   initStore: async () => {
     set({ isLoading: true });

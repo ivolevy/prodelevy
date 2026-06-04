@@ -19,10 +19,6 @@ export default function Home() {
   const [selectedGroupId, setSelectedGroupId] = useState<string>('all');
   const [isStandalone, setIsStandalone] = useState(false);
 
-  // Tour / Onboarding State
-  const [showTour, setShowTour] = useState(false);
-  const [tourStep, setTourStep] = useState(0);
-
   // Admin form state
   const [adminTab, setAdminTab] = useState<'users' | 'groups' | 'standings'>('users');
   const [isCreatingNew, setIsCreatingNew] = useState(false);
@@ -72,40 +68,12 @@ export default function Home() {
     editProfile,
     createGroup,
     isDemoMode,
-    isLoading 
+    isLoading,
+    showTour,
+    tourStep,
+    setShowTour,
+    setTourStep
   } = useStore();
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const completed = localStorage.getItem('prode_onboarding_completed');
-      const activeProfile = profiles.find(p => p.id === currentProfileId);
-      // Only show to logged in regular users who haven't completed the tour
-      if (!completed && activeProfile && !activeProfile.is_admin) {
-        setShowTour(true);
-      }
-    }
-  }, [currentProfileId, profiles]);
-
-  const handleNextStep = () => {
-    if (tourStep < 4) {
-      setTourStep(prev => prev + 1);
-    } else {
-      handleCompleteTour();
-    }
-  };
-
-  const handlePrevStep = () => {
-    if (tourStep > 0) {
-      setTourStep(prev => prev - 1);
-    }
-  };
-
-  const handleCompleteTour = () => {
-    setShowTour(false);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('prode_onboarding_completed', 'true');
-    }
-  };
 
   const triggerConfetti = () => {
     confetti({
@@ -669,124 +637,10 @@ export default function Home() {
 
   return (
     <div className="space-y-8 text-stone-900 max-w-5xl mx-auto pt-2 relative">
-      {/* Onboarding Dark Spotlight Overlay */}
-      {showTour && (
-        <div className="fixed inset-0 bg-stone-950/70 z-50 transition-all duration-300" />
-      )}
 
-      {/* Onboarding Tour Overlay Highlight Card */}
-      <AnimatePresence>
-        {showTour && (
-          <div className="fixed inset-0 z-55 flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white border border-cream-300 p-6 rounded-3xl max-w-md w-full shadow-2xl text-left space-y-4 relative overflow-hidden"
-            >
-              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-gold-500/10 to-transparent rounded-full -mr-8 -mt-8 pointer-events-none" />
-              
-              <div className="flex justify-between items-center">
-                <span className="text-[9px] bg-gold-500/10 text-gold-650 px-2 py-0.5 rounded-full font-black uppercase tracking-wider">
-                  Tutorial Paso {tourStep + 1} de 5
-                </span>
-                <button 
-                  onClick={handleCompleteTour}
-                  className="text-stone-400 hover:text-stone-700 cursor-pointer transition-colors p-1"
-                  title="Omitir tutorial"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Steps details */}
-              {tourStep === 0 && (
-                <div className="space-y-2">
-                  <h3 className="text-sm font-black text-stone-900 uppercase flex items-center gap-1.5">
-                    <Sparkles className="w-5 h-5 text-gold-500 shrink-0" /> ¡Puntapié Inicial!
-                  </h3>
-                  <p className="text-xs text-stone-600 leading-relaxed">
-                    Te damos la bienvenida al Prode Mundial USA-MEX 26′. En este tutorial te enseñamos las herramientas clave de la app para que no te pierdas nada.
-                  </p>
-                </div>
-              )}
-
-              {tourStep === 1 && (
-                <div className="space-y-2">
-                  <h3 className="text-sm font-black text-stone-900 uppercase flex items-center gap-1.5">
-                    <Trophy className="w-5 h-5 text-gold-500 shrink-0" /> Elegí tu Campeón (+10 pts)
-                  </h3>
-                  <p className="text-xs text-stone-600 leading-relaxed">
-                    Antes del comienzo del mundial, tenés que elegir cuál selección creés que saldrá campeona. Si acertás, ¡recibís 10 puntos extra que pueden definir la tabla!
-                  </p>
-                </div>
-              )}
-
-              {tourStep === 2 && (
-                <div className="space-y-2">
-                  <h3 className="text-sm font-black text-stone-900 uppercase flex items-center gap-1.5">
-                    <Users className="w-5 h-5 text-gold-500 shrink-0" /> Tabla y Grupos de Prode
-                  </h3>
-                  <p className="text-xs text-stone-600 leading-relaxed">
-                    En la pantalla principal tenés la tabla de posiciones en tiempo real. Podés unirte a grupos mediante códigos de invitación y filtrar el ranking para competir directamente con amigos y familia.
-                  </p>
-                </div>
-              )}
-
-              {tourStep === 3 && (
-                <div className="space-y-2">
-                  <h3 className="text-sm font-black text-stone-900 uppercase flex items-center gap-1.5">
-                    <Calendar className="w-5 h-5 text-gold-500 shrink-0" /> Fixture y Predicciones
-                  </h3>
-                  <p className="text-xs text-stone-600 leading-relaxed">
-                    En la sección de fixture (haciendo clic en Ver Fixture o el botón de abajo) podés cargar tus pronósticos de goles para cada partido. Recordá que se bloquean 24 hs antes de cada pitido inicial.
-                  </p>
-                </div>
-              )}
-
-              {tourStep === 4 && (
-                <div className="space-y-2">
-                  <h3 className="text-sm font-black text-stone-900 uppercase flex items-center gap-1.5">
-                    <Settings className="w-5 h-5 text-gold-500 shrink-0" /> Recordatorios Móviles
-                  </h3>
-                  <p className="text-xs text-stone-600 leading-relaxed">
-                    Ingresá a tu perfil para activar las notificaciones móviles de 24 hs. Te enviaremos alertas si tenés pronósticos pendientes para que nunca te quedes sin jugar.
-                  </p>
-                </div>
-              )}
-
-              <div className="flex justify-between items-center pt-3 border-t border-cream-200">
-                <button
-                  onClick={handleCompleteTour}
-                  className="text-stone-400 hover:text-stone-700 text-[10px] font-bold uppercase tracking-wider cursor-pointer"
-                >
-                  Omitir Tutorial
-                </button>
-                <div className="flex gap-2">
-                  {tourStep > 0 && (
-                    <button
-                      onClick={handlePrevStep}
-                      className="px-3.5 py-1.5 border border-cream-300 text-stone-700 rounded-xl text-[9px] font-black uppercase tracking-wider hover:bg-stone-50 cursor-pointer"
-                    >
-                      Atrás
-                    </button>
-                  )}
-                  <button
-                    onClick={handleNextStep}
-                    className="px-4 py-1.5 bg-stone-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-stone-850 cursor-pointer flex items-center gap-1"
-                  >
-                    <span>{tourStep === 4 ? 'Listo' : 'Siguiente'}</span>
-                    <ArrowRight className="w-3 h-3" />
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
 
       {/* Editorial Title */}
-      <div className="relative text-center pb-2 border-b border-cream-300 flex items-center justify-center gap-2">
+      <div className="relative text-center pb-2 border-b border-cream-300">
         <h1 className="text-[10px] font-black tracking-widest text-stone-400 uppercase">
           prode mundial usa-mex 26′
         </h1>
@@ -795,7 +649,7 @@ export default function Home() {
             setTourStep(0);
             setShowTour(true);
           }}
-          className="w-5 h-5 rounded-full hover:bg-cream-100/50 flex items-center justify-center text-stone-400 hover:text-stone-750 transition-all cursor-pointer"
+          className="absolute right-1 top-0 w-5 h-5 rounded-full hover:bg-cream-100/50 flex items-center justify-center text-stone-400 hover:text-stone-755 transition-all cursor-pointer"
           title="Ver tutorial de onboarding"
         >
           <HelpCircle className="w-3.5 h-3.5" />

@@ -260,7 +260,7 @@ function MatchesPageContent() {
         </div>
 
         {/* Sub Tabs Navigation */}
-        <div className="flex bg-cream-100/50 p-1 rounded-2xl border border-cream-300 gap-1 shrink-0 w-full sm:w-auto">
+        <div id="matches-tabs" className="flex bg-cream-100/50 p-1 rounded-2xl border border-cream-300 gap-1 shrink-0 w-full sm:w-auto">
           {[
             { id: 'fixture', label: 'Partidos' },
             { id: 'standings', label: 'Tabla' },
@@ -283,7 +283,7 @@ function MatchesPageContent() {
       </div>
 
       {activeSubTab === 'fixture' && (
-        <div className="space-y-4 animate-in fade-in duration-200">
+        <div id="matches-list" className="space-y-4 animate-in fade-in duration-200">
           {/* Filter Tabs inside matches view */}
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-cream-200 pb-3">
             {/* Status filters (Clean modern outline tabs) */}
