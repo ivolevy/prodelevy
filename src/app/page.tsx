@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Trophy, ArrowRight, Sparkles, AlertCircle, CheckCircle, 
   ChevronDown, ChevronRight, Smartphone, Users, Calendar, 
-  Settings, Plus, Trash2, Eye, EyeOff, HelpCircle, X, Play, LogOut 
+  Settings, Plus, Trash2, Eye, EyeOff, HelpCircle, X, LogOut 
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useRouter } from 'next/navigation';
@@ -202,7 +202,7 @@ export default function Home() {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3">
         <div className="w-8 h-8 rounded-full border-2 border-cream-300 border-t-gold-500 animate-spin" />
-        <span className="text-[10px] uppercase tracking-widest text-stone-450 font-semibold">Cargando</span>
+        <span className="text-[10px] uppercase tracking-widest text-stone-400 font-semibold">Cargando</span>
       </div>
     );
   }
@@ -243,7 +243,7 @@ export default function Home() {
     );
 
     return (
-      <div className="space-y-6 text-stone-905 max-w-5xl mx-auto pt-2 pb-20 animate-in fade-in duration-300">
+      <div className="space-y-6 text-stone-900 max-w-5xl mx-auto pt-2 pb-20 animate-in fade-in duration-300">
         {/* Admin Header */}
         <div className="border-b border-cream-300 pb-4 flex flex-col sm:flex-row justify-between items-center gap-3">
           <div className="text-center sm:text-left">
@@ -322,7 +322,7 @@ export default function Home() {
             <div className="glass-card p-6 border border-cream-300 bg-white text-left space-y-6 shadow-sm">
               <div className="border-b border-cream-200 pb-3 flex justify-between items-center gap-3">
                 <h3 className="text-xs font-black text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
-                  <Users className="w-4 h-4 text-gold-505" /> Gestión de Participantes
+                  <Users className="w-4 h-4 text-gold-500" /> Gestión de Participantes
                 </h3>
                 <button
                   onClick={() => {
@@ -399,7 +399,7 @@ export default function Home() {
                         type="text"
                         value={editUsername}
                         onChange={e => setEditUsername(e.target.value)}
-                        className="w-full bg-white border border-cream-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-gold-555"
+                        className="w-full bg-white border border-cream-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-gold-500"
                       />
                     </div>
                     <div>
@@ -459,7 +459,7 @@ export default function Home() {
                         <div>
                           <div className="flex items-center gap-1.5">
                             <span className="text-xs font-bold text-stone-850">{p.display_name}</span>
-                            <span className="text-[7px] font-bold uppercase bg-stone-105 border border-stone-250/50 text-stone-500 px-1.5 py-0.2 rounded shrink-0">
+                            <span className="text-[7px] font-bold uppercase bg-stone-100 border border-stone-250/50 text-stone-500 px-1.5 py-0.2 rounded shrink-0">
                               {pPredCount} pronósticos
                             </span>
                           </div>
@@ -669,10 +669,15 @@ export default function Home() {
 
   return (
     <div className="space-y-8 text-stone-900 max-w-5xl mx-auto pt-2 relative">
-      {/* Onboarding Tour Overlay Backdrop & Highlight Card */}
+      {/* Onboarding Dark Spotlight Overlay */}
+      {showTour && (
+        <div className="fixed inset-0 bg-stone-950/70 z-50 transition-all duration-300" />
+      )}
+
+      {/* Onboarding Tour Overlay Highlight Card */}
       <AnimatePresence>
         {showTour && (
-          <div className="fixed inset-0 bg-stone-900/60 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
+          <div className="fixed inset-0 z-55 flex items-center justify-center p-4">
             <motion.div 
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -701,7 +706,7 @@ export default function Home() {
                     <Sparkles className="w-5 h-5 text-gold-500 shrink-0" /> ¡Puntapié Inicial!
                   </h3>
                   <p className="text-xs text-stone-600 leading-relaxed">
-                    Te damos la bienvenida al **Prode Mundial USA-MEX 26′**. En este tutorial te enseñamos las herramientas clave de la app para que no te pierdas nada.
+                    Te damos la bienvenida al Prode Mundial USA-MEX 26′. En este tutorial te enseñamos las herramientas clave de la app para que no te pierdas nada.
                   </p>
                 </div>
               )}
@@ -712,7 +717,7 @@ export default function Home() {
                     <Trophy className="w-5 h-5 text-gold-500 shrink-0" /> Elegí tu Campeón (+10 pts)
                   </h3>
                   <p className="text-xs text-stone-600 leading-relaxed">
-                    Antes del comienzo del mundial, tenés que votar cuál selección creés que saldrá campeona. Si acertás, ¡recibís **10 puntos extra** que pueden definir la tabla!
+                    Antes del comienzo del mundial, tenés que elegir cuál selección creés que saldrá campeona. Si acertás, ¡recibís 10 puntos extra que pueden definir la tabla!
                   </p>
                 </div>
               )}
@@ -734,7 +739,7 @@ export default function Home() {
                     <Calendar className="w-5 h-5 text-gold-500 shrink-0" /> Fixture y Predicciones
                   </h3>
                   <p className="text-xs text-stone-600 leading-relaxed">
-                    En la sección de **fixture** (haciendo clic en Ver Fixture o el botón de abajo) podés cargar tus pronósticos goles para cada partido. Recordá que se bloquean **24 hs antes** de cada pitido inicial.
+                    En la sección de fixture (haciendo clic en Ver Fixture o el botón de abajo) podés cargar tus pronósticos de goles para cada partido. Recordá que se bloquean 24 hs antes de cada pitido inicial.
                   </p>
                 </div>
               )}
@@ -745,7 +750,7 @@ export default function Home() {
                     <Settings className="w-5 h-5 text-gold-500 shrink-0" /> Recordatorios Móviles
                   </h3>
                   <p className="text-xs text-stone-600 leading-relaxed">
-                    Ingresá a tu perfil para activar las **notificaciones móviles de 24 hs**. Te enviaremos alertas si tenés pronósticos pendientes para que nunca te quedes sin jugar.
+                    Ingresá a tu perfil para activar las notificaciones móviles de 24 hs. Te enviaremos alertas si tenés pronósticos pendientes para que nunca te quedes sin jugar.
                   </p>
                 </div>
               )}
@@ -782,16 +787,30 @@ export default function Home() {
 
       {/* Editorial Title */}
       <div className="text-center pb-2 border-b border-cream-300">
-        <h1 className="text-[10px] font-black tracking-widest text-stone-450 uppercase">
+        <h1 className="text-[10px] font-black tracking-widest text-stone-400 uppercase">
           prode mundial usa-mex 26′
         </h1>
       </div>
 
       {/* Countdown Strip */}
-      <Countdown />
+      <div 
+        id="tour-step-0" 
+        className={`transition-all duration-300 ${
+          showTour && tourStep === 0 ? 'relative bg-white rounded-3xl p-2 shadow-2xl ring-4 ring-gold-500 scale-[1.01]' : ''
+        }`}
+        style={showTour && tourStep === 0 ? { zIndex: 51 } : undefined}
+      >
+        <Countdown />
+      </div>
 
       {/* Champion Prediction Banner */}
-      <div id="champion-banner" className="glass-card p-5 border border-cream-300 shadow-sm bg-white flex flex-col md:flex-row justify-between items-center gap-4 relative overflow-hidden">
+      <div 
+        id="champion-banner" 
+        className={`glass-card p-5 border border-cream-300 shadow-sm bg-white flex flex-col md:flex-row justify-between items-center gap-4 relative overflow-hidden transition-all duration-300 ${
+          showTour && tourStep === 1 ? 'relative shadow-2xl ring-4 ring-gold-500 scale-[1.01]' : ''
+        }`}
+        style={showTour && tourStep === 1 ? { zIndex: 51 } : undefined}
+      >
         <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-gold-500/10 to-transparent rounded-full -mr-8 -mt-8 pointer-events-none" />
         <div className="space-y-1 text-left w-full md:w-auto">
           <div className="flex items-center gap-2">
@@ -901,76 +920,84 @@ export default function Home() {
       ) : null}
 
       {/* PWA Mobile Installation Guide */}
-      {!isStandalone && (
-        <div className="glass-card border border-cream-300 shadow-sm bg-white relative overflow-hidden max-w-5xl mx-auto text-left transition-all duration-300">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-cream-200/20 to-transparent rounded-full -mr-12 -mt-12 pointer-events-none" />
-        
-          <button 
-            onClick={() => setShowPwaGuide(!showPwaGuide)}
-            className="w-full flex items-center justify-between p-5 focus:outline-none hover:bg-stone-50/50 transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              <Smartphone className="w-5 h-5 text-stone-700 shrink-0" />
-              <div className="text-left">
-                <h4 className="text-[9.5px] font-extrabold text-stone-450 uppercase leading-none mb-1">Cómo instalar el Prode en tu celular</h4>
-                <h3 className="text-xs font-black text-stone-900 uppercase">Instalar App Móvil</h3>
+      <div 
+        id="tour-step-4"
+        className={`transition-all duration-300 ${
+          showTour && tourStep === 4 ? 'relative bg-white rounded-3xl p-1 shadow-2xl ring-4 ring-gold-500 scale-[1.01]' : ''
+        }`}
+        style={showTour && tourStep === 4 ? { zIndex: 51 } : undefined}
+      >
+        {!isStandalone && (
+          <div className="glass-card border border-cream-300 shadow-sm bg-white relative overflow-hidden max-w-5xl mx-auto text-left transition-all duration-300">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-cream-200/20 to-transparent rounded-full -mr-12 -mt-12 pointer-events-none" />
+          
+            <button 
+              onClick={() => setShowPwaGuide(!showPwaGuide)}
+              className="w-full flex items-center justify-between p-5 focus:outline-none hover:bg-stone-50/50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <Smartphone className="w-5 h-5 text-stone-700 shrink-0" />
+                <div className="text-left">
+                  <h4 className="text-[9.5px] font-extrabold text-stone-450 uppercase leading-none mb-1">Cómo instalar el Prode en tu celular</h4>
+                  <h3 className="text-xs font-black text-stone-900 uppercase">Instalar App Móvil</h3>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="hidden sm:inline-block text-[8px] bg-stone-100 border border-stone-250 text-stone-550 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
-                Sin Descargas
-              </span>
-              <ChevronDown className={`w-4 h-4 text-stone-400 transition-transform duration-300 ${showPwaGuide ? 'rotate-180' : ''}`} />
-            </div>
-          </button>
+              <div className="flex items-center gap-2">
+                <span className="hidden sm:inline-block text-[8px] bg-stone-100 border border-stone-250 text-stone-550 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                  Sin Descargas
+                </span>
+                <ChevronDown className={`w-4 h-4 text-stone-400 transition-transform duration-300 ${showPwaGuide ? 'rotate-180' : ''}`} />
+              </div>
+            </button>
 
-          <AnimatePresence initial={false}>
-            {showPwaGuide && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.25, ease: 'easeInOut' }}
-                className="overflow-hidden"
-              >
-                <div className="px-5 pb-6 border-t border-cream-200 pt-5">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs text-stone-600">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <span className="w-5 h-5 rounded-full bg-stone-900 text-white font-extrabold text-[10px] flex items-center justify-center">1</span>
-                        <h4 className="font-bold text-stone-850">Abrí el enlace</h4>
+            <AnimatePresence initial={false}>
+              {showPwaGuide && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.25, ease: 'easeInOut' }}
+                  className="overflow-hidden"
+                >
+                  <div className="px-5 pb-6 border-t border-cream-200 pt-5">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs text-stone-600">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <span className="w-5 h-5 rounded-full bg-stone-900 text-white font-extrabold text-[10px] flex items-center justify-center">1</span>
+                          <h4 className="font-bold text-stone-850">Abrí el enlace</h4>
+                        </div>
+                        <p className="pl-7 text-[11px] leading-relaxed text-stone-500">
+                          Ingresá a la web del Prode desde el navegador de tu celular (preferentemente <strong>Safari</strong> en iPhone o <strong>Chrome</strong> en Android).
+                        </p>
                       </div>
-                      <p className="pl-7 text-[11px] leading-relaxed text-stone-500">
-                        Ingresá a la web del Prode desde el navegador de tu celular (preferentemente <strong>Safari</strong> en iPhone o <strong>Chrome</strong> en Android).
-                      </p>
-                    </div>
 
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <span className="w-5 h-5 rounded-full bg-stone-900 text-white font-extrabold text-[10px] flex items-center justify-center">2</span>
-                        <h4 className="font-bold text-stone-850">Tocá compartir</h4>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <span className="w-5 h-5 rounded-full bg-stone-900 text-white font-extrabold text-[10px] flex items-center justify-center">2</span>
+                          <h4 className="font-bold text-stone-850">Tocá compartir</h4>
+                        </div>
+                        <p className="pl-7 text-[11px] leading-relaxed text-stone-500">
+                          Presioná el botón de <strong>Compartir</strong> (el ícono de la caja con flecha hacia arriba o los tres puntos y luego en compartir).
+                        </p>
                       </div>
-                      <p className="pl-7 text-[11px] leading-relaxed text-stone-500">
-                        Presioná el botón de <strong>Compartir</strong> (el ícono de la caja con flecha hacia arriba o los tres puntos y luego en compartir).
-                      </p>
-                    </div>
 
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <span className="w-5 h-5 rounded-full bg-stone-900 text-white font-extrabold text-[10px] flex items-center justify-center">3</span>
-                        <h4 className="font-bold text-stone-850">Añadir a Inicio</h4>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <span className="w-5 h-5 rounded-full bg-stone-900 text-white font-extrabold text-[10px] flex items-center justify-center">3</span>
+                          <h4 className="font-bold text-stone-850">Añadir a Inicio</h4>
+                        </div>
+                        <p className="pl-7 text-[11px] leading-relaxed text-stone-500">
+                          Buscá y presioná la opción <strong>Añadir a pantalla de inicio</strong> (en iOS tocá "Compartir", luego bajá y tocá "Añadir a pantalla de inicio"). ¡Y listo!
+                        </p>
                       </div>
-                      <p className="pl-7 text-[11px] leading-relaxed text-stone-500">
-                        Buscá y presioná la opción <strong>Añadir a pantalla de inicio</strong> (en iOS tocá "Compartir", luego bajá y tocá "Añadir a pantalla de inicio"). ¡Y listo!
-                      </p>
                     </div>
                   </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
+      </div>
 
       {/* Restart Tour button */}
       <div className="flex justify-end pr-2">
@@ -990,7 +1017,13 @@ export default function Home() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         {/* Left Column: Standings */}
-        <div id="standings-column" className="lg:col-span-2 space-y-3">
+        <div 
+          id="standings-column" 
+          className={`lg:col-span-2 space-y-3 transition-all duration-300 ${
+            showTour && tourStep === 2 ? 'relative bg-white rounded-3xl p-3 shadow-2xl ring-4 ring-gold-500 scale-[1.01]' : ''
+          }`}
+          style={showTour && tourStep === 2 ? { zIndex: 51 } : undefined}
+        >
           <div className="border-b border-cream-200 pb-1.5 flex justify-between items-center gap-2">
             <div className="flex items-center gap-2.5">
               <h3 className="text-[10px] text-stone-450 uppercase tracking-widest font-black shrink-0">TABLA DE POSICIONES</h3>
@@ -1078,7 +1111,13 @@ export default function Home() {
         </div>
 
         {/* Right Column: Próximos Partidos */}
-        <div id="fixture-column" className="lg:col-span-1 space-y-3">
+        <div 
+          id="fixture-column" 
+          className={`lg:col-span-1 space-y-3 transition-all duration-300 ${
+            showTour && tourStep === 3 ? 'relative bg-white rounded-3xl p-3 shadow-2xl ring-4 ring-gold-500 scale-[1.01]' : ''
+          }`}
+          style={showTour && tourStep === 3 ? { zIndex: 51 } : undefined}
+        >
           <div className="flex justify-between items-end border-b border-cream-200 pb-1.5">
             <h3 className="text-[10px] text-stone-450 uppercase tracking-widest font-black">PRÓXIMOS PARTIDOS</h3>
             <Link href="/matches" className="text-[9px] text-gold-650 font-bold uppercase tracking-widest hover:underline flex items-center gap-0.5">
