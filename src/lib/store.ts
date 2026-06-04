@@ -333,8 +333,12 @@ export const useStore = create<TournamentState>((set, get) => ({
 
         // Ensure all INITIAL_PROFILES exist in the merged profiles list and database
         for (const ip of INITIAL_PROFILES) {
-          if (!mergedProfiles.some(p => p.id === ip.id)) {
+          const existing = mergedProfiles.find(p => p.id === ip.id);
+          if (!existing) {
             mergedProfiles.push(ip);
+          } else {
+            if (!existing.username) existing.username = ip.username;
+            if (!existing.password) existing.password = ip.password;
           }
           if (supabase && !dbProfiles.some(p => p.id === ip.id)) {
             try {
