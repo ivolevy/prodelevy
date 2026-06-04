@@ -109,7 +109,6 @@ export const INITIAL_MATCHES: Match[] = [
 
 export const INITIAL_PROFILES: Profile[] = [
   { id: 'user-ivanlevy', display_name: 'ivanlevy', username: 'ivanlevy', password: 'cata1804', is_admin: true, avatar_url: 'IL', created_at: '', updated_at: '' },
-  { id: 'user-test123', display_name: 'test123', username: 'test123', password: 'test123', is_admin: false, avatar_url: 'TE', created_at: '', updated_at: '' },
   { id: 'user-alan', display_name: 'alan', username: 'alan', password: 'alan123', is_admin: false, avatar_url: 'AL', created_at: '', updated_at: '' },
   { id: 'user-betu', display_name: 'betu', username: 'betu', password: 'betu123', is_admin: false, avatar_url: 'BE', created_at: '', updated_at: '' },
   { id: 'user-simon', display_name: 'simon', username: 'simon', password: 'simon123', is_admin: false, avatar_url: 'SI', created_at: '', updated_at: '' },
@@ -133,7 +132,6 @@ export const INITIAL_GROUPS: Group[] = [
 ];
 
 export const INITIAL_GROUP_MEMBERS: GroupMember[] = [
-  { group_id: 'group-familia', profile_id: 'user-test123', joined_at: '2026-06-02T00:00:00Z' },
   { group_id: 'group-familia', profile_id: 'user-alan', joined_at: '2026-06-02T00:00:00Z' },
   { group_id: 'group-familia', profile_id: 'user-betu', joined_at: '2026-06-02T00:00:00Z' },
   { group_id: 'group-familia', profile_id: 'user-simon', joined_at: '2026-06-02T00:00:00Z' },
@@ -244,24 +242,7 @@ export const useStore = create<TournamentState>((set, get) => ({
         
         let dbProfiles = profilesData || [];
         
-        // Ensure test123 user is in database
-        const hasTestUser = dbProfiles.some(p => p.username === 'test123');
-        if (!hasTestUser && supabase) {
-          try {
-            await supabase.from('profiles').insert({
-              id: 'user-test123',
-              display_name: 'test123',
-              username: 'test123',
-              password: 'test123',
-              avatar_url: 'TE',
-              is_admin: false
-            });
-            const { data: refreshedProfiles } = await supabase.from('profiles').select('*');
-            if (refreshedProfiles) dbProfiles = refreshedProfiles;
-          } catch (e) {
-            console.error('Failed to auto-insert test123 user:', e);
-          }
-        }
+
         
         // Force admin password to cata1804 if it exists in database but has different password
         const dbAdmin = dbProfiles.find(p => p.username === 'ivanlevy');
@@ -398,22 +379,82 @@ export const useStore = create<TournamentState>((set, get) => ({
 
         const teams = (teamsData && teamsData.length > 0) ? teamsData : INITIAL_TEAMS;
         const matches = (matchesData && matchesData.length > 0) ? matchesData : INITIAL_MATCHES;
-        const profiles = mergedProfiles.length > 0 ? mergedProfiles : INITIAL_PROFILES;
-        const predictions = mergedPredictions;
-        const groups = mergedGroups;
-        const groupMembers = mergedGroupMembers;
 
-        const currentUserId = storedActiveProfile !== null ? storedActiveProfile : '';
-        const standings = updateStandings(matches, predictions, profiles, teams);
+        // Deduplicate profiles by username and build ID mapping to unify duplicate profiles
+        const uniqueProfiles: Profile[] = [];
+        const seenUsernames = new Set<string>();
+        const profileIdMapping = new Map<string, string>();
+
+        const rawProfiles = mergedProfiles.length > 0 ? mergedProfiles : INITIAL_PROFILES;
+        for (const p of rawProfiles) {
+          const uKey = (p.username || p.display_name || '').trim().toLowerCase();
+          if (!uKey) continue;
+          
+          const existing = uniqueProfiles.find(ep => (ep.username || ep.display_name || '').trim().toLowerCase() === uKey);
+          if (!existing) {
+            uniqueProfiles.push(p);
+            profileIdMapping.set(p.id, p.id);
+          } else {
+            // Keep the one that doesn't start with 'user-' (database UUID) if possible, or just the existing one
+            if (existing.id.startsWith('user-') && !p.id.startsWith('user-')) {
+              const oldKeptId = existing.id;
+              existing.id = p.id;
+              existing.display_name = p.display_name;
+              existing.avatar_url = p.avatar_url;
+              profileIdMapping.set(oldKeptId, p.id);
+              profileIdMapping.set(p.id, p.id);
+            } else {
+              profileIdMapping.set(p.id, existing.id);
+            }
+          }
+        }
+
+        // Map duplicate/redundant IDs in predictions
+        const mappedPredictions = mergedPredictions.map(pred => ({
+          ...pred,
+          participant_id: profileIdMapping.get(pred.participant_id) || pred.participant_id
+        }));
+
+        // Deduplicate predictions
+        const uniquePredictions: Prediction[] = [];
+        const seenPreds = new Set<string>();
+        for (const pred of mappedPredictions) {
+          const key = `${pred.participant_id}-${pred.match_id}`;
+          if (!seenPreds.has(key)) {
+            seenPreds.add(key);
+            uniquePredictions.push(pred);
+          }
+        }
+
+        // Map duplicate/redundant IDs in group members
+        const mappedGroupMembers = mergedGroupMembers.map(gm => ({
+          ...gm,
+          profile_id: profileIdMapping.get(gm.profile_id) || gm.profile_id
+        }));
+
+        // Deduplicate group members
+        const uniqueGroupMembers: GroupMember[] = [];
+        const seenGms = new Set<string>();
+        for (const gm of mappedGroupMembers) {
+          const key = `${gm.group_id}-${gm.profile_id}`;
+          if (!seenGms.has(key)) {
+            seenGms.add(key);
+            uniqueGroupMembers.push(gm);
+          }
+        }
+
+        const groups = mergedGroups;
+        const currentUserId = storedActiveProfile !== null ? (profileIdMapping.get(storedActiveProfile) || storedActiveProfile) : '';
+        const standings = updateStandings(matches, uniquePredictions, uniqueProfiles, teams);
 
         set({
           teams,
           matches,
-          profiles,
-          predictions,
+          profiles: uniqueProfiles,
+          predictions: uniquePredictions,
           standings,
           groups,
-          groupMembers,
+          groupMembers: uniqueGroupMembers,
           currentProfileId: currentUserId,
           isLoading: false
         });
@@ -474,27 +515,79 @@ export const useStore = create<TournamentState>((set, get) => ({
 
       const teams = storedTeams ? JSON.parse(storedTeams) : INITIAL_TEAMS;
       const matches = storedMatches ? JSON.parse(storedMatches) : INITIAL_MATCHES;
-      const currentProfileId = !profiles.some((p: any) => p.id === storedActiveProfile) ? '' : (storedActiveProfile || '');
+
+      // Deduplicate profiles by username and build ID mapping to unify duplicate profiles
+      const uniqueProfiles: Profile[] = [];
+      const profileIdMapping = new Map<string, string>();
+
+      for (const p of profiles) {
+        const uKey = (p.username || p.display_name || '').trim().toLowerCase();
+        if (!uKey) continue;
+        
+        const existing = uniqueProfiles.find(ep => (ep.username || ep.display_name || '').trim().toLowerCase() === uKey);
+        if (!existing) {
+          uniqueProfiles.push(p);
+          profileIdMapping.set(p.id, p.id);
+        } else {
+          profileIdMapping.set(p.id, existing.id);
+        }
+      }
+
+      // Map duplicate/redundant IDs in predictions
+      const mappedPredictions = predictions.map((pred: any) => ({
+        ...pred,
+        participant_id: profileIdMapping.get(pred.participant_id) || pred.participant_id
+      }));
+
+      // Deduplicate predictions
+      const uniquePredictions: Prediction[] = [];
+      const seenPreds = new Set<string>();
+      for (const pred of mappedPredictions) {
+        const key = `${pred.participant_id}-${pred.match_id}`;
+        if (!seenPreds.has(key)) {
+          seenPreds.add(key);
+          uniquePredictions.push(pred);
+        }
+      }
+
+      // Map duplicate/redundant IDs in group members
+      const mappedGroupMembers = groupMembers.map((gm: any) => ({
+        ...gm,
+        profile_id: profileIdMapping.get(gm.profile_id) || gm.profile_id
+      }));
+
+      // Deduplicate group members
+      const uniqueGroupMembers: GroupMember[] = [];
+      const seenGms = new Set<string>();
+      for (const gm of mappedGroupMembers) {
+        const key = `${gm.group_id}-${gm.profile_id}`;
+        if (!seenGms.has(key)) {
+          seenGms.add(key);
+          uniqueGroupMembers.push(gm);
+        }
+      }
+
+      const currentProfileId = !uniqueProfiles.some((p: any) => p.id === storedActiveProfile) ? '' : (profileIdMapping.get(storedActiveProfile || '') || storedActiveProfile || '');
 
       // Always save back to guarantee consistency
       localStorage.setItem('prode_teams', JSON.stringify(teams));
       localStorage.setItem('prode_matches', JSON.stringify(matches));
-      localStorage.setItem('prode_profiles', JSON.stringify(profiles));
-      localStorage.setItem('prode_predictions', JSON.stringify(predictions));
+      localStorage.setItem('prode_profiles', JSON.stringify(uniqueProfiles));
+      localStorage.setItem('prode_predictions', JSON.stringify(uniquePredictions));
       localStorage.setItem('prode_groups', JSON.stringify(groups));
-      localStorage.setItem('prode_group_members', JSON.stringify(groupMembers));
+      localStorage.setItem('prode_group_members', JSON.stringify(uniqueGroupMembers));
       localStorage.setItem('prode_active_profile', currentProfileId);
 
-      const standings = updateStandings(matches, predictions, profiles, teams);
+      const standings = updateStandings(matches, uniquePredictions, uniqueProfiles, teams);
 
       set({
         teams,
         matches,
-        profiles,
-        predictions,
+        profiles: uniqueProfiles,
+        predictions: uniquePredictions,
         standings,
         groups,
-        groupMembers,
+        groupMembers: uniqueGroupMembers,
         currentProfileId,
         isLoading: false
       });
@@ -569,12 +662,6 @@ export const useStore = create<TournamentState>((set, get) => ({
 
   savePrediction: async (profileId: string, matchId: number, homeScore: number, awayScore: number) => {
     const { isDemoMode, predictions, matches, profiles } = get();
-
-    // Prevent test user from saving predictions
-    const activeProfile = profiles.find(p => p.id === profileId);
-    if (activeProfile?.username === 'test123') {
-      throw new Error('El usuario de prueba no puede guardar pronósticos.');
-    }
 
     // Enforce the 24 hours lock
     const match = matches.find(m => m.id === matchId);
@@ -833,12 +920,6 @@ export const useStore = create<TournamentState>((set, get) => ({
 
   saveChampionPrediction: async (profileId: string, teamId: string) => {
     const { isDemoMode, profiles, teams, matches, predictions } = get();
-
-    // Prevent test user from saving champion prediction
-    const activeProfile = profiles.find(p => p.id === profileId);
-    if (activeProfile?.username === 'test123') {
-      throw new Error('El usuario de prueba no puede elegir un campeón.');
-    }
 
     // Check 24 hours lock before tournament starts (June 11, 2026 16:00:00 UTC-3)
     const deadline = new Date('2026-06-10T16:00:00-03:00').getTime();
