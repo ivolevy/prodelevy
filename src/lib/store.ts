@@ -285,9 +285,9 @@ export const useStore = create<TournamentState>((set, get) => ({
           }
         }
 
-        const mergedProfiles = [...dbProfiles];
+        const mergedProfiles = [...dbProfiles].filter(p => p.username !== 'test123' && p.id !== 'user-test123');
         localProfiles.forEach((lp: any) => {
-          if (!mergedProfiles.some(dp => dp.id === lp.id)) {
+          if (lp.username !== 'test123' && lp.id !== 'user-test123' && !mergedProfiles.some(dp => dp.id === lp.id)) {
             mergedProfiles.push(lp);
           }
         });
@@ -475,6 +475,7 @@ export const useStore = create<TournamentState>((set, get) => ({
       const storedGroupMembers = localStorage.getItem('prode_group_members');
 
       let profiles = storedProfiles ? JSON.parse(storedProfiles) : INITIAL_PROFILES;
+      profiles = profiles.filter((p: any) => p.username !== 'test123' && p.id !== 'user-test123');
       let predictions = storedPredictions ? JSON.parse(storedPredictions) : [];
       let groups = storedGroups ? JSON.parse(storedGroups) : [];
       let groupMembers = storedGroupMembers ? JSON.parse(storedGroupMembers) : [];
