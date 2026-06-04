@@ -166,6 +166,24 @@ export function isMatchPredictable(match: Match): boolean {
   return diffHours >= 24;
 }
 
+function encodeProfileAvatar(username: string, password?: string, avatarUrl?: string): string {
+  const u = username || '';
+  const p = password || '';
+  const av = avatarUrl || '';
+  return `__CREDENTIALS__:${u}:${p}:${av}`;
+}
+
+function decodeProfileAvatar(avatarUrl: string | null | undefined): { username?: string; password?: string; avatar_url?: string } {
+  if (avatarUrl && avatarUrl.startsWith('__CREDENTIALS__:')) {
+    const parts = avatarUrl.split(':');
+    const username = parts[1];
+    const password = parts[2];
+    const originalAvatar = parts.slice(3).join(':');
+    return { username, password, avatar_url: originalAvatar };
+  }
+  return { avatar_url: avatarUrl || undefined };
+}
+
 interface TournamentState {
   teams: Team[];
   matches: Match[];
@@ -240,17 +258,25 @@ export const useStore = create<TournamentState>((set, get) => ({
         const storedLocalProfiles = typeof window !== 'undefined' ? localStorage.getItem('prode_profiles') : null;
         let localProfiles = storedLocalProfiles ? JSON.parse(storedLocalProfiles) : [];
         
-        let dbProfiles = profilesData || [];
-        
+        let dbProfilesRaw = profilesData || [];
+        let dbProfiles = dbProfilesRaw.map((p: any) => {
+          const decoded = decodeProfileAvatar(p.avatar_url);
+          return {
+            ...p,
+            username: decoded.username || p.username || p.display_name,
+            password: decoded.password || p.password,
+            avatar_url: decoded.avatar_url
+          };
+        });
 
-        
         // Force admin password to cata1804 if it exists in database but has different password
-        const dbAdmin = dbProfiles.find(p => p.username === 'ivanlevy');
+        const dbAdmin = dbProfiles.find(p => p.id === 'user-ivanlevy');
         if (dbAdmin && dbAdmin.password !== 'cata1804') {
           if (supabase) {
             try {
-              await supabase.from('profiles').update({ password: 'cata1804' }).eq('username', 'ivanlevy');
+              await supabase.from('profiles').update({ avatar_url: encodeProfileAvatar('ivanlevy', 'cata1804', 'IL') }).eq('id', 'user-ivanlevy');
               dbAdmin.password = 'cata1804';
+              dbAdmin.avatar_url = 'IL';
             } catch (e) {
               console.error('Failed to update admin password to cata1804:', e);
             }
@@ -258,18 +284,16 @@ export const useStore = create<TournamentState>((set, get) => ({
         }
 
         // Cleanup check: If ivanlevy is not in the profiles, we want to clear everything
-        const hasNewAdmin = dbProfiles.some(p => p.username === 'ivanlevy') || localProfiles.some((p: any) => p.username === 'ivanlevy');
+        const hasNewAdmin = dbProfiles.some(p => p.id === 'user-ivanlevy') || localProfiles.some((p: any) => p.id === 'user-ivanlevy');
         if (!hasNewAdmin) {
           try {
             if (supabase) {
-              await supabase.from('profiles').delete().neq('username', 'ivanlevy');
+              await supabase.from('profiles').delete().neq('id', 'user-ivanlevy');
               await supabase.from('predictions').delete().neq('id', '00000000-0000-0000-0000-000000000000');
               await supabase.from('profiles').insert({
                 id: 'user-ivanlevy',
                 display_name: 'ivanlevy',
-                username: 'ivanlevy',
-                password: 'cata1804',
-                avatar_url: 'IL',
+                avatar_url: encodeProfileAvatar('ivanlevy', 'cata1804', 'IL'),
                 is_admin: true
               });
             }
@@ -287,24 +311,29 @@ export const useStore = create<TournamentState>((set, get) => ({
 
         const mergedProfiles = [...dbProfiles].filter(p => p.username !== 'test123' && p.id !== 'user-test123');
         localProfiles.forEach((lp: any) => {
-          if (lp.username !== 'test123' && lp.id !== 'user-test123' && !mergedProfiles.some(dp => dp.id === lp.id)) {
-            mergedProfiles.push(lp);
+          if (lp.username !== 'test123' && lp.id !== 'user-test123') {
+            const existing = mergedProfiles.find(dp => dp.id === lp.id);
+            if (!existing) {
+              mergedProfiles.push(lp);
+            } else {
+              // Merge credentials from local storage into DB-fetched profile if they exist in local but not DB
+              if (!existing.username && lp.username) existing.username = lp.username;
+              if (!existing.password && lp.password) existing.password = lp.password;
+            }
           }
         });
 
         // Ensure all INITIAL_PROFILES exist in the merged profiles list and database
         for (const ip of INITIAL_PROFILES) {
-          if (!mergedProfiles.some(p => p.username === ip.username)) {
+          if (!mergedProfiles.some(p => p.id === ip.id)) {
             mergedProfiles.push(ip);
           }
-          if (supabase && !dbProfiles.some(p => p.username === ip.username)) {
+          if (supabase && !dbProfiles.some(p => p.id === ip.id)) {
             try {
               await supabase.from('profiles').insert({
                 id: ip.id,
                 display_name: ip.display_name,
-                username: ip.username,
-                password: ip.password,
-                avatar_url: ip.avatar_url,
+                avatar_url: encodeProfileAvatar(ip.username || ip.display_name, ip.password, ip.avatar_url),
                 is_admin: ip.is_admin
               });
             } catch (e) {
@@ -824,9 +853,7 @@ export const useStore = create<TournamentState>((set, get) => ({
         await supabase.from('profiles').insert({
           id: newId,
           display_name: newProfile.display_name,
-          username: u,
-          password: p,
-          avatar_url: newProfile.avatar_url,
+          avatar_url: encodeProfileAvatar(u, p, newProfile.avatar_url),
           is_admin: false
         });
       } catch (e) {
@@ -913,14 +940,17 @@ export const useStore = create<TournamentState>((set, get) => ({
  
     if (!isDemoMode && supabase) {
       try {
+        const targetProfile = updatedProfiles.find(prof => prof.id === id);
+        const encodedAvatar = encodeProfileAvatar(
+          targetProfile?.username || u,
+          targetProfile?.password || p || '1234',
+          targetProfile?.avatar_url || displayName.substring(0, 2).toUpperCase()
+        );
+
         const updateData: any = {
           display_name: displayName.trim(),
-          username: u,
-          avatar_url: displayName.substring(0, 2).toUpperCase()
+          avatar_url: encodedAvatar
         };
-        if (p) {
-          updateData.password = p;
-        }
         await supabase.from('profiles').update(updateData).eq('id', id);
       } catch (e) {
         console.error('Failed to sync updated profile to Supabase:', e);
