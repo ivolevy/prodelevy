@@ -1,14 +1,26 @@
 'use client';
  
 import { useStore } from '@/lib/store';
-import { LogIn, Lock, User as UserIcon, Trophy } from 'lucide-react';
-import { useState } from 'react';
+import { LogIn, Lock, User as UserIcon, Trophy, Smartphone, ChevronDown } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
  
 export default function LoginView() {
   const { profiles, setCurrentProfile } = useStore();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [showPwaGuide, setShowPwaGuide] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setIsStandalone(
+        window.matchMedia('(display-mode: standalone)').matches ||
+        (window.navigator as any).standalone === true
+      );
+    }
+  }, []);
  
   const handleFormLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,6 +119,79 @@ export default function LoginView() {
           </button>
         </form>
       </div>
+
+      {/* PWA Mobile Installation Guide */}
+      {!isStandalone && (
+        <div className="w-full max-w-md mt-6 bg-white border border-cream-300 rounded-3xl overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.03)] relative z-10 text-left transition-all duration-300">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-cream-200/20 to-transparent rounded-full -mr-12 -mt-12 pointer-events-none" />
+        
+          <button 
+            type="button"
+            onClick={() => setShowPwaGuide(!showPwaGuide)}
+            className="w-full flex items-center justify-between p-5 focus:outline-none hover:bg-stone-50/50 transition-colors cursor-pointer"
+          >
+            <div className="flex items-center gap-3">
+              <Smartphone className="w-5 h-5 text-stone-700 shrink-0" />
+              <div className="text-left">
+                <h4 className="text-[9.5px] font-extrabold text-stone-450 uppercase leading-none mb-1">Cómo instalar el Prode en tu celular</h4>
+                <h3 className="text-xs font-black text-stone-900 uppercase">Instalar App Móvil</h3>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="hidden xs:inline-block text-[8px] bg-stone-100 border border-stone-250 text-stone-550 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                Sin Descargas
+              </span>
+              <ChevronDown className={`w-4 h-4 text-stone-400 transition-transform duration-300 ${showPwaGuide ? 'rotate-180' : ''}`} />
+            </div>
+          </button>
+
+          <AnimatePresence initial={false}>
+            {showPwaGuide && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.25, ease: 'easeInOut' }}
+                className="overflow-hidden"
+              >
+                <div className="px-5 pb-6 border-t border-cream-200 pt-5">
+                  <div className="grid grid-cols-1 gap-4 text-xs text-stone-600">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="w-5 h-5 rounded-full bg-stone-900 text-white font-extrabold text-[10px] flex items-center justify-center">1</span>
+                        <h4 className="font-bold text-stone-850">Abrí el enlace</h4>
+                      </div>
+                      <p className="pl-7 text-[11px] leading-relaxed text-stone-500">
+                        Ingresá a la web del Prode desde el navegador de tu celular (preferentemente <strong>Safari</strong> en iPhone o <strong>Chrome</strong> en Android).
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="w-5 h-5 rounded-full bg-stone-900 text-white font-extrabold text-[10px] flex items-center justify-center">2</span>
+                        <h4 className="font-bold text-stone-850">Tocá compartir</h4>
+                      </div>
+                      <p className="pl-7 text-[11px] leading-relaxed text-stone-500">
+                        Presioná el botón de <strong>Compartir</strong> (el ícono de la caja con flecha hacia arriba o los tres puntos y luego en compartir).
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="w-5 h-5 rounded-full bg-stone-900 text-white font-extrabold text-[10px] flex items-center justify-center">3</span>
+                        <h4 className="font-bold text-stone-850">Añadir a Inicio</h4>
+                      </div>
+                      <p className="pl-7 text-[11px] leading-relaxed text-stone-500">
+                        Buscá y presioná la opción <strong>Añadir a pantalla de inicio</strong> (en iOS tocá "Compartir", luego bajá y tocá "Añadir a pantalla de inicio"). ¡Y listo!
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
     </div>
   );
 }
