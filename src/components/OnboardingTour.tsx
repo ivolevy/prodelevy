@@ -166,6 +166,21 @@ export default function OnboardingTour() {
     };
   }, [showTour, tourStep, currentStepConfig, pathname]);
 
+  // Disable page scrolling when tour is active
+  useEffect(() => {
+    if (showTour) {
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    };
+  }, [showTour]);
+
   if (!showTour || !currentStepConfig) return null;
 
   const handleNext = () => {
