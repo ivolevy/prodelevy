@@ -105,7 +105,11 @@ function MatchesPageContent() {
       return { text: 'Cerrado', color: 'text-stone-400', isLocked: true };
     }
     
-    const matchDateTimeStr = `${match.fecha}T${match.hora_arg.includes('-') || match.hora_arg.includes('+') ? match.hora_arg : match.hora_arg + '-03:00'}`;
+    let hora = match.hora_arg || '';
+    if (/[-+][0-9]{2}$/.test(hora)) {
+      hora = hora + ':00';
+    }
+    const matchDateTimeStr = `${match.fecha}T${hora.includes('-') || hora.includes('+') ? hora : hora + '-03:00'}`;
     const matchTime = new Date(matchDateTimeStr).getTime();
     
     if (isNaN(matchTime)) {

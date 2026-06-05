@@ -154,7 +154,11 @@ export const INITIAL_GROUP_MEMBERS: GroupMember[] = [
 export function isMatchPredictable(match: Match): boolean {
   if (match.status !== 'upcoming') return false;
 
-  const matchDateTimeStr = `${match.fecha}T${match.hora_arg.includes('-') || match.hora_arg.includes('+') ? match.hora_arg : match.hora_arg + '-03:00'}`;
+  let hora = match.hora_arg || '';
+  if (/[-+][0-9]{2}$/.test(hora)) {
+    hora = hora + ':00';
+  }
+  const matchDateTimeStr = `${match.fecha}T${hora.includes('-') || hora.includes('+') ? hora : hora + '-03:00'}`;
   const matchTime = new Date(matchDateTimeStr).getTime();
 
   if (isNaN(matchTime)) {
@@ -494,6 +498,75 @@ export const useStore = create<TournamentState>((set, get) => ({
         const groups = mergedGroups;
         const currentUserId = storedActiveProfile !== null ? (profileIdMapping.get(storedActiveProfile) || storedActiveProfile) : '';
         const standings = updateStandings(matches, uniquePredictions, uniqueProfiles, teams);
+
+        // Sync any unsynced unique data to database
+        if (supabase) {
+          try {
+            // 1. Sync uniqueProfiles
+            for (const p of uniqueProfiles) {
+              if (!dbProfiles.some(dp => dp.id === p.id)) {
+                try {
+                  await supabase.from('profiles').insert({
+                    id: p.id,
+                    display_name: p.display_name,
+                    avatar_url: encodeProfileAvatar(p.username || p.display_name, p.password, p.avatar_url),
+                    is_admin: p.is_admin || false
+                  });
+                } catch (e) {
+                  console.error(`Failed to sync profile ${p.display_name} to database:`, e);
+                }
+              }
+            }
+            
+            // 2. Sync uniquePredictions
+            for (const pred of uniquePredictions) {
+              if (!dbPredictions.some(dp => dp.participant_id === pred.participant_id && dp.match_id === pred.match_id)) {
+                try {
+                  await supabase.from('predictions').upsert({
+                    participant_id: pred.participant_id,
+                    match_id: pred.match_id,
+                    home_score: pred.home_score,
+                    away_score: pred.away_score
+                  });
+                } catch (e) {
+                  console.error(`Failed to sync prediction for ${pred.participant_id} match ${pred.match_id} to database:`, e);
+                }
+              }
+            }
+
+            // 3. Sync groups
+            for (const g of groups) {
+              if (!groupsData.some(dg => dg.id === g.id)) {
+                try {
+                  await supabase.from('groups').insert({
+                    id: g.id,
+                    name: g.name,
+                    invite_code: g.invite_code,
+                    created_by: g.created_by
+                  });
+                } catch (e) {
+                  console.warn(`Failed to sync local group ${g.name} to database:`, e);
+                }
+              }
+            }
+
+            // 4. Sync uniqueGroupMembers
+            for (const gm of uniqueGroupMembers) {
+              if (!groupMembersData.some(dgm => dgm.group_id === gm.group_id && dgm.profile_id === gm.profile_id)) {
+                try {
+                  await supabase.from('group_members').insert({
+                    group_id: gm.group_id,
+                    profile_id: gm.profile_id
+                  });
+                } catch (e) {
+                  console.warn(`Failed to sync local group member to database:`, e);
+                }
+              }
+            }
+          } catch (syncErr) {
+            console.error('Failed to run database sync:', syncErr);
+          }
+        }
 
         set({
           teams,
