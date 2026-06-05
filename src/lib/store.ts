@@ -522,18 +522,20 @@ export const useStore = create<TournamentState>((set, get) => ({
             }
             
             // 2. Sync uniquePredictions
-            for (const pred of uniquePredictions) {
-              if (!dbPredictions.some(dp => dp.participant_id === pred.participant_id && dp.match_id === pred.match_id)) {
-                try {
-                  await supabase.from('predictions').upsert({
-                    participant_id: pred.participant_id,
-                    match_id: pred.match_id,
-                    home_score: pred.home_score,
-                    away_score: pred.away_score
-                  });
-                } catch (e) {
-                  console.error(`Failed to sync prediction for ${pred.participant_id} match ${pred.match_id} to database:`, e);
-                }
+            const missingPredictions = uniquePredictions.filter(
+              pred => !dbPredictions.some(dp => dp.participant_id === pred.participant_id && dp.match_id === pred.match_id)
+            );
+            if (missingPredictions.length > 0) {
+              try {
+                const records = missingPredictions.map(pred => ({
+                  participant_id: pred.participant_id,
+                  match_id: pred.match_id,
+                  home_score: pred.home_score,
+                  away_score: pred.away_score
+                }));
+                await supabase.from('predictions').upsert(records);
+              } catch (e) {
+                console.error(`Failed to bulk sync predictions to database:`, e);
               }
             }
 
@@ -884,13 +886,16 @@ export const useStore = create<TournamentState>((set, get) => ({
 
     const { isDemoMode } = get();
     if (!isDemoMode && supabase) {
-      for (const pred of seededPredictions) {
-        await supabase.from('predictions').upsert({
-          participant_id: pred.participant_id,
-          match_id: pred.match_id,
-          home_score: pred.home_score,
-          away_score: pred.away_score
-        });
+      const records = seededPredictions.map(pred => ({
+        participant_id: pred.participant_id,
+        match_id: pred.match_id,
+        home_score: pred.home_score,
+        away_score: pred.away_score
+      }));
+      try {
+        await supabase.from('predictions').upsert(records);
+      } catch (e) {
+        console.error('Failed to bulk upsert seeded predictions:', e);
       }
     }
   },
