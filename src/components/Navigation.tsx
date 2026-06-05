@@ -24,7 +24,7 @@ export default function Navigation() {
     return team ? `${team.flag_emoji} ${team.name}` : null;
   };
 
-  const navItems = activeProfile?.is_admin ? [] : [
+  const navItems = [
     { name: 'Inicio', path: '/' },
     { name: 'Fixture', path: '/matches' },
     { name: 'Reglas', path: '/rules' },
@@ -97,15 +97,6 @@ export default function Navigation() {
 
       {/* ───────────────── MOBILE LAYOUT ───────────────── */}
       <div className="flex md:hidden items-center justify-around w-full h-full text-cream-100">
-        {activeProfile?.is_admin ? (
-          <Link 
-            href="/profile" 
-            className="flex-1 flex flex-col items-center justify-center gap-0.5 py-1 text-white font-black scale-105"
-          >
-            <User className="w-5.5 h-5.5" />
-            <span className="text-[7.5px] uppercase tracking-widest font-black">Panel Admin</span>
-          </Link>
-        ) : (
           <>
             {/* Tab 1: Inicio */}
             <Link 
@@ -151,7 +142,6 @@ export default function Navigation() {
               <span className="text-[7.5px] uppercase tracking-widest font-black transition-colors duration-200">Perfil</span>
             </Link>
           </>
-        )}
 
       </div>
     </header>

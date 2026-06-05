@@ -18,6 +18,7 @@ export default function Home() {
   const [showPwaGuide, setShowPwaGuide] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState<string>('all');
   const [isStandalone, setIsStandalone] = useState(false);
+  const [isAdminView, setIsAdminView] = useState(true);
 
   // Admin form state
   const [adminTab, setAdminTab] = useState<'users' | 'groups' | 'standings'>('users');
@@ -197,7 +198,7 @@ export default function Home() {
   );
 
   // --- ADMIN VIEW PANEL ---
-  if (activeProfile?.is_admin) {
+  if (activeProfile?.is_admin && isAdminView) {
     const totalParticipants = profiles.filter(p => !p.is_admin).length;
     const totalGroups = groups.length;
     const totalMatchesPlayed = matches.filter(m => m.status === 'finished').length;
@@ -218,14 +219,23 @@ export default function Home() {
             <h2 className="text-[10px] tracking-widest font-black uppercase text-stone-450">PANEL DE ADMINISTRACIÓN</h2>
             <h1 className="text-xl font-extrabold tracking-tight text-stone-900 uppercase mt-0.5">Control Central del Prode</h1>
           </div>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-1.5 px-3 py-1.5 border border-rose-250 bg-rose-50/50 hover:bg-rose-50 text-rose-650 hover:text-rose-700 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all cursor-pointer shadow-xs shrink-0"
-            title="Cerrar sesión"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            <span>Cerrar Sesión</span>
-          </button>
+          <div className="flex gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => setIsAdminView(false)}
+              className="flex items-center gap-1.5 px-3 py-1.5 border border-gold-300 bg-gold-50/20 hover:bg-gold-50/50 text-gold-700 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all cursor-pointer shadow-xs"
+            >
+              <span>Vista Jugador</span>
+            </button>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-1.5 px-3 py-1.5 border border-rose-250 bg-rose-50/50 hover:bg-rose-50 text-rose-650 hover:text-rose-700 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all cursor-pointer shadow-xs"
+              title="Cerrar sesión"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>Cerrar Sesión</span>
+            </button>
+          </div>
         </div>
 
         {/* Stats Grid */}
@@ -637,6 +647,20 @@ export default function Home() {
 
   return (
     <div className="space-y-8 text-stone-900 max-w-5xl mx-auto pt-2 relative">
+      {activeProfile?.is_admin && (
+        <div className="bg-gold-500/10 border border-gold-500/25 rounded-2xl p-3.5 flex justify-between items-center text-xs shadow-xs max-w-5xl mx-auto">
+          <span className="text-stone-700 font-extrabold uppercase tracking-wider text-[9px] flex items-center gap-1.5">
+            ⭐ Vista de Jugador Activa (Sos Administrador)
+          </span>
+          <button
+            onClick={() => setIsAdminView(true)}
+            className="px-3.5 py-1.5 bg-stone-900 hover:bg-stone-850 text-white font-bold text-[9px] uppercase tracking-widest rounded-xl transition-all cursor-pointer shadow-xs"
+          >
+            Volver a Panel Admin
+          </button>
+        </div>
+      )}
+
       <button 
         onClick={() => {
           setTourStep(0);

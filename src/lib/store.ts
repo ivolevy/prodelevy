@@ -125,29 +125,34 @@ export const INITIAL_PROFILES: Profile[] = [
   { id: 'user-latota', display_name: 'la tota', username: 'la tota', password: 'la tota123', is_admin: false, avatar_url: 'LT', created_at: '', updated_at: '' },
   { id: 'user-ivan', display_name: 'ivan', username: 'ivan', password: 'ivan123', is_admin: false, avatar_url: 'IV', created_at: '', updated_at: '' },
   { id: 'user-barbie', display_name: 'barbie', username: 'barbie', password: 'barbie123', is_admin: false, avatar_url: 'BA', created_at: '', updated_at: '' },
+  { id: 'user-tomas', display_name: 'tomas', username: 'tomas', password: 'tomas123', is_admin: false, avatar_url: 'TO', created_at: '', updated_at: '' },
+  { id: 'user-monica', display_name: 'monica', username: 'monica', password: 'monica123', is_admin: false, avatar_url: 'MO', created_at: '', updated_at: '' },
 ];
 
 export const INITIAL_GROUPS: Group[] = [
-  { id: 'group-familia', name: 'familia', invite_code: '3103', created_at: '2026-06-02T00:00:00Z', created_by: 'user-ivanlevy' }
+  { id: 'd0000000-0000-0000-0000-000000000001', name: 'familia', invite_code: '3103', created_at: '2026-06-02T00:00:00Z', created_by: 'user-ivanlevy' }
 ];
 
 export const INITIAL_GROUP_MEMBERS: GroupMember[] = [
-  { group_id: 'group-familia', profile_id: 'user-alan', joined_at: '2026-06-02T00:00:00Z' },
-  { group_id: 'group-familia', profile_id: 'user-betu', joined_at: '2026-06-02T00:00:00Z' },
-  { group_id: 'group-familia', profile_id: 'user-simon', joined_at: '2026-06-02T00:00:00Z' },
-  { group_id: 'group-familia', profile_id: 'user-valen', joined_at: '2026-06-02T00:00:00Z' },
-  { group_id: 'group-familia', profile_id: 'user-sofi', joined_at: '2026-06-02T00:00:00Z' },
-  { group_id: 'group-familia', profile_id: 'user-lionel', joined_at: '2026-06-02T00:00:00Z' },
-  { group_id: 'group-familia', profile_id: 'user-pochi', joined_at: '2026-06-02T00:00:00Z' },
-  { group_id: 'group-familia', profile_id: 'user-santi', joined_at: '2026-06-02T00:00:00Z' },
-  { group_id: 'group-familia', profile_id: 'user-feli', joined_at: '2026-06-02T00:00:00Z' },
-  { group_id: 'group-familia', profile_id: 'user-fabio', joined_at: '2026-06-02T00:00:00Z' },
-  { group_id: 'group-familia', profile_id: 'user-denise', joined_at: '2026-06-02T00:00:00Z' },
-  { group_id: 'group-familia', profile_id: 'user-lucas', joined_at: '2026-06-02T00:00:00Z' },
-  { group_id: 'group-familia', profile_id: 'user-mati', joined_at: '2026-06-02T00:00:00Z' },
-  { group_id: 'group-familia', profile_id: 'user-latota', joined_at: '2026-06-02T00:00:00Z' },
-  { group_id: 'group-familia', profile_id: 'user-ivan', joined_at: '2026-06-02T00:00:00Z' },
-  { group_id: 'group-familia', profile_id: 'user-barbie', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'd0000000-0000-0000-0000-000000000001', profile_id: 'user-ivanlevy', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'd0000000-0000-0000-0000-000000000001', profile_id: 'user-alan', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'd0000000-0000-0000-0000-000000000001', profile_id: 'user-betu', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'd0000000-0000-0000-0000-000000000001', profile_id: 'user-simon', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'd0000000-0000-0000-0000-000000000001', profile_id: 'user-valen', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'd0000000-0000-0000-0000-000000000001', profile_id: 'user-sofi', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'd0000000-0000-0000-0000-000000000001', profile_id: 'user-lionel', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'd0000000-0000-0000-0000-000000000001', profile_id: 'user-pochi', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'd0000000-0000-0000-0000-000000000001', profile_id: 'user-santi', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'd0000000-0000-0000-0000-000000000001', profile_id: 'user-feli', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'd0000000-0000-0000-0000-000000000001', profile_id: 'user-fabio', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'd0000000-0000-0000-0000-000000000001', profile_id: 'user-denise', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'd0000000-0000-0000-0000-000000000001', profile_id: 'user-lucas', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'd0000000-0000-0000-0000-000000000001', profile_id: 'user-mati', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'd0000000-0000-0000-0000-000000000001', profile_id: 'user-latota', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'd0000000-0000-0000-0000-000000000001', profile_id: 'user-ivan', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'd0000000-0000-0000-0000-000000000001', profile_id: 'user-barbie', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'd0000000-0000-0000-0000-000000000001', profile_id: 'user-tomas', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'd0000000-0000-0000-0000-000000000001', profile_id: 'user-monica', joined_at: '2026-06-02T00:00:00Z' },
 ];
 
 // Helper to determine if a match is predictable (open to predictions)
@@ -251,17 +256,24 @@ export const useStore = create<TournamentState>((set, get) => ({
     if (configured && supabase) {
       try {
         // Fetch from Supabase
-        const { data: teamsData } = await supabase.from('teams').select('*');
-        const { data: matchesData } = await supabase.from('matches').select('*').order('id', { ascending: true });
-        const { data: profilesData } = await supabase.from('profiles').select('*');
-        const { data: predictionsData } = await supabase.from('predictions').select('*');
+        const { data: teamsData, error: teamsError } = await supabase.from('teams').select('*');
+        const { data: matchesData, error: matchesError } = await supabase.from('matches').select('*').order('id', { ascending: true });
+        const { data: profilesData, error: profilesError } = await supabase.from('profiles').select('*');
+        const { data: predictionsData, error: predictionsError } = await supabase.from('predictions').select('*');
         
+        if (teamsError || matchesError || profilesError || predictionsError) {
+          throw new Error('Failed to fetch from database: ' + (teamsError?.message || matchesError?.message || profilesError?.message || predictionsError?.message));
+        }
+
         let groupsData: any[] = [];
         let groupMembersData: any[] = [];
         try {
-          const { data: g } = await supabase.from('groups').select('*');
+          const { data: g, error: gError } = await supabase.from('groups').select('*');
+          if (gError) throw gError;
           if (g) groupsData = g;
-          const { data: gm } = await supabase.from('group_members').select('*');
+          
+          const { data: gm, error: gmError } = await supabase.from('group_members').select('*');
+          if (gmError) throw gmError;
           if (gm) groupMembersData = gm;
         } catch (e) {
           console.warn('Failed to fetch groups from Supabase, possibly tables not created yet. Falling back to local storage.', e);
@@ -295,13 +307,11 @@ export const useStore = create<TournamentState>((set, get) => ({
           }
         }
 
-        // Cleanup check: If ivanlevy is not in the profiles, we want to clear everything
+        // Cleanup check: If ivanlevy is not in the profiles, make sure it gets created. Do not wipe other profiles!
         const hasNewAdmin = dbProfiles.some(p => p.id === 'user-ivanlevy') || localProfiles.some((p: any) => p.id === 'user-ivanlevy');
         if (!hasNewAdmin) {
           try {
             if (supabase) {
-              await supabase.from('profiles').delete().neq('id', 'user-ivanlevy');
-              await supabase.from('predictions').delete().neq('id', '00000000-0000-0000-0000-000000000000');
               await supabase.from('profiles').insert({
                 id: 'user-ivanlevy',
                 display_name: 'ivanlevy',
@@ -310,15 +320,18 @@ export const useStore = create<TournamentState>((set, get) => ({
               });
             }
           } catch (e) {
-            console.error('Failed db cleanup', e);
+            console.error('Failed to auto-insert admin:', e);
           }
-          dbProfiles = INITIAL_PROFILES;
-          localProfiles = INITIAL_PROFILES;
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('prode_profiles', JSON.stringify(INITIAL_PROFILES));
-            localStorage.removeItem('prode_predictions');
-            localStorage.setItem('prode_active_profile', '');
-          }
+          dbProfiles.push({
+            id: 'user-ivanlevy',
+            display_name: 'ivanlevy',
+            username: 'ivanlevy',
+            password: 'cata1804',
+            is_admin: true,
+            avatar_url: 'IL',
+            created_at: '',
+            updated_at: ''
+          });
         }
 
         const mergedProfiles = [...dbProfiles].filter(p => p.username !== 'test123' && p.id !== 'user-test123');
