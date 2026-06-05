@@ -331,6 +331,9 @@ export const useStore = create<TournamentState>((set, get) => ({
               // Merge credentials from local storage into DB-fetched profile if they exist in local but not DB
               if (!existing.username && lp.username) existing.username = lp.username;
               if (!existing.password && lp.password) existing.password = lp.password;
+              if (!existing.champion_prediction && lp.champion_prediction) {
+                existing.champion_prediction = lp.champion_prediction;
+              }
             }
           }
         });
