@@ -1,7 +1,7 @@
 'use client';
 
 import { useStore, isMatchPredictable } from '@/lib/store';
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Calendar, MapPin, Check, ChevronDown, ChevronUp, Lock, Unlock, Users, Trophy, ArrowRight } from 'lucide-react';
@@ -10,7 +10,7 @@ import { Match } from '@/lib/types';
 import BracketView from '@/components/BracketView';
 
 function MatchesPageContent() {
-  const { matches, teams, currentProfileId, predictions, savePrediction, profiles, standings } = useStore();
+  const { matches, teams, currentProfileId, predictions, savePrediction, profiles, standings, groups: userGroups, groupMembers } = useStore();
   const searchParams = useSearchParams();
   const tabParam = searchParams.get('tab');
   const [activeFilter, setActiveFilter] = useState<'ALL' | 'upcoming' | 'live' | 'finished'>('ALL');
@@ -24,6 +24,17 @@ function MatchesPageContent() {
   // Forms states for prediction inputs
   const [predHome, setPredHome] = useState<string>('');
   const [predAway, setPredAway] = useState<string>('');
+  const [selectedGroupId, setSelectedGroupId] = useState<string>('all');
+
+  useEffect(() => {
+    if (currentProfileId && userGroups.length > 0) {
+      const myGms = groupMembers.filter(gm => gm.profile_id === currentProfileId);
+      const myGs = userGroups.filter(g => myGms.some(gm => gm.group_id === g.id));
+      if (myGs.length > 0) {
+        setSelectedGroupId(myGs[0].id);
+      }
+    }
+  }, [currentProfileId, userGroups, groupMembers]);
 
   const activeProfile = profiles.find(p => p.id === currentProfileId);
 
@@ -686,26 +697,49 @@ function MatchesPageContent() {
       )}
 
       {/* Prode Rankings Tab */}
-      {activeSubTab === 'prode' && (
-        <div className="space-y-3 max-w-xl mx-auto animate-in fade-in duration-200">
-          <div className="border-b border-cream-200 pb-1.5 flex justify-between items-center">
-            <h3 className="text-[10px] text-stone-450 uppercase tracking-widest font-black">Mesa del Prode</h3>
-            <span className="text-[8px] font-bold text-stone-400 uppercase tracking-wider">Posiciones</span>
-          </div>
-          <div className="space-y-3">
-            <AnimatePresence initial={false}>
-              {standings.map((standing, index) => {
-                const isCurrentUser = standing.profile_id === currentProfileId;
-                const initials = standing.display_name ? standing.display_name.substring(0, 2).toUpperCase() : 'US';
-                const profileObj = profiles.find(p => p.id === standing.profile_id);
-                const championTeam = teams.find(t => t.id === profileObj?.champion_prediction);
+      {activeSubTab === 'prode' && (() => {
+        const filteredStandings = standings.filter(s => 
+          selectedGroupId === 'all'
+            ? true 
+            : groupMembers.some(gm => gm.group_id === selectedGroupId && gm.profile_id === s.profile_id)
+        );
+        return (
+          <div className="space-y-3 max-w-xl mx-auto animate-in fade-in duration-200">
+            <div className="border-b border-cream-200 pb-1.5 flex justify-between items-center gap-2">
+              <div className="flex items-center gap-2">
+                <h3 className="text-[10px] text-stone-450 uppercase tracking-widest font-black">Mesa del Prode</h3>
+                {userGroups.length > 0 && (
+                  <div className="relative shrink-0">
+                    <select
+                      value={selectedGroupId}
+                      onChange={(e) => setSelectedGroupId(e.target.value)}
+                      className="appearance-none bg-cream-50/50 border border-cream-300 rounded-lg pl-2.5 pr-7 py-0.5 text-[8.5px] font-black uppercase text-stone-750 focus:outline-none focus:border-gold-555 cursor-pointer shadow-3xs"
+                    >
+                      <option value="all">Global</option>
+                      {userGroups.map(g => (
+                        <option key={g.id} value={g.id}>{g.name}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-2.5 h-2.5 text-stone-400 pointer-events-none" />
+                  </div>
+                )}
+              </div>
+              <span className="text-[8px] font-bold text-stone-400 uppercase tracking-wider">Posiciones</span>
+            </div>
+            <div className="space-y-3">
+              <AnimatePresence initial={false}>
+                {filteredStandings.map((standing, index) => {
+                  const isCurrentUser = standing.profile_id === currentProfileId;
+                  const initials = standing.display_name ? standing.display_name.substring(0, 2).toUpperCase() : 'US';
+                  const profileObj = profiles.find(p => p.id === standing.profile_id);
+                  const championTeam = teams.find(t => t.id === profileObj?.champion_prediction);
 
-                let badge = `${index + 1}`;
-                let badgeColor = 'text-stone-400 font-semibold';
-                if (index === 0) {
-                  badge = '1';
-                  badgeColor = 'text-gold-650 font-black';
-                }
+                  let badge = `${index + 1}`;
+                  let badgeColor = 'text-stone-400 font-semibold';
+                  if (index === 0) {
+                    badge = '1';
+                    badgeColor = 'text-gold-650 font-black';
+                  }
 
                 return (
                   <motion.div
@@ -769,7 +803,8 @@ function MatchesPageContent() {
             </AnimatePresence>
           </div>
         </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
