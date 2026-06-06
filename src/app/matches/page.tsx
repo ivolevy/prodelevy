@@ -708,21 +708,6 @@ function MatchesPageContent() {
             <div className="border-b border-cream-200 pb-1.5 flex justify-between items-center gap-2">
               <div className="flex items-center gap-2">
                 <h3 className="text-[10px] text-stone-450 uppercase tracking-widest font-black">Mesa del Prode</h3>
-                {userGroups.length > 0 && (
-                  <div className="relative shrink-0">
-                    <select
-                      value={selectedGroupId}
-                      onChange={(e) => setSelectedGroupId(e.target.value)}
-                      className="appearance-none bg-cream-50/50 border border-cream-300 rounded-lg pl-2.5 pr-7 py-0.5 text-[8.5px] font-black uppercase text-stone-750 focus:outline-none focus:border-gold-555 cursor-pointer shadow-3xs"
-                    >
-                      <option value="all">Global</option>
-                      {userGroups.map(g => (
-                        <option key={g.id} value={g.id}>{g.name}</option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-2.5 h-2.5 text-stone-400 pointer-events-none" />
-                  </div>
-                )}
               </div>
               <span className="text-[8px] font-bold text-stone-400 uppercase tracking-wider">Posiciones</span>
             </div>

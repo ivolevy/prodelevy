@@ -24,10 +24,14 @@ export default function Navigation() {
     return team ? `${team.flag_emoji} ${team.name}` : null;
   };
 
+  const isAdmin = activeProfile?.is_admin;
+
   const navItems = [
     { name: 'Inicio', path: '/' },
-    { name: 'Fixture', path: '/matches' },
-    { name: 'Reglas', path: '/rules' },
+    ...(!isAdmin ? [
+      { name: 'Fixture', path: '/matches' },
+      { name: 'Reglas', path: '/rules' },
+    ] : []),
   ];
 
   // Helper to get initials
@@ -110,26 +114,30 @@ export default function Navigation() {
             </Link>
 
             {/* Tab 2: Fixture */}
-            <Link 
-              href="/matches" 
-              className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-1 transition-all duration-200 ease-out transform-gpu active:scale-95 min-h-[48px] ${
-                pathname === '/matches' ? 'text-white scale-105 font-black' : 'text-cream-200/55 hover:text-white'
-              }`}
-            >
-              <Calendar className="w-5.5 h-5.5 transition-transform duration-200 ease-out" />
-              <span className="text-[7.5px] uppercase tracking-widest font-black transition-colors duration-200">Fixture</span>
-            </Link>
+            {!isAdmin && (
+              <Link 
+                href="/matches" 
+                className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-1 transition-all duration-200 ease-out transform-gpu active:scale-95 min-h-[48px] ${
+                  pathname === '/matches' ? 'text-white scale-105 font-black' : 'text-cream-200/55 hover:text-white'
+                }`}
+              >
+                <Calendar className="w-5.5 h-5.5 transition-transform duration-200 ease-out" />
+                <span className="text-[7.5px] uppercase tracking-widest font-black transition-colors duration-200">Fixture</span>
+              </Link>
+            )}
 
             {/* Tab 3: Reglas */}
-            <Link 
-              href="/rules" 
-              className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-1 transition-all duration-200 ease-out transform-gpu active:scale-95 min-h-[48px] ${
-                pathname === '/rules' ? 'text-white scale-105 font-black' : 'text-cream-200/55 hover:text-white'
-              }`}
-            >
-              <FileText className="w-5.5 h-5.5 transition-transform duration-200 ease-out" />
-              <span className="text-[7.5px] uppercase tracking-widest font-black transition-colors duration-200">Reglas</span>
-            </Link>
+            {!isAdmin && (
+              <Link 
+                href="/rules" 
+                className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-1 transition-all duration-200 ease-out transform-gpu active:scale-95 min-h-[48px] ${
+                  pathname === '/rules' ? 'text-white scale-105 font-black' : 'text-cream-200/55 hover:text-white'
+                }`}
+              >
+                <FileText className="w-5.5 h-5.5 transition-transform duration-200 ease-out" />
+                <span className="text-[7.5px] uppercase tracking-widest font-black transition-colors duration-200">Reglas</span>
+              </Link>
+            )}
 
             {/* Tab 4: Perfil Link */}
             <Link 
