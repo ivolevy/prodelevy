@@ -201,10 +201,15 @@ export default function Home() {
   const myGroups = groups.filter(g => myGroupMemberships.some(gm => gm.group_id === g.id));
   const myGroupIds = myGroups.map(g => g.id);
 
+  // Default to user's first group if selectedGroupId is 'all' but they belong to some groups
+  const activeGroupIdForUser = selectedGroupId !== 'all' 
+    ? selectedGroupId 
+    : (myGroups.length > 0 ? myGroups[0].id : 'all');
+
   const filteredStandings = standings.filter(s => 
-    selectedGroupId === 'all'
+    activeGroupIdForUser === 'all'
       ? true 
-      : groupMembers.some(gm => gm.group_id === selectedGroupId && gm.profile_id === s.profile_id)
+      : groupMembers.some(gm => gm.group_id === activeGroupIdForUser && gm.profile_id === s.profile_id)
   );
 
   // --- ADMIN VIEW PANEL ---

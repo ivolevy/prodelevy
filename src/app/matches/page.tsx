@@ -698,10 +698,16 @@ function MatchesPageContent() {
 
       {/* Prode Rankings Tab */}
       {activeSubTab === 'prode' && (() => {
+        const myGroupMemberships = groupMembers.filter(gm => gm.profile_id === currentProfileId);
+        const myGroups = userGroups.filter(g => myGroupMemberships.some(gm => gm.group_id === g.id));
+        const activeGroupIdForUser = selectedGroupId !== 'all' 
+          ? selectedGroupId 
+          : (myGroups.length > 0 ? myGroups[0].id : 'all');
+
         const filteredStandings = standings.filter(s => 
-          selectedGroupId === 'all'
+          activeGroupIdForUser === 'all'
             ? true 
-            : groupMembers.some(gm => gm.group_id === selectedGroupId && gm.profile_id === s.profile_id)
+            : groupMembers.some(gm => gm.group_id === activeGroupIdForUser && gm.profile_id === s.profile_id)
         );
         return (
           <div className="space-y-3 max-w-xl mx-auto animate-in fade-in duration-200">

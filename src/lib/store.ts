@@ -132,6 +132,7 @@ export const INITIAL_PROFILES: Profile[] = [
   { id: 'user-alfie', display_name: 'alfie', username: 'alfie', password: 'alfie123', is_admin: false, avatar_url: 'AF', created_at: '', updated_at: '' },
   { id: 'user-dami', display_name: 'dami', username: 'dami', password: 'dami123', is_admin: false, avatar_url: 'DM', created_at: '', updated_at: '' },
   { id: 'user-ilo', display_name: 'ilo', username: 'ilo', password: 'ilo123', is_admin: false, avatar_url: 'IL', created_at: '', updated_at: '' },
+  { id: 'user-ivo', display_name: 'ivo', username: 'ivo', password: 'ivo123', is_admin: false, avatar_url: 'IO', created_at: '', updated_at: '' },
 ];
 
 export const INITIAL_GROUPS: Group[] = [
@@ -165,7 +166,7 @@ export const INITIAL_GROUP_MEMBERS: GroupMember[] = [
   { group_id: 'd0000000-0000-0000-0000-000000000002', profile_id: 'user-alfie', joined_at: '2026-06-02T00:00:00Z' },
   { group_id: 'd0000000-0000-0000-0000-000000000002', profile_id: 'user-dami', joined_at: '2026-06-02T00:00:00Z' },
   { group_id: 'd0000000-0000-0000-0000-000000000002', profile_id: 'user-ilo', joined_at: '2026-06-02T00:00:00Z' },
-  { group_id: 'd0000000-0000-0000-0000-000000000002', profile_id: 'user-ivan', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'd0000000-0000-0000-0000-000000000002', profile_id: 'user-ivo', joined_at: '2026-06-02T00:00:00Z' },
 ];
 
 // Helper to determine if a match is predictable (open to predictions)
