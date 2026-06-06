@@ -127,10 +127,17 @@ export const INITIAL_PROFILES: Profile[] = [
   { id: 'user-barbie', display_name: 'barbie', username: 'barbie', password: 'barbie123', is_admin: false, avatar_url: 'BA', created_at: '', updated_at: '' },
   { id: 'user-tomas', display_name: 'tomas', username: 'tomas', password: 'tomas123', is_admin: false, avatar_url: 'TO', created_at: '', updated_at: '' },
   { id: 'user-monica', display_name: 'monica', username: 'monica', password: 'monica123', is_admin: false, avatar_url: 'MO', created_at: '', updated_at: '' },
+  { id: 'user-gafas', display_name: 'gafas', username: 'gafas', password: 'gafas123', is_admin: false, avatar_url: 'GF', created_at: '', updated_at: '' },
+  { id: 'user-walo', display_name: 'walo', username: 'walo', password: 'walo123', is_admin: false, avatar_url: 'WL', created_at: '', updated_at: '' },
+  { id: 'user-alfie', display_name: 'alfie', username: 'alfie', password: 'alfie123', is_admin: false, avatar_url: 'AF', created_at: '', updated_at: '' },
+  { id: 'user-dami', display_name: 'dami', username: 'dami', password: 'dami123', is_admin: false, avatar_url: 'DM', created_at: '', updated_at: '' },
+  { id: 'user-ilo', display_name: 'ilo', username: 'ilo', password: 'ilo123', is_admin: false, avatar_url: 'IL', created_at: '', updated_at: '' },
+  { id: 'user-ivo', display_name: 'ivo', username: 'ivo', password: 'ivo123', is_admin: false, avatar_url: 'IO', created_at: '', updated_at: '' },
 ];
 
 export const INITIAL_GROUPS: Group[] = [
-  { id: 'd0000000-0000-0000-0000-000000000001', name: 'familia', invite_code: '3103', created_at: '2026-06-02T00:00:00Z', created_by: 'user-ivanlevy' }
+  { id: 'd0000000-0000-0000-0000-000000000001', name: 'familia', invite_code: '3103', created_at: '2026-06-02T00:00:00Z', created_by: 'user-ivanlevy' },
+  { id: 'd0000000-0000-0000-0000-000000000002', name: 'mr martes', invite_code: 'MARTES', created_at: '2026-06-02T00:00:00Z', created_by: 'user-ivanlevy' }
 ];
 
 export const INITIAL_GROUP_MEMBERS: GroupMember[] = [
@@ -153,6 +160,13 @@ export const INITIAL_GROUP_MEMBERS: GroupMember[] = [
   { group_id: 'd0000000-0000-0000-0000-000000000001', profile_id: 'user-barbie', joined_at: '2026-06-02T00:00:00Z' },
   { group_id: 'd0000000-0000-0000-0000-000000000001', profile_id: 'user-tomas', joined_at: '2026-06-02T00:00:00Z' },
   { group_id: 'd0000000-0000-0000-0000-000000000001', profile_id: 'user-monica', joined_at: '2026-06-02T00:00:00Z' },
+  
+  { group_id: 'd0000000-0000-0000-0000-000000000002', profile_id: 'user-gafas', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'd0000000-0000-0000-0000-000000000002', profile_id: 'user-walo', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'd0000000-0000-0000-0000-000000000002', profile_id: 'user-alfie', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'd0000000-0000-0000-0000-000000000002', profile_id: 'user-dami', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'd0000000-0000-0000-0000-000000000002', profile_id: 'user-ilo', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'd0000000-0000-0000-0000-000000000002', profile_id: 'user-ivo', joined_at: '2026-06-02T00:00:00Z' },
 ];
 
 // Helper to determine if a match is predictable (open to predictions)
