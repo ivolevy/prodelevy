@@ -133,6 +133,8 @@ export const INITIAL_PROFILES: Profile[] = [
   { id: 'user-dami', display_name: 'dami', username: 'dami', password: 'dami123', is_admin: false, avatar_url: 'DM', created_at: '', updated_at: '' },
   { id: 'user-ilo', display_name: 'ilo', username: 'ilo', password: 'ilo123', is_admin: false, avatar_url: 'IL', created_at: '', updated_at: '' },
   { id: 'user-ivo', display_name: 'ivo', username: 'ivo', password: 'ivo123', is_admin: false, avatar_url: 'IO', created_at: '', updated_at: '' },
+  { id: 'user-alberto', display_name: 'alberto', username: 'alberto', password: 'alberto123', is_admin: false, avatar_url: 'AB', created_at: '', updated_at: '' },
+  { id: 'user-golce', display_name: 'golce', username: 'golce', password: 'golce123', is_admin: false, avatar_url: 'GO', created_at: '', updated_at: '' },
 ];
 
 export const INITIAL_GROUPS: Group[] = [
@@ -160,6 +162,7 @@ export const INITIAL_GROUP_MEMBERS: GroupMember[] = [
   { group_id: 'd0000000-0000-0000-0000-000000000001', profile_id: 'user-barbie', joined_at: '2026-06-02T00:00:00Z' },
   { group_id: 'd0000000-0000-0000-0000-000000000001', profile_id: 'user-tomas', joined_at: '2026-06-02T00:00:00Z' },
   { group_id: 'd0000000-0000-0000-0000-000000000001', profile_id: 'user-monica', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'd0000000-0000-0000-0000-000000000001', profile_id: 'user-alberto', joined_at: '2026-06-02T00:00:00Z' },
   
   { group_id: 'd0000000-0000-0000-0000-000000000002', profile_id: 'user-gafas', joined_at: '2026-06-02T00:00:00Z' },
   { group_id: 'd0000000-0000-0000-0000-000000000002', profile_id: 'user-walo', joined_at: '2026-06-02T00:00:00Z' },
@@ -167,6 +170,7 @@ export const INITIAL_GROUP_MEMBERS: GroupMember[] = [
   { group_id: 'd0000000-0000-0000-0000-000000000002', profile_id: 'user-dami', joined_at: '2026-06-02T00:00:00Z' },
   { group_id: 'd0000000-0000-0000-0000-000000000002', profile_id: 'user-ilo', joined_at: '2026-06-02T00:00:00Z' },
   { group_id: 'd0000000-0000-0000-0000-000000000002', profile_id: 'user-ivo', joined_at: '2026-06-02T00:00:00Z' },
+  { group_id: 'd0000000-0000-0000-0000-000000000002', profile_id: 'user-golce', joined_at: '2026-06-02T00:00:00Z' },
 ];
 
 // Helper to determine if a match is predictable (open to predictions)
