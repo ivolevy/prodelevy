@@ -76,7 +76,8 @@ export default function Home() {
     showTour,
     tourStep,
     setShowTour,
-    setTourStep
+    setTourStep,
+    initStore
   } = useStore();
 
   useEffect(() => {
@@ -255,28 +256,45 @@ export default function Home() {
           <div className="flex gap-2 shrink-0">
             <button
               type="button"
-              onClick={() => {
-                const backupData = {
-                  backup_version: "1.0",
-                  timestamp: new Date().toISOString(),
-                  profiles,
-                  predictions,
-                  matches,
-                  groups,
-                  groupMembers,
-                  standings
-                };
-                const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `prode_backup_${new Date().toISOString().split('T')[0]}.json`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
+              onClick={async (e) => {
+                const target = e.currentTarget;
+                const originalText = target.innerHTML;
+                target.innerHTML = "Actualizando...";
+                target.disabled = true;
+                
+                try {
+                  // Fetch absolute latest data from Supabase
+                  await initStore();
+                  
+                  const state = useStore.getState();
+                  const backupData = {
+                    backup_version: "1.0",
+                    timestamp: new Date().toISOString(),
+                    profiles: state.profiles,
+                    predictions: state.predictions,
+                    matches: state.matches,
+                    groups: state.groups,
+                    groupMembers: state.groupMembers,
+                    standings: state.standings
+                  };
+                  
+                  const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `prode_backup_${new Date().toISOString().split('T')[0]}.json`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                } catch (err) {
+                  console.error("Error generating backup:", err);
+                } finally {
+                  target.innerHTML = originalText;
+                  target.disabled = false;
+                }
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 border border-stone-300 bg-stone-50 hover:bg-stone-100 text-stone-700 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all cursor-pointer shadow-xs"
+              className="flex items-center gap-1.5 px-3 py-1.5 border border-stone-300 bg-stone-50 hover:bg-stone-100 text-stone-750 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all cursor-pointer shadow-xs disabled:opacity-50"
               title="Descargar todos los pronósticos y datos del Prode"
             >
               <span>Descargar Respaldo</span>
@@ -299,40 +317,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="glass-card p-4 border border-cream-300 bg-white shadow-xs">
-            <div className="flex justify-between items-start">
-              <span className="block text-2xl font-black text-stone-900 leading-none">{totalParticipants}</span>
-              <Users className="w-4 h-4 text-stone-400" />
-            </div>
-            <span className="block text-[8px] text-stone-450 uppercase tracking-widest font-black mt-2">Participantes Activos</span>
-          </div>
 
-          <div className="glass-card p-4 border border-cream-300 bg-white shadow-xs">
-            <div className="flex justify-between items-start">
-              <span className="block text-2xl font-black text-stone-900 mt-0.5">{totalGroups}</span>
-              <Users className="w-4 h-4 text-stone-400" />
-            </div>
-            <span className="block text-[8px] text-stone-450 uppercase tracking-widest font-black mt-2">Grupos Creados</span>
-          </div>
-
-          <div className="glass-card p-4 border border-cream-300 bg-white shadow-xs">
-            <div className="flex justify-between items-start">
-              <span className="block text-2xl font-black text-stone-900 mt-0.5">{totalPredictionsCount}</span>
-              <Trophy className="w-4 h-4 text-stone-400" />
-            </div>
-            <span className="block text-[8px] text-stone-450 uppercase tracking-widest font-black mt-2">Pronósticos Totales</span>
-          </div>
-
-          <div className="glass-card p-4 border border-cream-300 bg-white shadow-xs">
-            <div className="flex justify-between items-start">
-              <span className="block text-2xl font-black text-stone-900 mt-0.5">{totalMatchesPlayed} / {totalMatchesCount}</span>
-              <Calendar className="w-4 h-4 text-stone-400" />
-            </div>
-            <span className="block text-[8px] text-stone-450 uppercase tracking-widest font-black mt-2">Partidos Jugados</span>
-          </div>
-        </div>
 
         {/* Dashboard Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
