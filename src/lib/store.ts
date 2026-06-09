@@ -367,7 +367,13 @@ export const useStore = create<TournamentState>((set, get) => ({
               // Merge credentials from local storage into DB-fetched profile if they exist in local but not DB
               if (!existing.username && lp.username) existing.username = lp.username;
               if (!existing.password && lp.password) existing.password = lp.password;
-              if (!existing.champion_prediction && lp.champion_prediction) {
+              
+              // If local profile has a champion prediction but DB profile doesn't, flag it to sync back to Supabase
+              const decodedDbProfile = dbProfiles.find(dp => dp.id === lp.id);
+              if (lp.champion_prediction && (!decodedDbProfile || !decodedDbProfile.champion_prediction)) {
+                existing.champion_prediction = lp.champion_prediction;
+                (existing as any)._needs_sync = true;
+              } else if (!existing.champion_prediction && lp.champion_prediction) {
                 existing.champion_prediction = lp.champion_prediction;
               }
             }
@@ -543,7 +549,8 @@ export const useStore = create<TournamentState>((set, get) => ({
           try {
             // 1. Sync uniqueProfiles
             for (const p of uniqueProfiles) {
-              if (!dbProfiles.some(dp => dp.id === p.id)) {
+              const inDb = dbProfiles.some(dp => dp.id === p.id);
+              if (!inDb) {
                 try {
                   await supabase.from('profiles').insert({
                     id: p.id,
@@ -553,6 +560,15 @@ export const useStore = create<TournamentState>((set, get) => ({
                   });
                 } catch (e) {
                   console.error(`Failed to sync profile ${p.display_name} to database:`, e);
+                }
+              } else if ((p as any)._needs_sync) {
+                try {
+                  await supabase.from('profiles').update({
+                    avatar_url: encodeProfileAvatar(p.username || p.display_name, p.password, p.avatar_url, p.champion_prediction)
+                  }).eq('id', p.id);
+                  delete (p as any)._needs_sync;
+                } catch (e) {
+                  console.error(`Failed to sync/update profile ${p.display_name} champion prediction to database:`, e);
                 }
               }
             }
