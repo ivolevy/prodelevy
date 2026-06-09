@@ -520,6 +520,7 @@ export default function Home() {
                     <th className="py-3 px-4">Credenciales</th>
                     <th className="py-3 px-4 text-center">Pronósticos</th>
                     <th className="py-3 px-4 text-center">Puntos</th>
+                    <th className="py-3 px-4 text-center">Campeón</th>
                     <th className="py-3 px-4 text-right">Acciones</th>
                   </tr>
                 </thead>
@@ -606,6 +607,20 @@ export default function Home() {
                               {pts} pts
                             </span>
                           </td>
+                          {/* Champion Prediction */}
+                          <td className="py-3.5 px-4 text-center">
+                            {(() => {
+                              const team = teams.find(t => t.id === p.champion_prediction);
+                              return team ? (
+                                <span className="text-[10px] font-bold text-stone-750 bg-cream-50/50 border border-cream-200 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
+                                  <span>{team.flag_emoji}</span>
+                                  <span>{team.name}</span>
+                                </span>
+                              ) : (
+                                <span className="text-[10px] text-stone-400 italic">Ninguno</span>
+                              );
+                            })()}
+                          </td>
                           {/* Action Buttons */}
                           <td className="py-3.5 px-4 text-right">
                             <div className="flex items-center justify-end gap-1.5">
@@ -642,7 +657,7 @@ export default function Home() {
                         {/* Expanded predictions row */}
                         {isExpanded && (
                           <tr className="bg-stone-50/50">
-                            <td colSpan={6} className="p-4 border-t border-cream-200/60">
+                            <td colSpan={7} className="p-4 border-t border-cream-200/60">
                               <div className="space-y-3 text-left">
                                 <div className="flex items-center justify-between gap-2 flex-wrap">
                                   <h5 className="text-[10px] font-black text-stone-500 uppercase tracking-widest flex items-center gap-1">
