@@ -195,20 +195,22 @@ export function isMatchPredictable(match: Match): boolean {
   return diffHours >= 24;
 }
 
-function encodeProfileAvatar(username: string, password?: string, avatarUrl?: string): string {
+function encodeProfileAvatar(username: string, password?: string, avatarUrl?: string, championPrediction?: string): string {
   const u = username || '';
   const p = password || '';
   const av = avatarUrl || '';
-  return `__CREDENTIALS__:${u}:${p}:${av}`;
+  const cp = championPrediction || '';
+  return `__CREDENTIALS__:${u}:${p}:${av}:${cp}`;
 }
 
-function decodeProfileAvatar(avatarUrl: string | null | undefined): { username?: string; password?: string; avatar_url?: string } {
+function decodeProfileAvatar(avatarUrl: string | null | undefined): { username?: string; password?: string; avatar_url?: string; champion_prediction?: string } {
   if (avatarUrl && avatarUrl.startsWith('__CREDENTIALS__:')) {
     const parts = avatarUrl.split(':');
     const username = parts[1];
     const password = parts[2];
-    const originalAvatar = parts.slice(3).join(':');
-    return { username, password, avatar_url: originalAvatar };
+    const originalAvatar = parts[3];
+    const championPrediction = parts[4] || undefined;
+    return { username, password, avatar_url: originalAvatar, champion_prediction: championPrediction };
   }
   return { avatar_url: avatarUrl || undefined };
 }
@@ -309,7 +311,8 @@ export const useStore = create<TournamentState>((set, get) => ({
             ...p,
             username: decoded.username || p.username || p.display_name,
             password: decoded.password || p.password,
-            avatar_url: decoded.avatar_url
+            avatar_url: decoded.avatar_url,
+            champion_prediction: decoded.champion_prediction || p.champion_prediction
           };
         });
 
@@ -318,7 +321,7 @@ export const useStore = create<TournamentState>((set, get) => ({
         if (dbAdmin && dbAdmin.password !== 'cata1804') {
           if (supabase) {
             try {
-              await supabase.from('profiles').update({ avatar_url: encodeProfileAvatar('ivanlevy', 'cata1804', 'IL') }).eq('id', 'user-ivanlevy');
+              await supabase.from('profiles').update({ avatar_url: encodeProfileAvatar('ivanlevy', 'cata1804', 'IL', dbAdmin.champion_prediction) }).eq('id', 'user-ivanlevy');
               dbAdmin.password = 'cata1804';
               dbAdmin.avatar_url = 'IL';
             } catch (e) {
@@ -385,7 +388,7 @@ export const useStore = create<TournamentState>((set, get) => ({
               await supabase.from('profiles').insert({
                 id: ip.id,
                 display_name: ip.display_name,
-                avatar_url: encodeProfileAvatar(ip.username || ip.display_name, ip.password, ip.avatar_url),
+                avatar_url: encodeProfileAvatar(ip.username || ip.display_name, ip.password, ip.avatar_url, ip.champion_prediction),
                 is_admin: ip.is_admin
               });
             } catch (e) {
@@ -545,7 +548,7 @@ export const useStore = create<TournamentState>((set, get) => ({
                   await supabase.from('profiles').insert({
                     id: p.id,
                     display_name: p.display_name,
-                    avatar_url: encodeProfileAvatar(p.username || p.display_name, p.password, p.avatar_url),
+                    avatar_url: encodeProfileAvatar(p.username || p.display_name, p.password, p.avatar_url, p.champion_prediction),
                     is_admin: p.is_admin || false
                   });
                 } catch (e) {
@@ -994,7 +997,7 @@ export const useStore = create<TournamentState>((set, get) => ({
         await supabase.from('profiles').insert({
           id: newId,
           display_name: newProfile.display_name,
-          avatar_url: encodeProfileAvatar(u, p, newProfile.avatar_url),
+          avatar_url: encodeProfileAvatar(u, p, newProfile.avatar_url, newProfile.champion_prediction),
           is_admin: false
         });
         if (groupId) {
@@ -1102,7 +1105,8 @@ export const useStore = create<TournamentState>((set, get) => ({
         const encodedAvatar = encodeProfileAvatar(
           targetProfile?.username || u,
           targetProfile?.password || p || '1234',
-          targetProfile?.avatar_url || displayName.substring(0, 2).toUpperCase()
+          targetProfile?.avatar_url || displayName.substring(0, 2).toUpperCase(),
+          targetProfile?.champion_prediction
         );
 
         const updateData: any = {
@@ -1153,6 +1157,20 @@ export const useStore = create<TournamentState>((set, get) => ({
         
         if (error) {
           console.warn('Supabase update returned an error (likely due to missing champion_prediction column in profiles table). Falling back to localStorage.', error);
+        }
+
+        // Also update the encoded credentials inside avatar_url to persist champion_prediction in Supabase!
+        const profileToUpdate = updatedProfiles.find(p => p.id === profileId);
+        if (profileToUpdate) {
+          const encodedAvatar = encodeProfileAvatar(
+            profileToUpdate.username || profileToUpdate.display_name.toLowerCase(),
+            profileToUpdate.password,
+            profileToUpdate.avatar_url,
+            teamId
+          );
+          await supabase.from('profiles').update({
+            avatar_url: encodedAvatar
+          }).eq('id', profileId);
         }
       } catch (e) {
         console.error('Failed to sync champion prediction to Supabase:', e);
