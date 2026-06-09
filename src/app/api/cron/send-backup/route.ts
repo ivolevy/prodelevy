@@ -29,15 +29,58 @@ export async function GET(request: Request) {
     const { data: groupMembers } = await supabase.from('group_members').select('*');
     const { data: teams } = await supabase.from('teams').select('*');
 
+    // Generate structured user predictions summary
+    const userPredictionsSummary = (profiles || [])
+      .filter(p => !p.is_admin)
+      .map(p => {
+        const champ = (teams || []).find(t => t.id === p.champion_prediction);
+        const champText = champ ? `${champ.name} ${champ.flag_emoji}` : 'No cargó';
+
+        const userPreds = (predictions || [])
+          .filter(pr => pr.participant_id === p.id)
+          .map(pr => {
+            const match = (matches || []).find(m => m.id === pr.match_id);
+            if (!match) return null;
+            const homeTeam = (teams || []).find(t => t.id === match.home_team_id);
+            const awayTeam = (teams || []).find(t => t.id === match.away_team_id);
+            
+            const homeLabel = homeTeam ? `${homeTeam.name} ${homeTeam.flag_emoji}` : match.home_team_id || 'TBD';
+            const awayLabel = awayTeam ? `${awayTeam.name} ${awayTeam.flag_emoji}` : match.away_team_id || 'TBD';
+            
+            let realResult = 'Pendiente';
+            if (match.status === 'finished' || match.home_score !== null) {
+              const statusLabel = match.status === 'finished' ? 'Terminado' : 'En vivo';
+              realResult = `${match.home_score} - ${match.away_score} (${statusLabel})`;
+            }
+
+            return {
+              partido_id: match.id,
+              fase: match.phase,
+              partido: `${homeLabel} vs ${awayLabel}`,
+              pronostico: `${pr.home_score} - ${pr.away_score}`,
+              resultado_real: realResult
+            };
+          })
+          .filter(Boolean);
+
+        return {
+          usuario: p.display_name,
+          username: p.username || p.display_name.toLowerCase(),
+          campeon_predicho: champText,
+          pronosticos: userPreds
+        };
+      });
+
     const backupData = {
-      backup_version: "1.0",
+      backup_version: "1.1",
       timestamp: new Date().toISOString(),
       profiles: profiles || [],
       predictions: predictions || [],
       matches: matches || [],
       groups: groups || [],
       groupMembers: groupMembers || [],
-      teams: teams || []
+      teams: teams || [],
+      user_predictions_summary: userPredictionsSummary
     };
 
     // Construct a compact HTML summary
@@ -102,8 +145,12 @@ export async function GET(request: Request) {
           </tbody>
         </table>
 
+        <p style="margin-top: 20px; font-size: 12px; color: #444; background-color: #fcf8e3; border: 1px solid #faebcc; padding: 10px; border-radius: 4px;">
+          <strong>Nota:</strong> Se ha adjuntado el archivo <code>pronosticos_usuarios.json</code> que contiene de forma detallada todos los pronósticos y campeón de cada usuario.
+        </p>
+
         <p style="margin-top: 30px; font-size: 11px; color: #777; border-top: 1px solid #eee; padding-top: 15px;">
-          * Este es un envío automatizado generado por Vercel Cron. El archivo JSON adjunto contiene todo el esquema y los datos necesarios para restaurar el estado del Prode ante cualquier falla.
+          * Este es un envío automatizado generado por Vercel Cron. Los archivos JSON adjuntos contienen todo el esquema y los datos necesarios para restaurar el estado del Prode ante cualquier falla.
         </p>
       </div>
     `;
@@ -118,6 +165,10 @@ export async function GET(request: Request) {
         {
           filename: `prode_backup_${new Date().toISOString().split('T')[0]}.json`,
           content: Buffer.from(JSON.stringify(backupData, null, 2)).toString('base64'),
+        },
+        {
+          filename: `pronosticos_usuarios_${new Date().toISOString().split('T')[0]}.json`,
+          content: Buffer.from(JSON.stringify(userPredictionsSummary, null, 2)).toString('base64'),
         }
       ]
     });

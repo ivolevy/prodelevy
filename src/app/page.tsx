@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { useStore } from '@/lib/store';
 import Countdown from '@/components/Countdown';
 import Link from 'next/link';
@@ -226,6 +226,14 @@ export default function Home() {
        (p.username && p.username.toLowerCase().includes(userSearchQuery.toLowerCase())))
     );
 
+    const sortedParticipants = [...filteredParticipants].sort((a, b) => {
+      const standingA = standings.find(s => s.profile_id === a.id);
+      const standingB = standings.find(s => s.profile_id === b.id);
+      const ptsA = standingA ? standingA.total_points : 0;
+      const ptsB = standingB ? standingB.total_points : 0;
+      return ptsB - ptsA;
+    });
+
     return (
       <div className="space-y-6 text-stone-900 max-w-7xl mx-auto pt-2 pb-20 animate-in fade-in duration-300">
         {/* Admin Header */}
@@ -435,7 +443,6 @@ export default function Home() {
               </form>
             )}
 
-            {/* User Search */}
             <input
               type="text"
               placeholder="Buscar participante por nombre..."
@@ -444,182 +451,217 @@ export default function Home() {
               className="w-full bg-cream-50/30 border border-cream-300 rounded-xl px-3.5 py-2 text-xs text-stone-850 placeholder-stone-450 focus:outline-none focus:border-gold-500 transition-all font-semibold"
             />
 
-            {/* User List */}
-            <div className="divide-y divide-cream-150 border border-cream-200 rounded-2xl overflow-hidden bg-cream-50/5">
-              {filteredParticipants.map(p => {
-                const initials = p.display_name.substring(0, 2).toUpperCase();
-                const pPredCount = predictions.filter(pr => pr.participant_id === p.id).length;
-                const standing = standings.find(s => s.profile_id === p.id);
-                const pts = standing ? standing.total_points : 0;
-                const isExpanded = !!expandedPredictions[p.id];
+            {/* User Table (La Tabla) */}
+            <div className="overflow-x-auto border border-cream-200 rounded-2xl bg-cream-50/5">
+              <table className="w-full border-collapse text-left text-xs text-stone-850">
+                <thead>
+                  <tr className="bg-cream-100/50 border-b border-cream-200 uppercase font-black tracking-wider text-stone-450 text-[9px]">
+                    <th className="py-3 px-4 text-center w-12">Pos</th>
+                    <th className="py-3 px-4">Usuario</th>
+                    <th className="py-3 px-4">Credenciales</th>
+                    <th className="py-3 px-4 text-center">Pronósticos</th>
+                    <th className="py-3 px-4 text-center">Puntos</th>
+                    <th className="py-3 px-4 text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-cream-150">
+                  {sortedParticipants.map((p, index) => {
+                    const initials = p.display_name.substring(0, 2).toUpperCase();
+                    const pPredCount = predictions.filter(pr => pr.participant_id === p.id).length;
+                    const standing = standings.find(s => s.profile_id === p.id);
+                    const pts = standing ? standing.total_points : 0;
+                    const rank = standing ? standing.rank : index + 1;
+                    const isExpanded = !!expandedPredictions[p.id];
 
-                return (
-                  <div key={p.id} className="flex flex-col p-3.5 hover:bg-cream-50/10 transition-colors">
-                    <div className="flex justify-between items-center gap-2">
-                      <div className="flex items-center gap-3">
-                        <span className="w-8 h-8 rounded-full bg-stone-900 flex items-center justify-center text-xs font-black text-white uppercase shrink-0">
-                          {initials}
-                        </span>
-                        <div>
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-xs font-bold text-stone-850">{p.display_name}</span>
-                            <span className="text-[7.5px] font-bold uppercase bg-stone-100 border border-stone-250/50 text-stone-500 px-1.5 py-0.2 rounded shrink-0">
-                              {pPredCount}/{totalMatchesCount} pronósticos
-                            </span>
-                            <span className="text-[7.5px] font-black uppercase bg-gold-500/10 border border-gold-500/20 text-gold-700 px-1.5 py-0.2 rounded shrink-0">
-                              {pts} pts
-                            </span>
-                          </div>
-                          
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-x-2 gap-y-1 mt-1 text-[8.5px] text-stone-450 font-semibold uppercase">
-                            <span>User: <strong className="text-stone-750 font-bold">{p.username || p.display_name.toLowerCase()}</strong></span>
-                            <span className="hidden sm:inline text-stone-300">|</span>
-                            <span className="flex items-center gap-1">
-                              Pass: <strong className="text-stone-750 font-bold font-mono">{showPasswords[p.id] ? p.password : '••••••••'}</strong>
+                    return (
+                      <Fragment key={p.id}>
+                        <tr 
+                          onClick={(e) => {
+                            const target = e.target as HTMLElement;
+                            if (target.closest('button') || target.closest('input')) return;
+                            setExpandedPredictions(prev => ({ ...prev, [p.id]: !prev[p.id] }));
+                          }}
+                          className={`hover:bg-cream-50/20 transition-colors cursor-pointer ${isExpanded ? 'bg-cream-50/10' : ''}`}
+                        >
+                          {/* Position */}
+                          <td className="py-3.5 px-4 text-center font-extrabold text-stone-700">
+                            {rank}°
+                          </td>
+                          {/* User Profile */}
+                          <td className="py-3.5 px-4">
+                            <div className="flex items-center gap-2.5">
+                              <span className="w-7 h-7 rounded-full bg-stone-900 flex items-center justify-center text-[10px] font-black text-white uppercase shrink-0">
+                                {initials}
+                              </span>
+                              <div className="flex flex-col">
+                                <span className="font-bold text-stone-900">{p.display_name}</span>
+                                <span className="text-[9px] text-stone-400 font-semibold">@{p.username || p.display_name.toLowerCase()}</span>
+                              </div>
+                            </div>
+                          </td>
+                          {/* Credentials */}
+                          <td className="py-3.5 px-4 text-[10px] text-stone-500 font-semibold font-mono">
+                            <div className="flex items-center gap-1.5">
+                              <span>Pass: {showPasswords[p.id] ? p.password : '••••••••'}</span>
                               <button
                                 type="button"
-                                onClick={() => {
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   setShowPasswords(prev => ({ ...prev, [p.id]: !prev[p.id] }));
                                 }}
-                                className="p-0.5 text-stone-400 hover:text-stone-650 cursor-pointer"
+                                className="p-1 text-stone-400 hover:text-stone-650 cursor-pointer"
                               >
                                 {showPasswords[p.id] ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
                               </button>
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-1 shrink-0">
-                        <button
-                          onClick={() => setExpandedPredictions(prev => ({ ...prev, [p.id]: !prev[p.id] }))}
-                          className="px-2 py-1 border border-cream-300 bg-white hover:bg-cream-105 text-stone-750 font-bold text-[8px] uppercase tracking-widest rounded-lg transition-all cursor-pointer mr-1"
-                        >
-                          {isExpanded ? 'Ocultar' : 'Ver Pronósticos'}
-                        </button>
-                        <button
-                          onClick={() => {
-                            setEditingProfileId(p.id);
-                            setIsCreatingNew(false);
-                            setEditUsername(p.username || p.display_name.toLowerCase());
-                            setEditPassword(p.password || '');
-                            setShowEditPassword(false);
-                          }}
-                          className="px-2 py-1 border border-cream-300 bg-white hover:bg-cream-105 text-stone-750 font-bold text-[8px] uppercase tracking-widest rounded-lg transition-all cursor-pointer"
-                        >
-                          Editar
-                        </button>
-                        <button
-                          onClick={async () => {
-                            if (confirm(`¿Estás seguro de eliminar a ${p.display_name}?`)) {
-                              await deleteProfile(p.id);
-                              showSuccess('Usuario eliminado correctamente.');
-                            }
-                          }}
-                          className="p-1 border border-rose-250 bg-rose-50/50 hover:bg-rose-50 text-rose-650 hover:text-rose-700 font-bold text-[8px] uppercase tracking-widest rounded-lg transition-all cursor-pointer"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Participant Predictions list */}
-                    {isExpanded && (
-                      <div className="mt-3.5 pt-3.5 border-t border-cream-200/60 bg-stone-50/50 -mx-3.5 px-3.5 pb-1">
-                        <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
-                          <h5 className="text-[8.5px] font-black text-stone-455 uppercase tracking-widest flex items-center gap-1">
-                            <Trophy className="w-3 h-3 text-gold-500" /> Pronósticos de {p.display_name}
-                          </h5>
-                          {p.champion_prediction && (
-                            <div className="text-[8px] text-stone-600 font-bold flex items-center gap-1 bg-gold-500/10 border border-gold-500/20 rounded px-1.5 py-0.5 uppercase tracking-wide">
-                              <span>🏆 Campeón:</span>
-                              <span className="font-extrabold text-stone-850">
-                                {(() => {
-                                  const team = teams.find(t => t.id === p.champion_prediction);
-                                  return team ? `${team.flag_emoji} ${team.name}` : p.champion_prediction;
-                                })()}
-                              </span>
                             </div>
-                          )}
-                        </div>
-                        {predictions.filter(pr => pr.participant_id === p.id).length === 0 ? (
-                          <p className="text-[9.5px] text-stone-400 italic py-1">No cargó ningún pronóstico todavía.</p>
-                        ) : (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            {matches.map(m => {
-                              const homeTeam = teams.find(t => t.id === m.home_team_id);
-                              const awayTeam = teams.find(t => t.id === m.away_team_id);
-                              const pred = predictions.find(pr => pr.participant_id === p.id && pr.match_id === m.id);
-                              
-                              if (!pred) return null; // Show only predicted matches to save space
-                              
-                              let points = 0;
-                              let pointsLabel = '';
-                              const hasScore = m.home_score !== null && m.home_score !== undefined && m.away_score !== null && m.away_score !== undefined;
-                              
-                              if (hasScore && m.status === 'finished') {
-                                const actHome = m.home_score!;
-                                const actAway = m.away_score!;
-                                const predHome = pred.home_score;
-                                const predAway = pred.away_score;
-                                
-                                if (predHome === actHome && predAway === actAway) {
-                                  points = 3;
-                                  pointsLabel = '3 pts (Exacto)';
-                                } else {
-                                  const actualDiff = actHome - actAway;
-                                  const predDiff = predHome - predAway;
-                                  if (Math.sign(actualDiff) === Math.sign(predDiff)) {
-                                    points = 1;
-                                    pointsLabel = '1 pt (Resultado)';
-                                  } else {
-                                    points = 0;
-                                    pointsLabel = '0 pts';
+                          </td>
+                          {/* Predictions Count */}
+                          <td className="py-3.5 px-4 text-center">
+                            <span className="text-[10px] font-bold uppercase bg-stone-100 border border-stone-250/50 text-stone-600 px-2 py-0.5 rounded-full">
+                              {pPredCount} / {totalMatchesCount}
+                            </span>
+                          </td>
+                          {/* Points */}
+                          <td className="py-3.5 px-4 text-center">
+                            <span className="text-xs font-black text-gold-700 bg-gold-500/10 border border-gold-500/20 px-2 py-0.5 rounded-full">
+                              {pts} pts
+                            </span>
+                          </td>
+                          {/* Action Buttons */}
+                          <td className="py-3.5 px-4 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingProfileId(p.id);
+                                  setIsCreatingNew(false);
+                                  setEditUsername(p.username || p.display_name.toLowerCase());
+                                  setEditPassword(p.password || '');
+                                  setShowEditPassword(false);
+                                }}
+                                className="px-2 py-1 border border-cream-300 bg-white hover:bg-cream-105 text-stone-750 font-bold text-[9px] uppercase tracking-widest rounded-lg transition-all cursor-pointer"
+                              >
+                                Editar
+                              </button>
+                              <button
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  if (confirm(`¿Estás seguro de eliminar a ${p.display_name}?`)) {
+                                    await deleteProfile(p.id);
+                                    showSuccess('Usuario eliminado correctamente.');
                                   }
-                                }
-                              }
-
-                              return (
-                                <div key={m.id} className="flex items-center justify-between p-2 rounded-xl bg-white border border-cream-200 shadow-3xs text-[10px]">
-                                  <div className="flex items-center gap-1 min-w-[95px] max-w-[130px] truncate">
-                                    <span className="text-[11px] shrink-0">{homeTeam?.flag_emoji}</span>
-                                    <span className="font-bold text-stone-700 shrink-0">{homeTeam?.id}</span>
-                                    <span className="text-stone-300 shrink-0">vs</span>
-                                    <span className="text-[11px] shrink-0">{awayTeam?.flag_emoji}</span>
-                                    <span className="font-bold text-stone-700 shrink-0">{awayTeam?.id}</span>
-                                  </div>
-                                  
-                                  <div className="flex items-center gap-1 px-1.5 py-0.5 bg-cream-50 rounded border border-cream-150 font-bold text-stone-850">
-                                    {pred.home_score} - {pred.away_score}
-                                  </div>
-
-                                  <div className="text-right min-w-[65px] shrink-0">
-                                    {m.status === 'finished' ? (
-                                      <div className="flex flex-col items-end leading-tight">
-                                        <span className="text-[9px] font-medium text-stone-550">Fin: {m.home_score}-{m.away_score}</span>
-                                        <span className={`text-[7.5px] font-black uppercase tracking-wider ${points === 3 ? 'text-emerald-600' : points === 1 ? 'text-blue-600' : 'text-stone-400'}`}>
-                                          {pointsLabel}
-                                        </span>
-                                      </div>
-                                    ) : m.status === 'live' ? (
-                                      <span className="text-rose-600 font-extrabold flex items-center gap-0.5 text-[8.5px]">
-                                        <span className="w-1 h-1 rounded-full bg-rose-500 animate-pulse" />
-                                        {m.home_score}-{m.away_score}
+                                }}
+                                className="p-1 border border-rose-250 bg-rose-50/50 hover:bg-rose-50 text-rose-650 hover:text-rose-700 font-bold rounded-lg transition-all cursor-pointer"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                        {/* Expanded predictions row */}
+                        {isExpanded && (
+                          <tr className="bg-stone-50/50">
+                            <td colSpan={6} className="p-4 border-t border-cream-200/60">
+                              <div className="space-y-3 text-left">
+                                <div className="flex items-center justify-between gap-2 flex-wrap">
+                                  <h5 className="text-[10px] font-black text-stone-500 uppercase tracking-widest flex items-center gap-1">
+                                    <Trophy className="w-3.5 h-3.5 text-gold-500" /> Pronósticos de {p.display_name}
+                                  </h5>
+                                  {p.champion_prediction && (
+                                    <div className="text-[9px] text-stone-600 font-bold flex items-center gap-1.5 bg-gold-500/10 border border-gold-500/20 rounded px-2.5 py-0.5 uppercase tracking-wide">
+                                      <span>🏆 Campeón Predicho:</span>
+                                      <span className="font-extrabold text-stone-850">
+                                        {(() => {
+                                          const team = teams.find(t => t.id === p.champion_prediction);
+                                          return team ? `${team.flag_emoji} ${team.name}` : p.champion_prediction;
+                                        })()}
                                       </span>
-                                    ) : (
-                                      <span className="text-stone-400 text-[8.5px]">Pendiente</span>
-                                    )}
-                                  </div>
+                                    </div>
+                                  )}
                                 </div>
-                              );
-                            })}
-                          </div>
+
+                                {predictions.filter(pr => pr.participant_id === p.id).length === 0 ? (
+                                  <p className="text-[10px] text-stone-400 italic py-1 pl-1">No cargó ningún pronóstico todavía.</p>
+                                ) : (
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                                    {matches.map(m => {
+                                      const homeTeam = teams.find(t => t.id === m.home_team_id);
+                                      const awayTeam = teams.find(t => t.id === m.away_team_id);
+                                      const pred = predictions.find(pr => pr.participant_id === p.id && pr.match_id === m.id);
+                                      
+                                      if (!pred) return null;
+                                      
+                                      let points = 0;
+                                      let pointsLabel = '';
+                                      const hasScore = m.home_score !== null && m.home_score !== undefined && m.away_score !== null && m.away_score !== undefined;
+                                      
+                                      if (hasScore && m.status === 'finished') {
+                                        const actHome = m.home_score!;
+                                        const actAway = m.away_score!;
+                                        const predHome = pred.home_score;
+                                        const predAway = pred.away_score;
+                                        
+                                        if (predHome === actHome && predAway === actAway) {
+                                          points = 3;
+                                          pointsLabel = '3 pts (Exacto)';
+                                        } else {
+                                          const actualDiff = actHome - actAway;
+                                          const predDiff = predHome - predAway;
+                                          if (Math.sign(actualDiff) === Math.sign(predDiff)) {
+                                            points = 1;
+                                            pointsLabel = '1 pt (Resultado)';
+                                          } else {
+                                            points = 0;
+                                            pointsLabel = '0 pts';
+                                          }
+                                        }
+                                      }
+
+                                      return (
+                                        <div key={m.id} className="flex items-center justify-between p-2 rounded-xl bg-white border border-cream-200 shadow-3xs text-[10px]">
+                                          <div className="flex items-center gap-1 min-w-[95px] max-w-[130px] truncate">
+                                            <span className="text-[11px] shrink-0">{homeTeam?.flag_emoji}</span>
+                                            <span className="font-bold text-stone-700 shrink-0">{homeTeam?.id}</span>
+                                            <span className="text-stone-300 shrink-0">vs</span>
+                                            <span className="text-[11px] shrink-0">{awayTeam?.flag_emoji}</span>
+                                            <span className="font-bold text-stone-700 shrink-0">{awayTeam?.id}</span>
+                                          </div>
+                                          
+                                          <div className="flex items-center gap-1 px-1.5 py-0.5 bg-cream-50 rounded border border-cream-150 font-bold text-stone-850">
+                                            {pred.home_score} - {pred.away_score}
+                                          </div>
+
+                                          <div className="text-right min-w-[65px] shrink-0">
+                                            {m.status === 'finished' ? (
+                                              <div className="flex flex-col items-end leading-tight">
+                                                <span className="text-[9px] font-medium text-stone-550">Fin: {m.home_score}-{m.away_score}</span>
+                                                <span className={`text-[7.5px] font-black uppercase tracking-wider ${points === 3 ? 'text-emerald-600' : points === 1 ? 'text-blue-600' : 'text-stone-400'}`}>
+                                                  {pointsLabel}
+                                                </span>
+                                              </div>
+                                            ) : m.status === 'live' ? (
+                                              <span className="text-rose-600 font-extrabold flex items-center gap-0.5 text-[8.5px]">
+                                                <span className="w-1 h-1 rounded-full bg-rose-500 animate-pulse" />
+                                                {m.home_score}-{m.away_score}
+                                              </span>
+                                            ) : (
+                                              <span className="text-stone-400 text-[8.5px]">Pendiente</span>
+                                            )}
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
                         )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+                      </Fragment>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
 
