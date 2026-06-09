@@ -34,6 +34,9 @@ export default function Home() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showEditPassword, setShowEditPassword] = useState(false);
   const [userSearchQuery, setUserSearchQuery] = useState('');
+  const [adminSelectedGroupId, setAdminSelectedGroupId] = useState<string>('all');
+  const [newUserGroupId, setNewUserGroupId] = useState<string>('');
+  const [editUserGroupId, setEditUserGroupId] = useState<string>('');
 
   // Group form state
   const [isCreatingGroup, setIsCreatingGroup] = useState(false);
@@ -115,10 +118,11 @@ export default function Home() {
     }
     const cleanUsername = newUsername.trim();
     try {
-      await addProfile(cleanUsername, cleanUsername, newPassword);
+      await addProfile(cleanUsername, cleanUsername, newPassword, newUserGroupId || undefined);
       setIsCreatingNew(false);
       setNewUsername('');
       setNewPassword('');
+      setNewUserGroupId('');
       showSuccess('Usuario creado con éxito.');
     } catch (err: any) {
       showError(err.message || 'Error al crear usuario.');
@@ -133,10 +137,11 @@ export default function Home() {
     }
     const cleanUsername = editUsername.trim();
     try {
-      await editProfile(editingProfileId!, cleanUsername, cleanUsername, editPassword || undefined);
+      await editProfile(editingProfileId!, cleanUsername, cleanUsername, editPassword || undefined, editUserGroupId || undefined);
       setEditingProfileId(null);
       setEditUsername('');
       setEditPassword('');
+      setEditUserGroupId('');
       showSuccess('Usuario modificado con éxito.');
     } catch (err: any) {
       showError(err.message || 'Error al modificar usuario.');
@@ -219,12 +224,17 @@ export default function Home() {
     const totalMatchesPlayed = matches.filter(m => m.status === 'finished').length;
     const totalPredictionsCount = predictions.length;
 
-    // Filter participants based on search query
-    const filteredParticipants = profiles.filter(p => 
-      !p.is_admin && 
-      (p.display_name.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
-       (p.username && p.username.toLowerCase().includes(userSearchQuery.toLowerCase())))
-    );
+    // Filter participants based on search query and group
+    const filteredParticipants = profiles.filter(p => {
+      if (p.is_admin) return false;
+      
+      const matchesSearch = p.display_name.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
+                            (p.username && p.username.toLowerCase().includes(userSearchQuery.toLowerCase()));
+      if (!matchesSearch) return false;
+      
+      if (adminSelectedGroupId === 'all') return true;
+      return groupMembers.some(gm => gm.group_id === adminSelectedGroupId && gm.profile_id === p.id);
+    });
 
     const sortedParticipants = [...filteredParticipants].sort((a, b) => {
       const standingA = standings.find(s => s.profile_id === a.id);
@@ -338,6 +348,7 @@ export default function Home() {
                   setEditingProfileId(null);
                   setNewUsername('');
                   setNewPassword('');
+                  setNewUserGroupId(adminSelectedGroupId !== 'all' ? adminSelectedGroupId : '');
                 }}
                 className="px-2.5 py-1 bg-stone-900 hover:bg-stone-800 text-white font-bold text-[8.5px] uppercase tracking-widest rounded-lg transition-all cursor-pointer flex items-center gap-1"
               >
@@ -347,12 +358,11 @@ export default function Home() {
 
             {adminError && <p className="text-[9px] font-bold text-rose-650 bg-rose-50 border border-rose-200 p-2 rounded-lg text-center leading-tight">{adminError}</p>}
             {adminSuccess && <p className="text-[9px] font-bold text-emerald-650 bg-emerald-50 border border-emerald-200 p-2 rounded-lg text-center leading-tight">{adminSuccess}</p>}
-
             {/* Create User Form */}
             {isCreatingNew && (
               <form onSubmit={handleCreateUser} className="p-4 border border-cream-250 bg-cream-50/15 rounded-2xl space-y-3">
                 <h4 className="text-[9.5px] font-black tracking-widest text-stone-450 uppercase mb-2">Crear Nuevo Participante</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <label className="block text-[8px] font-black uppercase tracking-wider text-stone-450 mb-1">Nombre de Usuario</label>
                     <input
@@ -376,11 +386,25 @@ export default function Home() {
                       <button
                         type="button"
                         onClick={() => setShowNewPassword(!showNewPassword)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-650 cursor-pointer"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-450 hover:text-stone-650 cursor-pointer"
+                        title={showNewPassword ? "Ocultar" : "Mostrar"}
                       >
                         {showNewPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                       </button>
                     </div>
+                  </div>
+                  <div>
+                    <label className="block text-[8px] font-black uppercase tracking-wider text-stone-450 mb-1">Grupo</label>
+                    <select
+                      value={newUserGroupId}
+                      onChange={e => setNewUserGroupId(e.target.value)}
+                      className="w-full bg-white border border-cream-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-gold-500 font-semibold"
+                    >
+                      <option value="">Ninguno / Sin grupo</option>
+                      {groups.map(g => (
+                        <option key={g.id} value={g.id}>{g.name.toUpperCase()}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
                 <div className="flex justify-end gap-2 pt-2">
@@ -400,7 +424,7 @@ export default function Home() {
             {editingProfileId && (
               <form onSubmit={handleEditUser} className="p-4 border border-gold-500/30 bg-gold-500/5 rounded-2xl space-y-3">
                 <h4 className="text-[9.5px] font-black tracking-widest text-gold-650 uppercase mb-2">Editar Participante</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <label className="block text-[8px] font-black uppercase tracking-wider text-stone-450 mb-1">Usuario</label>
                     <input
@@ -423,11 +447,25 @@ export default function Home() {
                       <button
                         type="button"
                         onClick={() => setShowEditPassword(!showEditPassword)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-650 cursor-pointer"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-450 hover:text-stone-650 cursor-pointer"
+                        title={showEditPassword ? "Ocultar" : "Mostrar"}
                       >
                         {showEditPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                       </button>
                     </div>
+                  </div>
+                  <div>
+                    <label className="block text-[8px] font-black uppercase tracking-wider text-stone-450 mb-1">Grupo</label>
+                    <select
+                      value={editUserGroupId}
+                      onChange={e => setEditUserGroupId(e.target.value)}
+                      className="w-full bg-white border border-cream-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-gold-500 font-semibold"
+                    >
+                      <option value="">Ninguno / Sin grupo</option>
+                      {groups.map(g => (
+                        <option key={g.id} value={g.id}>{g.name.toUpperCase()}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
                 <div className="flex justify-end gap-2 pt-2">
@@ -442,6 +480,27 @@ export default function Home() {
                 </div>
               </form>
             )}
+
+            {/* Filter by Group Selector */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-cream-50/20 border border-cream-250 rounded-xl mb-1">
+              <div className="text-left">
+                <label className="block text-[8px] font-black uppercase tracking-wider text-stone-450">Filtrar por Grupo</label>
+                <span className="text-[10px] text-stone-500 font-medium">Mostrando usuarios asociados a este grupo</span>
+              </div>
+              <select
+                value={adminSelectedGroupId}
+                onChange={e => {
+                  setAdminSelectedGroupId(e.target.value);
+                  setAdminError(null);
+                }}
+                className="bg-white border border-cream-300 rounded-lg px-3 py-1.5 text-xs font-semibold text-stone-750 focus:outline-none focus:border-gold-500 min-w-[160px]"
+              >
+                <option value="all">Todos los usuarios</option>
+                {groups.map(g => (
+                  <option key={g.id} value={g.id}>{g.name.toUpperCase()}</option>
+                ))}
+              </select>
+            </div>
 
             <input
               type="text"
@@ -494,8 +553,28 @@ export default function Home() {
                                 {initials}
                               </span>
                               <div className="flex flex-col">
-                                <span className="font-bold text-stone-900">{p.display_name}</span>
-                                <span className="text-[9px] text-stone-400 font-semibold">@{p.username || p.display_name.toLowerCase()}</span>
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <span className="font-bold text-stone-900">{p.display_name}</span>
+                                  {/* Group Badges */}
+                                  {(() => {
+                                    const userGroups = groups.filter(g => groupMembers.some(gm => gm.group_id === g.id && gm.profile_id === p.id));
+                                    return (
+                                      <>
+                                        {userGroups.map(ug => (
+                                          <span key={ug.id} className="text-[6.5px] bg-gold-500/10 border border-gold-500/25 text-gold-700 px-1 py-0.2 rounded font-black uppercase tracking-wider">
+                                            {ug.name}
+                                          </span>
+                                        ))}
+                                        {userGroups.length === 0 && (
+                                          <span className="text-[6.5px] bg-stone-150 border border-stone-250 text-stone-500 px-1 py-0.2 rounded font-bold uppercase tracking-wider">
+                                            Sin grupo
+                                          </span>
+                                        )}
+                                      </>
+                                    );
+                                  })()}
+                                </div>
+                                <span className="text-[9px] text-stone-450 font-semibold">@{p.username || p.display_name.toLowerCase()}</span>
                               </div>
                             </div>
                           </td>
@@ -538,6 +617,8 @@ export default function Home() {
                                   setEditUsername(p.username || p.display_name.toLowerCase());
                                   setEditPassword(p.password || '');
                                   setShowEditPassword(false);
+                                  const currentMemberRecord = groupMembers.find(gm => gm.profile_id === p.id);
+                                  setEditUserGroupId(currentMemberRecord ? currentMemberRecord.group_id : '');
                                 }}
                                 className="px-2 py-1 border border-cream-300 bg-white hover:bg-cream-105 text-stone-750 font-bold text-[9px] uppercase tracking-widest rounded-lg transition-all cursor-pointer"
                               >
