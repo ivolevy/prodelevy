@@ -32,6 +32,9 @@ export default function ProfilePage() {
   const [newDisplayName, setNewDisplayName] = useState('');
   const [newUsername, setNewUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [selectedGroupId, setSelectedGroupId] = useState<string>('all');
+  const [newUserGroupId, setNewUserGroupId] = useState<string>('');
+  const [editUserGroupId, setEditUserGroupId] = useState<string>('');
   
   const [editingProfileId, setEditingProfileId] = useState<string | null>(null);
   const [editDisplayName, setEditDisplayName] = useState('');
@@ -84,11 +87,12 @@ export default function ProfilePage() {
     }
     const cleanUsername = newUsername.trim();
     try {
-      await addProfile(cleanUsername, cleanUsername, newPassword);
+      await addProfile(cleanUsername, cleanUsername, newPassword, newUserGroupId || undefined);
       setIsCreatingNew(false);
       setNewDisplayName('');
       setNewUsername('');
       setNewPassword('');
+      setNewUserGroupId('');
       showSuccess('Usuario creado con éxito.');
     } catch (err: any) {
       showError(err.message || 'Error al crear usuario.');
@@ -103,11 +107,12 @@ export default function ProfilePage() {
     }
     const cleanUsername = editUsername.trim();
     try {
-      await editProfile(editingProfileId!, cleanUsername, cleanUsername, editPassword || undefined);
+      await editProfile(editingProfileId!, cleanUsername, cleanUsername, editPassword || undefined, editUserGroupId || undefined);
       setEditingProfileId(null);
       setEditDisplayName('');
       setEditUsername('');
       setEditPassword('');
+      setEditUserGroupId('');
       showSuccess('Usuario modificado con éxito.');
     } catch (err: any) {
       showError(err.message || 'Error al modificar usuario.');
@@ -195,6 +200,12 @@ export default function ProfilePage() {
 
   const activeProfile = profiles.find(p => p.id === currentProfileId);
   const activeStanding = standings.find(s => s.profile_id === currentProfileId);
+
+  // Filter profiles based on selected group in admin panel
+  const filteredProfiles = profiles.filter(p => {
+    if (selectedGroupId === 'all') return true;
+    return groupMembers.some(gm => gm.group_id === selectedGroupId && gm.profile_id === p.id);
+  });
 
   // Get champion prediction details
   const championTeam = activeProfile?.champion_prediction 
@@ -462,12 +473,34 @@ export default function ProfilePage() {
                   setNewDisplayName('');
                   setNewUsername('');
                   setNewPassword('');
+                  setNewUserGroupId(selectedGroupId !== 'all' ? selectedGroupId : '');
                   setAdminError(null);
                 }}
                 className="px-2.5 py-1 bg-stone-900 hover:bg-stone-800 text-white font-bold text-[8.5px] uppercase tracking-widest rounded-lg transition-all cursor-pointer flex items-center gap-1"
               >
                 <Plus className="w-3 h-3" /> Nuevo Usuario
               </button>
+            </div>
+
+            {/* Filter by Group Selector */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-cream-50/20 border border-cream-250 rounded-xl mb-2">
+              <div className="text-left">
+                <label className="block text-[8px] font-black uppercase tracking-wider text-stone-450">Filtrar por Grupo</label>
+                <span className="text-[10px] text-stone-500 font-medium">Mostrando usuarios asociados a este grupo</span>
+              </div>
+              <select
+                value={selectedGroupId}
+                onChange={e => {
+                  setSelectedGroupId(e.target.value);
+                  setAdminError(null);
+                }}
+                className="bg-white border border-cream-300 rounded-lg px-3 py-1.5 text-xs font-semibold text-stone-750 focus:outline-none focus:border-gold-500 min-w-[160px]"
+              >
+                <option value="all">Todos los usuarios</option>
+                {groups.map(g => (
+                  <option key={g.id} value={g.id}>{g.name.toUpperCase()}</option>
+                ))}
+              </select>
             </div>
 
             {/* Error and Success Feedback */}
@@ -486,7 +519,7 @@ export default function ProfilePage() {
             {isCreatingNew && (
               <form onSubmit={handleCreateUser} className="p-4 border border-cream-250 bg-cream-50/15 rounded-2xl space-y-3">
                 <h4 className="text-[9.5px] font-black tracking-widest text-stone-450 uppercase mb-2">Crear Nuevo Participante</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <label className="block text-[8px] font-black uppercase tracking-wider text-stone-450 mb-1">Usuario</label>
                     <input
@@ -517,6 +550,19 @@ export default function ProfilePage() {
                       </button>
                     </div>
                   </div>
+                  <div>
+                    <label className="block text-[8px] font-black uppercase tracking-wider text-stone-450 mb-1">Grupo</label>
+                    <select
+                      value={newUserGroupId}
+                      onChange={e => setNewUserGroupId(e.target.value)}
+                      className="w-full bg-white border border-cream-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-gold-500 font-semibold"
+                    >
+                      <option value="">Ninguno / Sin grupo</option>
+                      {groups.map(g => (
+                        <option key={g.id} value={g.id}>{g.name.toUpperCase()}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
                 <div className="flex justify-end gap-2 pt-2">
                   <button
@@ -540,7 +586,7 @@ export default function ProfilePage() {
             {editingProfileId && (
               <form onSubmit={handleEditUser} className="p-4 border border-gold-500/30 bg-gold-500/5 rounded-2xl space-y-3">
                 <h4 className="text-[9.5px] font-black tracking-widest text-gold-650 uppercase mb-2">Editar Participante</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <label className="block text-[8px] font-black uppercase tracking-wider text-stone-450 mb-1">Usuario</label>
                     <input
@@ -570,6 +616,19 @@ export default function ProfilePage() {
                       </button>
                     </div>
                   </div>
+                  <div>
+                    <label className="block text-[8px] font-black uppercase tracking-wider text-stone-450 mb-1">Grupo</label>
+                    <select
+                      value={editUserGroupId}
+                      onChange={e => setEditUserGroupId(e.target.value)}
+                      className="w-full bg-white border border-cream-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-gold-500 font-semibold"
+                    >
+                      <option value="">Ninguno / Sin grupo</option>
+                      {groups.map(g => (
+                        <option key={g.id} value={g.id}>{g.name.toUpperCase()}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
                 <div className="flex justify-end gap-2 pt-2">
                   <button
@@ -591,7 +650,8 @@ export default function ProfilePage() {
 
             {/* User List */}
             <div className="divide-y divide-cream-150 border border-cream-200 rounded-2xl overflow-hidden bg-cream-50/5">
-              {profiles.map(p => {
+              {filteredProfiles.map(p => {
+                const userGroups = groups.filter(g => groupMembers.some(gm => gm.group_id === g.id && gm.profile_id === p.id));
                 return (
                   <div key={p.id} className="flex justify-between items-center p-3.5 hover:bg-cream-50/30 transition-colors">
                     <div className="flex items-center gap-3">
@@ -599,13 +659,24 @@ export default function ProfilePage() {
                         {p.display_name.substring(0, 2).toUpperCase()}
                       </span>
                       <div>
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="text-xs font-bold text-stone-850">{p.display_name}</span>
                           {p.is_admin && (
                             <span className="text-[6.5px] bg-stone-900 text-white px-1 py-0.2 rounded font-black uppercase tracking-wider">Admin</span>
                           )}
                           {p.id === currentProfileId && (
                             <span className="text-[6.5px] bg-emerald-500/10 border border-emerald-500/25 text-emerald-650 px-1 py-0.2 rounded font-black uppercase tracking-wider">Tú</span>
+                          )}
+                          {/* Group Badges */}
+                          {userGroups.map(ug => (
+                            <span key={ug.id} className="text-[6.5px] bg-gold-500/10 border border-gold-500/25 text-gold-700 px-1 py-0.2 rounded font-black uppercase tracking-wider">
+                              {ug.name}
+                            </span>
+                          ))}
+                          {userGroups.length === 0 && (
+                            <span className="text-[6.5px] bg-stone-150 border border-stone-250 text-stone-500 px-1 py-0.2 rounded font-bold uppercase tracking-wider">
+                              Sin grupo
+                            </span>
                           )}
                         </div>
                         
@@ -642,6 +713,8 @@ export default function ProfilePage() {
                           setEditPassword(p.password || '');
                           setShowEditPassword(false);
                           setAdminError(null);
+                          const currentMemberRecord = groupMembers.find(gm => gm.profile_id === p.id);
+                          setEditUserGroupId(currentMemberRecord ? currentMemberRecord.group_id : '');
                         }}
                         className="p-1.5 border border-cream-300 bg-white hover:bg-cream-100/30 text-stone-750 font-bold text-[8px] uppercase tracking-widest rounded-lg transition-all cursor-pointer"
                       >

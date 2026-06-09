@@ -237,9 +237,9 @@ interface TournamentState {
   savePrediction: (profileId: string, matchId: number, homeScore: number, awayScore: number) => Promise<void>;
   resetToDefaults: () => Promise<void>;
   autoSeedPredictions: () => Promise<void>;
-  addProfile: (displayName: string, username?: string, password?: string) => Promise<void>;
+  addProfile: (displayName: string, username?: string, password?: string, groupId?: string) => Promise<void>;
   deleteProfile: (id: string) => Promise<void>;
-  editProfile: (id: string, displayName: string, username: string, password?: string) => Promise<void>;
+  editProfile: (id: string, displayName: string, username: string, password?: string, groupId?: string) => Promise<void>;
   saveChampionPrediction: (profileId: string, teamId: string) => Promise<void>;
   createGroup: (name: string, inviteCode: string) => Promise<void>;
   joinGroup: (inviteCode: string) => Promise<void>;
@@ -933,7 +933,7 @@ export const useStore = create<TournamentState>((set, get) => ({
     }
   },
 
-  addProfile: async (displayName: string, username?: string, password?: string) => {
+  addProfile: async (displayName: string, username?: string, password?: string, groupId?: string) => {
     const { isDemoMode, profiles, matches, predictions } = get();
 
     const u = (username || displayName).trim().toLowerCase();
@@ -968,10 +968,25 @@ export const useStore = create<TournamentState>((set, get) => ({
     const updatedProfiles = [...profiles, newProfile];
     const standings = updateStandings(matches, predictions, updatedProfiles, get().teams);
 
-    set({ profiles: updatedProfiles, standings });
+    let updatedGroupMembers = get().groupMembers;
+    if (groupId) {
+      updatedGroupMembers = [
+        ...updatedGroupMembers,
+        {
+          group_id: groupId,
+          profile_id: newId,
+          joined_at: new Date().toISOString()
+        }
+      ];
+    }
+
+    set({ profiles: updatedProfiles, standings, groupMembers: updatedGroupMembers });
 
     if (typeof window !== 'undefined') {
       localStorage.setItem('prode_profiles', JSON.stringify(updatedProfiles));
+      if (groupId) {
+        localStorage.setItem('prode_group_members', JSON.stringify(updatedGroupMembers));
+      }
     }
 
     if (!isDemoMode && supabase) {
@@ -982,8 +997,14 @@ export const useStore = create<TournamentState>((set, get) => ({
           avatar_url: encodeProfileAvatar(u, p, newProfile.avatar_url),
           is_admin: false
         });
+        if (groupId) {
+          await supabase.from('group_members').insert({
+            group_id: groupId,
+            profile_id: newId
+          });
+        }
       } catch (e) {
-        console.error('Failed to sync new profile to Supabase:', e);
+        console.error('Failed to sync new profile or group membership to Supabase:', e);
       }
     }
   },
@@ -1025,7 +1046,7 @@ export const useStore = create<TournamentState>((set, get) => ({
     }
   },
  
-  editProfile: async (id: string, displayName: string, username: string, password?: string) => {
+  editProfile: async (id: string, displayName: string, username: string, password?: string, groupId?: string) => {
     const { isDemoMode, profiles, matches, predictions } = get();
  
     const u = username.trim().toLowerCase();
@@ -1058,10 +1079,21 @@ export const useStore = create<TournamentState>((set, get) => ({
     });
  
     const standings = updateStandings(matches, predictions, updatedProfiles, get().teams);
-    set({ profiles: updatedProfiles, standings });
+    
+    let updatedGroupMembers = get().groupMembers.filter(gm => gm.profile_id !== id);
+    if (groupId) {
+      updatedGroupMembers.push({
+        group_id: groupId,
+        profile_id: id,
+        joined_at: new Date().toISOString()
+      });
+    }
+
+    set({ profiles: updatedProfiles, standings, groupMembers: updatedGroupMembers });
  
     if (typeof window !== 'undefined') {
       localStorage.setItem('prode_profiles', JSON.stringify(updatedProfiles));
+      localStorage.setItem('prode_group_members', JSON.stringify(updatedGroupMembers));
     }
  
     if (!isDemoMode && supabase) {
@@ -1078,8 +1110,16 @@ export const useStore = create<TournamentState>((set, get) => ({
           avatar_url: encodedAvatar
         };
         await supabase.from('profiles').update(updateData).eq('id', id);
+
+        await supabase.from('group_members').delete().eq('profile_id', id);
+        if (groupId) {
+          await supabase.from('group_members').insert({
+            group_id: groupId,
+            profile_id: id
+          });
+        }
       } catch (e) {
-        console.error('Failed to sync updated profile to Supabase:', e);
+        console.error('Failed to sync updated profile or group membership to Supabase:', e);
       }
     }
   },
