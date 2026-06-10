@@ -941,27 +941,39 @@ export default function Home() {
 
         <div className="w-full md:w-auto flex flex-col sm:flex-row items-center gap-3 shrink-0">
           {isChampionOpen ? (
-            <div className="w-full sm:w-auto flex gap-2 items-center relative">
-              <select
-                value={currentChampionPred || ''}
-                onChange={async (e) => {
-                  if (e.target.value) {
-                    await saveChampionPrediction(currentProfileId, e.target.value);
-                    triggerConfetti();
-                  }
-                }}
-                className="w-full sm:w-60 appearance-none bg-white border border-cream-300 rounded-xl px-4 py-2.5 pr-10 text-xs text-stone-850 font-extrabold focus:outline-none focus:border-gold-500 cursor-pointer shadow-xs transition-all"
-              >
-                <option value="">-- Elegir Campeón --</option>
-                {teams.map(t => (
-                  <option key={t.id} value={t.id}>
-                    {t.flag_emoji} {t.name}
-                  </option>
-                ))}
-              </select>
-              <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
-                <ChevronDown className="w-4 h-4" />
+            <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-2 items-center relative">
+              <div className="relative w-full sm:w-auto">
+                <select
+                  value={currentChampionPred || ''}
+                  onChange={async (e) => {
+                    if (e.target.value) {
+                      await saveChampionPrediction(currentProfileId, e.target.value);
+                      triggerConfetti();
+                    }
+                  }}
+                  className={`w-full sm:w-60 appearance-none rounded-xl px-4 py-2.5 pr-10 text-xs text-stone-850 font-extrabold focus:outline-none focus:border-gold-500 cursor-pointer shadow-xs transition-all ${
+                    currentChampionPred 
+                      ? 'bg-emerald-50/10 border-emerald-500 focus:border-emerald-650' 
+                      : 'bg-white border-cream-300'
+                  }`}
+                >
+                  <option value="">-- Elegir Campeón --</option>
+                  {teams.map(t => (
+                    <option key={t.id} value={t.id}>
+                      {t.flag_emoji} {t.name}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
+                  <ChevronDown className="w-4 h-4" />
+                </div>
               </div>
+              {currentChampionPred && (
+                <div className="flex items-center gap-1.5 text-[9px] font-black text-emerald-650 bg-emerald-50 border border-emerald-250/50 rounded-xl px-3 py-2 uppercase tracking-widest shadow-3xs shrink-0 animate-in fade-in zoom-in duration-300">
+                  <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                  <span>ELEGIDO</span>
+                </div>
+              )}
             </div>
           ) : (
             <div className="w-full sm:w-auto px-4 py-2 border border-cream-250 bg-cream-100/50 rounded-lg text-center">
