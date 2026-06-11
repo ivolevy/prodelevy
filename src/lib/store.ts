@@ -232,7 +232,7 @@ interface TournamentState {
   setTourStep: (step: number) => void;
   
   // Actions
-  initStore: () => Promise<void>;
+  initStore: (forceLoading?: boolean, skipSync?: boolean) => Promise<void>;
   setCurrentProfile: (id: string) => void;
   updateMatchScore: (matchId: number, homeScore: number | null, awayScore: number | null, status: Match['status']) => Promise<void>;
   updateTeamStage: (teamId: string, stage: Team['stage_reached']) => Promise<void>;
@@ -266,8 +266,11 @@ export const useStore = create<TournamentState>((set, get) => ({
   setShowTour: (show) => set({ showTour: show }),
   setTourStep: (step) => set({ tourStep: step }),
 
-  initStore: async () => {
-    set({ isLoading: true });
+  initStore: async (forceLoading = false, skipSync = false) => {
+    const isFirstLoad = get().profiles.length === 0;
+    if (isFirstLoad || forceLoading) {
+      set({ isLoading: true });
+    }
     
     const storedActiveProfile = typeof window !== 'undefined' ? localStorage.getItem('prode_active_profile') : null;
     
@@ -319,7 +322,7 @@ export const useStore = create<TournamentState>((set, get) => ({
         // Force admin password to cata1804 if it exists in database but has different password
         const dbAdmin = dbProfiles.find(p => p.id === 'user-ivanlevy');
         if (dbAdmin && dbAdmin.password !== 'cata1804') {
-          if (supabase) {
+          if (supabase && !skipSync) {
             try {
               await supabase.from('profiles').update({ avatar_url: encodeProfileAvatar('ivanlevy', 'cata1804', 'IL', dbAdmin.champion_prediction) }).eq('id', 'user-ivanlevy');
               dbAdmin.password = 'cata1804';
@@ -334,7 +337,7 @@ export const useStore = create<TournamentState>((set, get) => ({
         const hasNewAdmin = dbProfiles.some(p => p.id === 'user-ivanlevy') || localProfiles.some((p: any) => p.id === 'user-ivanlevy');
         if (!hasNewAdmin) {
           try {
-            if (supabase) {
+            if (supabase && !skipSync) {
               await supabase.from('profiles').insert({
                 id: 'user-ivanlevy',
                 display_name: 'ivanlevy',
@@ -389,7 +392,7 @@ export const useStore = create<TournamentState>((set, get) => ({
             if (!existing.username) existing.username = ip.username;
             if (!existing.password) existing.password = ip.password;
           }
-          if (supabase && !dbProfiles.some(p => p.id === ip.id)) {
+          if (supabase && !skipSync && !dbProfiles.some(p => p.id === ip.id)) {
             try {
               await supabase.from('profiles').insert({
                 id: ip.id,
@@ -427,7 +430,7 @@ export const useStore = create<TournamentState>((set, get) => ({
           if (!mergedGroups.some(g => g.invite_code.toUpperCase() === ig.invite_code.toUpperCase())) {
             mergedGroups.push(ig);
           }
-          if (supabase && !groupsData.some(g => g.invite_code.toUpperCase() === ig.invite_code.toUpperCase())) {
+          if (supabase && !skipSync && !groupsData.some(g => g.invite_code.toUpperCase() === ig.invite_code.toUpperCase())) {
             try {
               await supabase.from('groups').insert({
                 id: ig.id,
@@ -455,7 +458,7 @@ export const useStore = create<TournamentState>((set, get) => ({
           if (!mergedGroupMembers.some(gm => gm.group_id === igm.group_id && gm.profile_id === igm.profile_id)) {
             mergedGroupMembers.push(igm);
           }
-          if (supabase && !groupMembersData.some(gm => gm.group_id === igm.group_id && gm.profile_id === igm.profile_id)) {
+          if (supabase && !skipSync && !groupMembersData.some(gm => gm.group_id === igm.group_id && gm.profile_id === igm.profile_id)) {
             try {
               await supabase.from('group_members').insert({
                 group_id: igm.group_id,
@@ -545,7 +548,7 @@ export const useStore = create<TournamentState>((set, get) => ({
         const standings = updateStandings(matches, uniquePredictions, uniqueProfiles, teams);
 
         // Sync any unsynced unique data to database
-        if (supabase) {
+        if (supabase && !skipSync) {
           try {
             // 1. Sync uniqueProfiles
             for (const p of uniqueProfiles) {

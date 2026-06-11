@@ -84,28 +84,28 @@ export default function StoreInitializer({ children }: { children: React.ReactNo
         'postgres_changes',
         { event: '*', schema: 'public', table: 'profiles' },
         () => {
-          initStore();
+          initStore(false, true);
         }
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'predictions' },
         () => {
-          initStore();
+          initStore(false, true);
         }
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'groups' },
         () => {
-          initStore();
+          initStore(false, true);
         }
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'group_members' },
         () => {
-          initStore();
+          initStore(false, true);
         }
       )
       .subscribe();

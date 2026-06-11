@@ -20,6 +20,7 @@ function MatchesPageContent() {
   const [predictingMatchId, setPredictingMatchId] = useState<number | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
+  const [expandedCompetitors, setExpandedCompetitors] = useState<Record<number, boolean>>({});
   
   // Forms states for prediction inputs
   const [predHome, setPredHome] = useState<string>('');
@@ -516,15 +517,31 @@ function MatchesPageContent() {
                           </span>
                           {predictingMatchId === match.id ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                         </button>
-                      ) : (
-                        <span className={`px-3.5 py-1.5 rounded-full font-extrabold uppercase border text-[9px] tracking-widest ${
-                          prediction 
-                            ? 'bg-cream-200 text-stone-700 border-cream-300' 
-                            : 'bg-stone-50 text-stone-400 border-stone-200'
-                        }`}>
-                          {prediction ? `Mi pronóstico: ${prediction.home_score}-${prediction.away_score}` : 'Sin pronóstico'}
-                        </span>
-                      )}
+                      ) : (() => {
+                        const isCompetitorsExpanded = !!expandedCompetitors[match.id];
+                        return (
+                          <div className="flex items-center gap-2">
+                            <span className={`px-2.5 py-1 rounded-full font-bold border text-[8.5px] ${
+                              prediction 
+                                ? 'bg-cream-100/60 text-stone-600 border-cream-250' 
+                                : 'bg-stone-50 text-stone-400 border-stone-200/50'
+                            }`}>
+                              {prediction ? `Mío: ${prediction.home_score}-${prediction.away_score}` : 'Sin pronóstico'}
+                            </span>
+                            <button
+                              onClick={() => setExpandedCompetitors(prev => ({ ...prev, [match.id]: !prev[match.id] }))}
+                              className={`px-3 py-1 rounded-full font-extrabold uppercase border text-[8.5px] tracking-wider flex items-center gap-1 transition-all shadow-3xs cursor-pointer ${
+                                isCompetitorsExpanded
+                                  ? 'bg-stone-900 text-white border-stone-900 shadow-xs'
+                                  : 'bg-white text-stone-750 border-cream-300 hover:bg-cream-50 hover:scale-[1.02]'
+                              }`}
+                            >
+                              <span>Rivales</span>
+                              {isCompetitorsExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                            </button>
+                          </div>
+                        );
+                      })()}
                     </div>
 
                     {/* Prediction collapsible panel */}
@@ -596,43 +613,65 @@ function MatchesPageContent() {
                     </AnimatePresence>
 
                     {/* Show everyone's predictions if locked/closed */}
-                    {!isPredictable && (
-                      <div className="bg-cream-100/30 border-t border-cream-200 px-4 py-3 space-y-2">
-                        <div className="flex items-center gap-1 text-[8px] uppercase tracking-wider font-extrabold text-stone-450">
-                          <Users className="w-3.5 h-3.5 text-stone-400" />
-                          <span>Pronósticos de la competencia:</span>
-                        </div>
+                    {!isPredictable && (() => {
+                      const isCompetitorsExpanded = !!expandedCompetitors[match.id];
+                      if (!isCompetitorsExpanded) return null;
 
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                          {profiles.map(prof => {
-                            const profPred = predictions.find(p => p.participant_id === prof.id && p.match_id === match.id);
-                            const isSelf = prof.id === currentProfileId;
-                            const initials = prof.display_name.substring(0, 2).toUpperCase();
+                      const myGroupIds = groupMembers
+                        .filter(gm => gm.profile_id === currentProfileId)
+                        .map(gm => gm.group_id);
 
-                            return (
-                              <div 
-                                key={prof.id} 
-                                className={`flex items-center justify-between p-1.5 rounded-lg border text-[10px] ${
-                                  isSelf 
-                                    ? 'bg-gold-500/5 border-gold-300/40 font-bold' 
-                                    : 'bg-white border-cream-200'
-                                }`}
-                              >
-                                <div className="flex items-center gap-1.5 truncate max-w-[70px]">
-                                  <span className="w-4.5 h-4.5 rounded-full bg-cream-200 flex items-center justify-center text-[7px] font-bold text-stone-600 shrink-0">
-                                    {initials}
+                      const sharedGroupProfileIds = new Set(
+                        groupMembers
+                          .filter(gm => myGroupIds.includes(gm.group_id))
+                          .map(gm => gm.profile_id)
+                      );
+                      sharedGroupProfileIds.add(currentProfileId);
+
+                      const competitorProfiles = profiles.filter(prof => {
+                        if (prof.is_admin) return false;
+                        if (myGroupIds.length === 0) return prof.id === currentProfileId;
+                        return sharedGroupProfileIds.has(prof.id);
+                      });
+
+                      return (
+                        <div className="bg-cream-100/30 border-t border-cream-200 px-4 py-3 space-y-2">
+                          <div className="flex items-center gap-1 text-[8px] uppercase tracking-wider font-extrabold text-stone-450">
+                            <Users className="w-3.5 h-3.5 text-stone-400" />
+                            <span>Pronósticos de la competencia:</span>
+                          </div>
+
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            {competitorProfiles.map(prof => {
+                              const profPred = predictions.find(p => p.participant_id === prof.id && p.match_id === match.id);
+                              const isSelf = prof.id === currentProfileId;
+                              const initials = prof.display_name.substring(0, 2).toUpperCase();
+
+                              return (
+                                <div 
+                                  key={prof.id} 
+                                  className={`flex items-center justify-between p-1.5 rounded-lg border text-[10px] ${
+                                    isSelf 
+                                      ? 'bg-gold-500/5 border-gold-300/40 font-bold' 
+                                      : 'bg-white border-cream-200'
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-1.5 truncate max-w-[70px]">
+                                    <span className="w-4.5 h-4.5 rounded-full bg-cream-200 flex items-center justify-center text-[7px] font-bold text-stone-600 shrink-0">
+                                      {initials}
+                                    </span>
+                                    <span className="truncate text-stone-705">{prof.display_name}</span>
+                                  </div>
+                                  <span className="font-mono text-stone-900 text-right shrink-0">
+                                    {profPred ? `${profPred.home_score}-${profPred.away_score}` : '-'}
                                   </span>
-                                  <span className="truncate text-stone-705">{prof.display_name}</span>
                                 </div>
-                                <span className="font-mono text-stone-900 text-right shrink-0">
-                                  {profPred ? `${profPred.home_score}-${profPred.away_score}` : '-'}
-                                </span>
-                              </div>
-                            );
-                          })}
+                              );
+                            })}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      );
+                    })()}
 
                     {/* Info text if Predictable but other predictions are hidden */}
                     {isPredictable && (

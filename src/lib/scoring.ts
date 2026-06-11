@@ -12,9 +12,19 @@ export function updateStandings(
   const championTeam = teams?.find(t => t.stage_reached === 'champion');
   const activeProfiles = profiles.filter(p => !p.is_admin); // Exclude admin accounts from standings
 
+  // OPTIMIZATION: Pre-map matches and pre-group predictions by participant
+  const matchesMap = new Map(matches.map(m => [m.id, m]));
+  
+  const predictionsByParticipant = new Map<string, Prediction[]>();
+  predictions.forEach(p => {
+    const list = predictionsByParticipant.get(p.participant_id) || [];
+    list.push(p);
+    predictionsByParticipant.set(p.participant_id, list);
+  });
+
   const standingsList: Standing[] = activeProfiles.map(profile => {
-    // Find all predictions for this participant
-    const userPredictions = predictions.filter(p => p.participant_id === profile.id);
+    // Find all predictions for this participant in O(1)
+    const userPredictions = predictionsByParticipant.get(profile.id) || [];
 
     let exactGuesses = 0;
     let outcomeGuesses = 0;
@@ -26,7 +36,8 @@ export function updateStandings(
     }
 
     userPredictions.forEach(pred => {
-      const match = matches.find(m => m.id === pred.match_id);
+      // Find match in O(1)
+      const match = matchesMap.get(pred.match_id);
       if (!match || match.status !== 'finished') return;
 
       const actHome = match.home_score;

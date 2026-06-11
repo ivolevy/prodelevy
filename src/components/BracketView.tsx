@@ -119,11 +119,11 @@ export default function BracketView() {
 
     const first: BracketTeam = firstTeam && firstTeam.played > 0
       ? { id: firstTeam.id, name: firstTeam.name, flag_emoji: firstTeam.flag_emoji }
-      : { id: `1${groupLetter}`, name: `1° Grupo ${groupLetter}`, flag_emoji: '🏳️', placeholder: `1${groupLetter}` };
+      : { id: `1${groupLetter}`, name: `Ganador Grupo ${groupLetter}`, flag_emoji: '🏳️', placeholder: `1${groupLetter}` };
 
     const second: BracketTeam = secondTeam && secondTeam.played > 0
       ? { id: secondTeam.id, name: secondTeam.name, flag_emoji: secondTeam.flag_emoji }
-      : { id: `2${groupLetter}`, name: `2° Grupo ${groupLetter}`, flag_emoji: '🏳️', placeholder: `2${groupLetter}` };
+      : { id: `2${groupLetter}`, name: `Segundo Grupo ${groupLetter}`, flag_emoji: '🏳️', placeholder: `2${groupLetter}` };
 
     return { first, second };
   };
@@ -181,14 +181,14 @@ export default function BracketView() {
 
   // Define Octavos
   const octavos: BracketMatch[] = [
-    getKnockoutMatch(13, 'Octavos', groupA.first, groupB.second),
-    getKnockoutMatch(14, 'Octavos', groupC.first, groupD.second),
-    getKnockoutMatch(15, 'Octavos', groupE.first, groupF.second),
-    getKnockoutMatch(16, 'Octavos', groupG.first, groupH.second),
-    getKnockoutMatch(17, 'Octavos', groupI.first, groupJ.second),
-    getKnockoutMatch(18, 'Octavos', groupK.first, groupL.second),
-    getKnockoutMatch(19, 'Octavos', groupB.first, groupA.second),
-    getKnockoutMatch(20, 'Octavos', groupD.first, groupC.second)
+    getKnockoutMatch(25, 'Octavos', groupA.first, groupB.second),
+    getKnockoutMatch(26, 'Octavos', groupC.first, groupD.second),
+    getKnockoutMatch(27, 'Octavos', groupE.first, groupF.second),
+    getKnockoutMatch(28, 'Octavos', groupG.first, groupH.second),
+    getKnockoutMatch(29, 'Octavos', groupI.first, groupJ.second),
+    getKnockoutMatch(30, 'Octavos', groupK.first, groupL.second),
+    getKnockoutMatch(31, 'Octavos', groupB.first, groupA.second),
+    getKnockoutMatch(32, 'Octavos', groupD.first, groupC.second)
   ];
 
   // Resolve winner helper
@@ -206,20 +206,20 @@ export default function BracketView() {
 
   // Define Cuartos
   const cuartos: BracketMatch[] = [
-    getKnockoutMatch(21, 'Cuartos', getWinner(octavos[0]), getWinner(octavos[1])),
-    getKnockoutMatch(22, 'Cuartos', getWinner(octavos[2]), getWinner(octavos[3])),
-    getKnockoutMatch(23, 'Cuartos', getWinner(octavos[4]), getWinner(octavos[5])),
-    getKnockoutMatch(24, 'Cuartos', getWinner(octavos[6]), getWinner(octavos[7]))
+    getKnockoutMatch(33, 'Cuartos', getWinner(octavos[0]), getWinner(octavos[1])),
+    getKnockoutMatch(34, 'Cuartos', getWinner(octavos[2]), getWinner(octavos[3])),
+    getKnockoutMatch(35, 'Cuartos', getWinner(octavos[4]), getWinner(octavos[5])),
+    getKnockoutMatch(36, 'Cuartos', getWinner(octavos[6]), getWinner(octavos[7]))
   ];
 
   // Define Semis
   const semis: BracketMatch[] = [
-    getKnockoutMatch(25, 'Semis', getWinner(cuartos[0]), getWinner(cuartos[1])),
-    getKnockoutMatch(26, 'Semis', getWinner(cuartos[2]), getWinner(cuartos[3]))
+    getKnockoutMatch(37, 'Semis', getWinner(cuartos[0]), getWinner(cuartos[1])),
+    getKnockoutMatch(38, 'Semis', getWinner(cuartos[2]), getWinner(cuartos[3]))
   ];
 
   // Define Final
-  const finalMatch = getKnockoutMatch(27, 'Final', getWinner(semis[0]), getWinner(semis[1]));
+  const finalMatch = getKnockoutMatch(39, 'Final', getWinner(semis[0]), getWinner(semis[1]));
 
   const champion = finalMatch.winnerId 
     ? (finalMatch.winnerId === finalMatch.team1.id ? finalMatch.team1 : finalMatch.team2)

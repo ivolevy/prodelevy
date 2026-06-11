@@ -225,6 +225,17 @@ export default function Home() {
     const totalMatchesPlayed = matches.filter(m => m.status === 'finished').length;
     const totalPredictionsCount = predictions.length;
 
+    // OPTIMIZATION: Pre-map standings, predictions count, teams, and predictions for O(1) lookups
+    const standingsMap = new Map(standings.map((s, index) => [s.profile_id, { ...s, calculatedRank: index + 1 }]));
+    
+    const predictionsCountMap = new Map<string, number>();
+    predictions.forEach(pr => {
+      predictionsCountMap.set(pr.participant_id, (predictionsCountMap.get(pr.participant_id) || 0) + 1);
+    });
+
+    const teamsMap = new Map(teams.map(t => [t.id, t]));
+    const predictionsMap = new Map(predictions.map(pr => [`${pr.participant_id}-${pr.match_id}`, pr]));
+
     // Filter participants based on search query and group
     const filteredParticipants = profiles.filter(p => {
       if (p.is_admin) return false;
@@ -238,11 +249,12 @@ export default function Home() {
     });
 
     const sortedParticipants = [...filteredParticipants].sort((a, b) => {
-      const standingA = standings.find(s => s.profile_id === a.id);
-      const standingB = standings.find(s => s.profile_id === b.id);
+      const standingA = standingsMap.get(a.id);
+      const standingB = standingsMap.get(b.id);
       const ptsA = standingA ? standingA.total_points : 0;
       const ptsB = standingB ? standingB.total_points : 0;
-      return ptsB - ptsA;
+      if (ptsB !== ptsA) return ptsB - ptsA;
+      return a.display_name.localeCompare(b.display_name);
     });
 
     return (
@@ -512,8 +524,8 @@ export default function Home() {
                 <tbody className="divide-y divide-cream-150">
                   {sortedParticipants.map((p, index) => {
                     const initials = p.display_name.substring(0, 2).toUpperCase();
-                    const pPredCount = predictions.filter(pr => pr.participant_id === p.id).length;
-                    const standing = standings.find(s => s.profile_id === p.id);
+                    const pPredCount = predictionsCountMap.get(p.id) || 0;
+                    const standing = standingsMap.get(p.id);
                     const pts = standing ? standing.total_points : 0;
                     const rank = standing ? standing.rank : index + 1;
                     const isExpanded = !!expandedPredictions[p.id];
@@ -595,7 +607,7 @@ export default function Home() {
                           {/* Champion Prediction */}
                           <td className="py-3.5 px-4 text-center">
                             {(() => {
-                              const team = teams.find(t => t.id === p.champion_prediction);
+                              const team = p.champion_prediction ? teamsMap.get(p.champion_prediction) : null;
                               return team ? (
                                 <span className="text-[10px] font-bold text-stone-750 bg-cream-50/50 border border-cream-200 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
                                   <span>{team.flag_emoji}</span>
@@ -653,7 +665,7 @@ export default function Home() {
                                       <span>🏆 Campeón Predicho:</span>
                                       <span className="font-extrabold text-stone-850">
                                         {(() => {
-                                          const team = teams.find(t => t.id === p.champion_prediction);
+                                          const team = teamsMap.get(p.champion_prediction);
                                           return team ? `${team.flag_emoji} ${team.name}` : p.champion_prediction;
                                         })()}
                                       </span>
@@ -661,14 +673,14 @@ export default function Home() {
                                   )}
                                 </div>
 
-                                {predictions.filter(pr => pr.participant_id === p.id).length === 0 ? (
+                                {(predictionsCountMap.get(p.id) || 0) === 0 ? (
                                   <p className="text-[10px] text-stone-400 italic py-1 pl-1">No cargó ningún pronóstico todavía.</p>
                                 ) : (
                                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                                     {matches.map(m => {
-                                      const homeTeam = teams.find(t => t.id === m.home_team_id);
-                                      const awayTeam = teams.find(t => t.id === m.away_team_id);
-                                      const pred = predictions.find(pr => pr.participant_id === p.id && pr.match_id === m.id);
+                                      const homeTeam = m.home_team_id ? teamsMap.get(m.home_team_id) : null;
+                                      const awayTeam = m.away_team_id ? teamsMap.get(m.away_team_id) : null;
+                                      const pred = predictionsMap.get(`${p.id}-${m.id}`);
                                       
                                       if (!pred) return null;
                                       
