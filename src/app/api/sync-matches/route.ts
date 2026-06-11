@@ -63,7 +63,7 @@ export async function POST(req: Request) {
         .map((m: any) => `ID ${m.id}: ${m.home_team_id} vs ${m.away_team_id} (Fecha: ${m.fecha})`)
         .join('\n');
 
-      const prompt = `Buscá en la web los resultados oficiales de la Copa del Mundo de la FIFA 2026 para los siguientes partidos:\n${matchesListText}\n\nDevolvé los puntajes actuales (home_score y away_score si ya jugaron o están jugando) y el estado correcto ('upcoming' si no empezó, 'live' si está en juego, 'finished' si terminó). Si no jugaron, home_score y away_score deben ser null.`;
+      const prompt = `Buscá en la web los resultados oficiales de la Copa del Mundo de la FIFA 2026 para los siguientes partidos:\n${matchesListText}\n\nDevolvé los puntajes actuales (home_score y away_score si ya jugaron o están jugando) y el estado correcto ('upcoming' si no empezó, 'live' si está en juego, 'finished' si terminó). Si no jugaron, home_score y away_score deben ser null.\n\nDevolvé el resultado ÚNICAMENTE como una lista/array JSON válido sin comentarios ni código markdown de formato. No agregues nada más que el JSON válido de la forma: [{"id": 1, "home_score": null, "away_score": null, "status": "upcoming"}]`;
 
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`,
@@ -82,23 +82,7 @@ export async function POST(req: Request) {
               {
                 googleSearch: {}
               }
-            ],
-            generationConfig: {
-              responseMimeType: "application/json",
-              responseSchema: {
-                type: "ARRAY",
-                items: {
-                  type: "OBJECT",
-                  properties: {
-                    id: { type: "INTEGER" },
-                    home_score: { type: "INTEGER", nullable: true },
-                    away_score: { type: "INTEGER", nullable: true },
-                    status: { type: "STRING", enum: ["upcoming", "live", "finished"] }
-                  },
-                  required: ["id", "status"]
-                }
-              }
-            }
+            ]
           }),
         }
       );
@@ -107,7 +91,11 @@ export async function POST(req: Request) {
       const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
       if (resultText) {
-        const updatedScores = JSON.parse(resultText.trim());
+        let cleaned = resultText.trim();
+        if (cleaned.startsWith('```')) {
+          cleaned = cleaned.replace(/^```(json)?/, '').replace(/```$/, '').trim();
+        }
+        const updatedScores = JSON.parse(cleaned);
         return NextResponse.json({ results: updatedScores, source: 'gemini' });
       }
     }
