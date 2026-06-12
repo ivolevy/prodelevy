@@ -33,11 +33,18 @@ function MatchesPageContent() {
       const myGs = userGroups.filter(g => myGms.some(gm => gm.group_id === g.id));
       if (myGs.length > 0) {
         setSelectedGroupId(myGs[0].id);
+      } else {
+        setSelectedGroupId('all');
       }
     }
   }, [currentProfileId, userGroups, groupMembers]);
 
   const activeProfile = profiles.find(p => p.id === currentProfileId);
+  const myGroupMemberships = groupMembers.filter(gm => gm.profile_id === currentProfileId);
+  const myGroups = userGroups.filter(g => myGroupMemberships.some(gm => gm.group_id === g.id));
+  const activeGroupIdForUser = selectedGroupId !== 'all' 
+    ? selectedGroupId 
+    : (myGroups.length > 0 ? myGroups[0].id : 'all');
 
   if (activeProfile?.is_admin) {
     return (
@@ -269,10 +276,26 @@ function MatchesPageContent() {
       </AnimatePresence>
       {/* Page Header */}
       <div className="sticky top-0 md:top-[72px] bg-sports-bg/95 backdrop-blur-xs pt-2 pb-4 border-b border-cream-300 z-30 flex flex-col sm:flex-row justify-between items-center gap-3 transition-all">
-        <div className="text-center sm:text-left w-full sm:w-auto">
+        <div className="text-center sm:text-left w-full sm:w-auto flex flex-col sm:flex-row sm:items-center gap-2">
           <h1 className="text-[10px] font-black tracking-widest text-stone-400 uppercase">
             fixture
           </h1>
+          {myGroups.length > 0 && (
+            <div className="relative self-center sm:self-auto">
+              <select
+                value={selectedGroupId}
+                onChange={(e) => setSelectedGroupId(e.target.value)}
+                className="appearance-none bg-cream-100/70 hover:bg-cream-200/50 border border-cream-300 rounded-xl px-3 pr-8 py-1.5 text-[9px] font-black uppercase tracking-wider text-stone-750 focus:outline-none focus:border-gold-500 cursor-pointer transition-all"
+              >
+                {myGroups.map(g => (
+                  <option key={g.id} value={g.id}>Grupo: {g.name}</option>
+                ))}
+              </select>
+              <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-stone-500">
+                <ChevronDown className="w-3 h-3 text-stone-500" />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Sub Tabs Navigation */}
@@ -617,21 +640,10 @@ function MatchesPageContent() {
                       const isCompetitorsExpanded = !!expandedCompetitors[match.id];
                       if (!isCompetitorsExpanded) return null;
 
-                      const myGroupIds = groupMembers
-                        .filter(gm => gm.profile_id === currentProfileId)
-                        .map(gm => gm.group_id);
-
-                      const sharedGroupProfileIds = new Set(
-                        groupMembers
-                          .filter(gm => myGroupIds.includes(gm.group_id))
-                          .map(gm => gm.profile_id)
-                      );
-                      sharedGroupProfileIds.add(currentProfileId);
-
                       const competitorProfiles = profiles.filter(prof => {
                         if (prof.is_admin) return false;
-                        if (myGroupIds.length === 0) return prof.id === currentProfileId;
-                        return sharedGroupProfileIds.has(prof.id);
+                        if (activeGroupIdForUser === 'all') return prof.id === currentProfileId;
+                        return groupMembers.some(gm => gm.group_id === activeGroupIdForUser && gm.profile_id === prof.id);
                       });
 
                       return (
@@ -737,15 +749,9 @@ function MatchesPageContent() {
 
       {/* Prode Rankings Tab */}
       {activeSubTab === 'prode' && (() => {
-        const myGroupMemberships = groupMembers.filter(gm => gm.profile_id === currentProfileId);
-        const myGroups = userGroups.filter(g => myGroupMemberships.some(gm => gm.group_id === g.id));
-        const activeGroupIdForUser = selectedGroupId !== 'all' 
-          ? selectedGroupId 
-          : (myGroups.length > 0 ? myGroups[0].id : 'all');
-
         const filteredStandings = standings.filter(s => 
           activeGroupIdForUser === 'all'
-            ? true 
+            ? (activeProfile?.is_admin ? true : s.profile_id === currentProfileId)
             : groupMembers.some(gm => gm.group_id === activeGroupIdForUser && gm.profile_id === s.profile_id)
         );
         return (
