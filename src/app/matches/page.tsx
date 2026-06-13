@@ -280,22 +280,6 @@ function MatchesPageContent() {
           <h1 className="text-[10px] font-black tracking-widest text-stone-400 uppercase">
             fixture
           </h1>
-          {myGroups.length > 0 && (
-            <div className="relative self-center sm:self-auto">
-              <select
-                value={selectedGroupId}
-                onChange={(e) => setSelectedGroupId(e.target.value)}
-                className="appearance-none bg-cream-100/70 hover:bg-cream-200/50 border border-cream-300 rounded-xl px-3 pr-8 py-1.5 text-[9px] font-black uppercase tracking-wider text-stone-750 focus:outline-none focus:border-gold-500 cursor-pointer transition-all"
-              >
-                {myGroups.map(g => (
-                  <option key={g.id} value={g.id}>Grupo: {g.name}</option>
-                ))}
-              </select>
-              <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-stone-500">
-                <ChevronDown className="w-3 h-3 text-stone-500" />
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Sub Tabs Navigation */}
