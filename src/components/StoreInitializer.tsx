@@ -177,8 +177,9 @@ export default function StoreInitializer({ children }: { children: React.ReactNo
   }, [isLoading]);
 
   const urlBase64ToUint8Array = (base64String: string) => {
-    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
-    const base64 = (base64String + padding)
+    const cleanBase64 = base64String.replace(/^"(.*)"$/, '$1').replace(/'/g, '');
+    const padding = '='.repeat((4 - (cleanBase64.length % 4)) % 4);
+    const base64 = (cleanBase64 + padding)
       .replace(/\-/g, '+')
       .replace(/_/g, '/');
 

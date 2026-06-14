@@ -28,12 +28,16 @@ export async function POST(req: Request) {
     }
 
     // 2. Load VAPID credentials
-    const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-    const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
+    let vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+    let vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
 
     if (!vapidPublicKey || !vapidPrivateKey) {
       return NextResponse.json({ error: 'Las llaves VAPID no están configuradas en el servidor.' }, { status: 500 });
     }
+
+    // Clean keys from double/single quotes if present in env configuration
+    vapidPublicKey = vapidPublicKey.replace(/^"(.*)"$/, '$1').replace(/'/g, '');
+    vapidPrivateKey = vapidPrivateKey.replace(/^"(.*)"$/, '$1').replace(/'/g, '');
 
     webpush.setVapidDetails(
       'mailto:ivo.levy03@gmail.com',
