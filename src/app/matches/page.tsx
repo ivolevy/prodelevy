@@ -354,7 +354,8 @@ function MatchesPageContent() {
             </div>
           </div>
 
-          {(activeDateFilter === 'FECHA_2' || activeDateFilter === 'FECHA_3') ? (
+          {((activeDateFilter === 'FECHA_2' && !matches.some(m => m.id >= 25 && m.id <= 48)) || 
+            (activeDateFilter === 'FECHA_3' && !matches.some(m => m.id >= 49 && m.id <= 72))) ? (
             <div className="text-center py-20 bg-cream-50/20 border border-dashed border-cream-300 rounded-3xl p-6 shadow-2xs">
               <Calendar className="w-8 h-8 text-stone-300 mx-auto mb-3" />
               <h4 className="text-xs font-black uppercase text-stone-800 tracking-wider">Próximamente</h4>
