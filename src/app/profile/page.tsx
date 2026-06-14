@@ -52,6 +52,7 @@ export default function ProfilePage() {
   
   const [adminError, setAdminError] = useState<string | null>(null);
   const [adminSuccess, setAdminSuccess] = useState<string | null>(null);
+  const [activeAdminTab, setActiveAdminTab] = useState<'users' | 'groups' | 'push'>('users');
 
   // Group form state
   const [isCreatingGroup, setIsCreatingGroup] = useState(false);
@@ -554,8 +555,46 @@ export default function ProfilePage() {
       {/* Admin Panel Card */}
       {activeProfile.is_admin && (
         <div className="space-y-6">
+          {/* Minimalist Tab Switcher */}
+          <div className="flex bg-cream-100/50 border border-cream-250 rounded-2xl p-1 gap-1">
+            <button
+              onClick={() => setActiveAdminTab('users')}
+              className={`flex-grow py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                activeAdminTab === 'users'
+                  ? 'bg-stone-900 text-white shadow-xs'
+                  : 'text-stone-500 hover:text-stone-855'
+              }`}
+            >
+              <Users className="w-3.5 h-3.5" />
+              <span>Usuarios</span>
+            </button>
+            <button
+              onClick={() => setActiveAdminTab('groups')}
+              className={`flex-grow py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                activeAdminTab === 'groups'
+                  ? 'bg-stone-900 text-white shadow-xs'
+                  : 'text-stone-500 hover:text-stone-855'
+              }`}
+            >
+              <Users className="w-3.5 h-3.5" />
+              <span>Grupos</span>
+            </button>
+            <button
+              onClick={() => setActiveAdminTab('push')}
+              className={`flex-grow py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                activeAdminTab === 'push'
+                  ? 'bg-stone-900 text-white shadow-xs'
+                  : 'text-stone-500 hover:text-stone-855'
+              }`}
+            >
+              <Bell className="w-3.5 h-3.5" />
+              <span>Notificaciones</span>
+            </button>
+          </div>
+
           {/* User Admin */}
-          <div className="glass-card p-6 border border-cream-300 shadow-sm bg-white text-left space-y-6">
+          {activeAdminTab === 'users' && (
+            <div className="glass-card p-6 border border-cream-300 shadow-sm bg-white text-left space-y-6">
             <div className="border-b border-cream-200 pb-3 flex justify-between items-center">
               <h3 className="text-xs font-black text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
                 <Users className="w-4 h-4 text-gold-500" /> Administración de Usuarios
@@ -834,9 +873,11 @@ export default function ProfilePage() {
               })}
             </div>
           </div>
+          )}
 
           {/* Group Admin */}
-          <div className="glass-card p-6 border border-cream-300 shadow-sm bg-white text-left space-y-6">
+          {activeAdminTab === 'groups' && (
+            <div className="glass-card p-6 border border-cream-300 shadow-sm bg-white text-left space-y-6">
             <div className="border-b border-cream-200 pb-3 flex justify-between items-center">
               <h3 className="text-xs font-black text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
                 <Users className="w-4 h-4 text-gold-500" /> Administración de Grupos
@@ -1015,9 +1056,11 @@ export default function ProfilePage() {
               )}
             </div>
           </div>
+          )}
 
           {/* Push Notifications Admin Console */}
-          <div className="glass-card p-6 border border-cream-300 shadow-sm bg-white text-left space-y-6">
+          {activeAdminTab === 'push' && (
+            <div className="glass-card p-6 border border-cream-300 shadow-sm bg-white text-left space-y-6">
             <div className="border-b border-cream-200 pb-3 flex justify-between items-center">
               <h3 className="text-xs font-black text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
                 <Bell className="w-4 h-4 text-gold-500" /> Enviar Notificación Push
@@ -1068,6 +1111,7 @@ export default function ProfilePage() {
               </button>
             </div>
           </div>
+          )}
         </div>
       )}
     </div>
