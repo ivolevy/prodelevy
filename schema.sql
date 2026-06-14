@@ -426,3 +426,15 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- 12. PUSH_SUBSCRIPTIONS Table (Stores PWA web push subscription tokens)
+CREATE TABLE IF NOT EXISTS public.push_subscriptions (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    profile_id TEXT REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+    subscription JSONB NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, now()) NOT NULL,
+    CONSTRAINT unique_profile_subscription UNIQUE (profile_id, subscription)
+);
+
+-- Disable Row Level Security (RLS) to allow client-side inserts/deletes from PWA
+ALTER TABLE public.push_subscriptions DISABLE ROW LEVEL SECURITY;

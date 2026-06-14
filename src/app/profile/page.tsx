@@ -22,10 +22,19 @@ export default function ProfilePage() {
     groupMembers,
     createGroup,
     joinGroup,
-    leaveGroup
+    leaveGroup,
+    savePushSubscription,
+    deletePushSubscription
   } = useStore();
   const router = useRouter();
   const [notificationStatus, setNotificationStatus] = useState<string>('default');
+
+  // Push notification states
+  const [pushTitle, setPushTitle] = useState('⏳ ¡No te duermas!');
+  const [pushBody, setPushBody] = useState('Los partidos de la Fecha 2 ya están listos. Cargá tus pronósticos antes del silbatazo inicial.');
+  const [pushError, setPushError] = useState<string | null>(null);
+  const [pushSuccess, setPushSuccess] = useState<string | null>(null);
+  const [isSendingPush, setIsSendingPush] = useState(false);
 
   // Admin form state
   const [isCreatingNew, setIsCreatingNew] = useState(false);
@@ -163,6 +172,21 @@ export default function ProfilePage() {
     }
   };
 
+  const urlBase64ToUint8Array = (base64String: string) => {
+    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding)
+      .replace(/\-/g, '+')
+      .replace(/_/g, '/');
+
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  };
+
   const handleRequestPermission = async () => {
     if (typeof window === 'undefined' || !('Notification' in window)) return;
     
@@ -172,6 +196,29 @@ export default function ProfilePage() {
       
       if (permission === 'granted') {
         triggerTestNotification();
+        
+        // Push notification subscription
+        if ('serviceWorker' in navigator) {
+          const registration = await navigator.serviceWorker.ready;
+          const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+          
+          if (vapidPublicKey) {
+            try {
+              let subscription = await registration.pushManager.getSubscription();
+              
+              if (!subscription) {
+                subscription = await registration.pushManager.subscribe({
+                  userVisibleOnly: true,
+                  applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
+                });
+              }
+              
+              await savePushSubscription(currentProfileId, subscription);
+            } catch (pushErr) {
+              console.error('Error establishing push subscription:', pushErr);
+            }
+          }
+        }
       }
     } catch (err) {
       console.error('Error requesting notification permission:', err);
@@ -212,9 +259,56 @@ export default function ProfilePage() {
     ? teams.find(t => t.id === activeProfile.champion_prediction)
     : null;
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+      try {
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.getSubscription();
+        if (subscription) {
+          await deletePushSubscription(currentProfileId, subscription);
+          await subscription.unsubscribe();
+        }
+      } catch (e) {
+        console.error('Error unsubscribing on logout:', e);
+      }
+    }
     setCurrentProfile('');
     router.push('/');
+  };
+
+  const handleSendPushNotification = async () => {
+    if (!pushTitle.trim() || !pushBody.trim()) {
+      setPushError('Por favor completa el título y el cuerpo.');
+      return;
+    }
+    setIsSendingPush(true);
+    setPushError(null);
+    setPushSuccess(null);
+
+    try {
+      const response = await fetch('/api/send-push', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: pushTitle,
+          body: pushBody,
+          adminProfileId: currentProfileId
+        })
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        setPushError(data.error || 'Error al enviar notificaciones.');
+      } else {
+        setPushSuccess(`¡Éxito! Se enviaron notificaciones a ${data.sentCount} dispositivos.`);
+      }
+    } catch (err: any) {
+      setPushError('Error de red al enviar notificaciones.');
+    } finally {
+      setIsSendingPush(false);
+    }
   };
 
   if (!activeProfile) {
@@ -919,6 +1013,59 @@ export default function ProfilePage() {
                   );
                 })
               )}
+            </div>
+          </div>
+
+          {/* Push Notifications Admin Console */}
+          <div className="glass-card p-6 border border-cream-300 shadow-sm bg-white text-left space-y-6">
+            <div className="border-b border-cream-200 pb-3 flex justify-between items-center">
+              <h3 className="text-xs font-black text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
+                <Bell className="w-4 h-4 text-gold-500" /> Enviar Notificación Push
+              </h3>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-[8.5px] font-black uppercase tracking-wider text-stone-450 mb-1">Título de la Notificación</label>
+                <input
+                  type="text"
+                  placeholder="ej: ⏳ ¡No te duermas!"
+                  value={pushTitle}
+                  onChange={e => setPushTitle(e.target.value)}
+                  className="w-full bg-cream-50/30 border border-cream-300 rounded-xl px-3.5 py-2 text-xs text-stone-850 placeholder-stone-400 focus:outline-none focus:border-gold-500 font-semibold"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[8.5px] font-black uppercase tracking-wider text-stone-450 mb-1">Mensaje</label>
+                <textarea
+                  placeholder="ej: Los partidos de la Fecha 2 ya están listos. Cargá tus pronósticos antes del silbatazo inicial."
+                  value={pushBody}
+                  onChange={e => setPushBody(e.target.value)}
+                  rows={3}
+                  className="w-full bg-cream-50/30 border border-cream-300 rounded-xl px-3.5 py-2 text-xs text-stone-850 placeholder-stone-400 focus:outline-none focus:border-gold-500 font-semibold resize-none"
+                />
+              </div>
+
+              {pushError && (
+                <p className="text-[10px] font-bold text-rose-650 bg-rose-50 border border-rose-200/50 p-2.5 rounded-lg text-center">
+                  {pushError}
+                </p>
+              )}
+
+              {pushSuccess && (
+                <p className="text-[10px] font-bold text-emerald-650 bg-emerald-50 border border-emerald-250/20 p-2.5 rounded-lg text-center">
+                  {pushSuccess}
+                </p>
+              )}
+
+              <button
+                onClick={handleSendPushNotification}
+                disabled={isSendingPush}
+                className="w-full py-2.5 bg-stone-900 hover:bg-stone-800 disabled:bg-stone-400 text-white font-bold text-[9px] uppercase tracking-widest rounded-xl transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                {isSendingPush ? 'Enviando...' : 'Enviar Notificación a Todos'}
+              </button>
             </div>
           </div>
         </div>

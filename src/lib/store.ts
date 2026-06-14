@@ -244,6 +244,8 @@ interface TournamentState {
   createGroup: (name: string, inviteCode: string) => Promise<void>;
   joinGroup: (inviteCode: string) => Promise<void>;
   leaveGroup: (groupId: string) => Promise<void>;
+  savePushSubscription: (profileId: string, subscription: any) => Promise<void>;
+  deletePushSubscription: (profileId: string, subscription: any) => Promise<void>;
 }
 
 // --- ZUSTAND STORE IMPLEMENTATION ---
@@ -1315,6 +1317,43 @@ export const useStore = create<TournamentState>((set, get) => ({
         await supabase.from('group_members').delete().eq('group_id', groupId).eq('profile_id', currentProfileId);
       } catch (e) {
         console.error('Failed to leave group in Supabase:', e);
+      }
+    }
+  },
+
+  savePushSubscription: async (profileId: string, subscription: any) => {
+    const { isDemoMode } = get();
+    if (!isDemoMode && supabase) {
+      try {
+        const { data } = await supabase
+          .from('push_subscriptions')
+          .select('id')
+          .eq('profile_id', profileId)
+          .eq('subscription->>endpoint', subscription.endpoint);
+        
+        if (!data || data.length === 0) {
+          await supabase.from('push_subscriptions').insert({
+            profile_id: profileId,
+            subscription: subscription
+          });
+        }
+      } catch (e) {
+        console.error('Failed to save push subscription in Supabase:', e);
+      }
+    }
+  },
+
+  deletePushSubscription: async (profileId: string, subscription: any) => {
+    const { isDemoMode } = get();
+    if (!isDemoMode && supabase) {
+      try {
+        await supabase
+          .from('push_subscriptions')
+          .delete()
+          .eq('profile_id', profileId)
+          .eq('subscription->>endpoint', subscription.endpoint);
+      } catch (e) {
+        console.error('Failed to delete push subscription in Supabase:', e);
       }
     }
   }

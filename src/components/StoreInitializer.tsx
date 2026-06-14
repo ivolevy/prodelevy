@@ -13,6 +13,7 @@ export default function StoreInitializer({ children }: { children: React.ReactNo
   const updateMatchScore = useStore((state) => state.updateMatchScore);
   const initialized = useRef(false);
   const matchesRef = useRef(matches);
+  const savePushSubscription = useStore((state) => state.savePushSubscription);
 
   // Keep matches reference up to date to avoid recreation of sync effect
   useEffect(() => {
@@ -175,6 +176,21 @@ export default function StoreInitializer({ children }: { children: React.ReactNo
     };
   }, [isLoading]);
 
+  const urlBase64ToUint8Array = (base64String: string) => {
+    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding)
+      .replace(/\-/g, '+')
+      .replace(/_/g, '/');
+
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  };
+
   // Prompt for notification permission on first login/profile activation
   useEffect(() => {
     if (typeof window !== 'undefined' && currentProfileId && 'Notification' in window) {
@@ -190,12 +206,53 @@ export default function StoreInitializer({ children }: { children: React.ReactNo
                   body: '¡Notificaciones activadas! "¿Vos tenés ganas de ganar, eh gordito? 😉"'
                 }
               });
+              
+              const registration = await navigator.serviceWorker.ready;
+              const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+              if (vapidPublicKey) {
+                const subscription = await registration.pushManager.subscribe({
+                  userVisibleOnly: true,
+                  applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
+                });
+                await savePushSubscription(currentProfileId, subscription);
+              }
             }
           } catch (err) {
             console.error('Error requesting notifications:', err);
           }
         }, 1500);
         return () => clearTimeout(timer);
+      }
+    }
+  }, [currentProfileId]);
+
+  // Synchronize Push Subscription if permission is already granted
+  useEffect(() => {
+    if (typeof window !== 'undefined' && currentProfileId && 'Notification' in window) {
+      if (Notification.permission === 'granted' && 'serviceWorker' in navigator) {
+        const syncSubscription = async () => {
+          try {
+            const registration = await navigator.serviceWorker.ready;
+            const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+            
+            if (vapidPublicKey) {
+              let subscription = await registration.pushManager.getSubscription();
+              
+              if (!subscription) {
+                subscription = await registration.pushManager.subscribe({
+                  userVisibleOnly: true,
+                  applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
+                });
+              }
+              
+              await savePushSubscription(currentProfileId, subscription);
+            }
+          } catch (e) {
+            console.error('Error synchronizing push subscription:', e);
+          }
+        };
+        
+        syncSubscription();
       }
     }
   }, [currentProfileId]);
