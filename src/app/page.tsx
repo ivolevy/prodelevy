@@ -22,29 +22,7 @@ export default function Home() {
 
   // Admin form state
   const [expandedPredictions, setExpandedPredictions] = useState<Record<string, boolean>>({});
-  const [isCreatingNew, setIsCreatingNew] = useState(false);
-  const [newUsername, setNewUsername] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [editingProfileId, setEditingProfileId] = useState<string | null>(null);
-  const [editUsername, setEditUsername] = useState('');
-  const [editPassword, setEditPassword] = useState('');
-  const [adminError, setAdminError] = useState<string | null>(null);
-  const [adminSuccess, setAdminSuccess] = useState<string | null>(null);
-  const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showEditPassword, setShowEditPassword] = useState(false);
   const [userSearchQuery, setUserSearchQuery] = useState('');
-  const [adminSelectedGroupId, setAdminSelectedGroupId] = useState<string>('all');
-  const [newUserGroupId, setNewUserGroupId] = useState<string>('');
-  const [editUserGroupId, setEditUserGroupId] = useState<string>('');
-
-  // Group form state
-  const [isCreatingGroup, setIsCreatingGroup] = useState(false);
-  const [newGroupName, setNewGroupName] = useState('');
-  const [newGroupCode, setNewGroupCode] = useState('');
-  const [groupError, setGroupError] = useState<string | null>(null);
-  const [groupSuccess, setGroupSuccess] = useState<string | null>(null);
-  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -101,84 +79,7 @@ export default function Home() {
     });
   };
 
-  const showSuccess = (msg: string) => {
-    setAdminSuccess(msg);
-    setAdminError(null);
-    setTimeout(() => setAdminSuccess(null), 3000);
-  };
 
-  const showError = (msg: string) => {
-    setAdminError(msg);
-    setAdminSuccess(null);
-    setTimeout(() => setAdminError(null), 4000);
-  };
-
-  const handleCreateUser = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newUsername.trim() || !newPassword.trim()) {
-      showError('Por favor completa todos los campos.');
-      return;
-    }
-    const cleanUsername = newUsername.trim();
-    try {
-      await addProfile(cleanUsername, cleanUsername, newPassword, newUserGroupId || undefined);
-      setIsCreatingNew(false);
-      setNewUsername('');
-      setNewPassword('');
-      setNewUserGroupId('');
-      showSuccess('Usuario creado con éxito.');
-    } catch (err: any) {
-      showError(err.message || 'Error al crear usuario.');
-    }
-  };
-
-  const handleEditUser = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editUsername.trim()) {
-      showError('Por favor completa los campos requeridos.');
-      return;
-    }
-    const cleanUsername = editUsername.trim();
-    try {
-      await editProfile(editingProfileId!, cleanUsername, cleanUsername, editPassword || undefined, editUserGroupId || undefined);
-      setEditingProfileId(null);
-      setEditUsername('');
-      setEditPassword('');
-      setEditUserGroupId('');
-      showSuccess('Usuario modificado con éxito.');
-    } catch (err: any) {
-      showError(err.message || 'Error al modificar usuario.');
-    }
-  };
-
-  const showGroupSuccess = (msg: string) => {
-    setGroupSuccess(msg);
-    setGroupError(null);
-    setTimeout(() => setGroupSuccess(null), 3000);
-  };
-
-  const showGroupError = (msg: string) => {
-    setGroupError(msg);
-    setGroupSuccess(null);
-    setTimeout(() => setGroupError(null), 4000);
-  };
-
-  const handleCreateGroupSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newGroupName.trim() || !newGroupCode.trim()) {
-      showGroupError('Por favor completa todos los campos.');
-      return;
-    }
-    try {
-      await createGroup(newGroupName, newGroupCode);
-      setIsCreatingGroup(false);
-      setNewGroupName('');
-      setNewGroupCode('');
-      showGroupSuccess('Grupo creado con éxito.');
-    } catch (err: any) {
-      showGroupError(err.message || 'Error al crear grupo.');
-    }
-  };
 
   const handleLogout = () => {
     setCurrentProfile('');
@@ -218,15 +119,8 @@ export default function Home() {
     activeGroupIdForUser === 'all'
       ? (activeProfile?.is_admin ? true : s.profile_id === currentProfileId)
       : groupMembers.some(gm => gm.group_id === activeGroupIdForUser && gm.profile_id === s.profile_id)
-  );
-
-  // --- ADMIN VIEW PANEL ---
+  )  // --- ADMIN VIEW PANEL ---
   if (activeProfile?.is_admin && isAdminView) {
-    const totalParticipants = profiles.filter(p => !p.is_admin).length;
-    const totalGroups = groups.length;
-    const totalMatchesPlayed = matches.filter(m => m.status === 'finished').length;
-    const totalPredictionsCount = predictions.length;
-
     // OPTIMIZATION: Pre-map standings, predictions count, teams, and predictions for O(1) lookups
     const standingsMap = new Map(standings.map((s, index) => [s.profile_id, { ...s, calculatedRank: index + 1 }]));
     
@@ -238,16 +132,12 @@ export default function Home() {
     const teamsMap = new Map(teams.map(t => [t.id, t]));
     const predictionsMap = new Map(predictions.map(pr => [`${pr.participant_id}-${pr.match_id}`, pr]));
 
-    // Filter participants based on search query and group
+    // Filter participants based on search query
     const filteredParticipants = profiles.filter(p => {
       if (p.is_admin) return false;
-      
       const matchesSearch = p.display_name.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
                             (p.username && p.username.toLowerCase().includes(userSearchQuery.toLowerCase()));
-      if (!matchesSearch) return false;
-      
-      if (adminSelectedGroupId === 'all') return true;
-      return groupMembers.some(gm => gm.group_id === adminSelectedGroupId && gm.profile_id === p.id);
+      return matchesSearch;
     });
 
     const sortedParticipants = [...filteredParticipants].sort((a, b) => {
@@ -260,7 +150,7 @@ export default function Home() {
     });
 
     return (
-      <div className="space-y-6 text-stone-900 max-w-7xl mx-auto pt-2 pb-20 animate-in fade-in duration-300">
+      <div className="space-y-6 text-stone-900 max-w-4xl mx-auto pt-2 pb-20 animate-in fade-in duration-300">
         {/* Admin Header */}
         <div className="border-b border-cream-300 pb-4 flex flex-col sm:flex-row justify-between items-center gap-3">
           <div className="text-center sm:text-left">
@@ -268,51 +158,6 @@ export default function Home() {
             <h1 className="text-xl font-extrabold tracking-tight text-stone-900 uppercase mt-0.5">Control Central del Prode</h1>
           </div>
           <div className="flex gap-2 shrink-0">
-            <button
-              type="button"
-              onClick={async (e) => {
-                const target = e.currentTarget;
-                const originalText = target.innerHTML;
-                target.innerHTML = "Actualizando...";
-                target.disabled = true;
-                
-                try {
-                  // Fetch absolute latest data from Supabase
-                  await initStore();
-                  
-                  const state = useStore.getState();
-                  const backupData = {
-                    backup_version: "1.0",
-                    timestamp: new Date().toISOString(),
-                    profiles: state.profiles,
-                    predictions: state.predictions,
-                    matches: state.matches,
-                    groups: state.groups,
-                    groupMembers: state.groupMembers,
-                    standings: state.standings
-                  };
-                  
-                  const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `prode_backup_${new Date().toISOString().split('T')[0]}.json`;
-                  document.body.appendChild(a);
-                  a.click();
-                  document.body.removeChild(a);
-                  URL.revokeObjectURL(url);
-                } catch (err) {
-                  console.error("Error generating backup:", err);
-                } finally {
-                  target.innerHTML = originalText;
-                  target.disabled = false;
-                }
-              }}
-              className="flex items-center gap-1.5 px-3 py-1.5 border border-stone-300 bg-stone-50 hover:bg-stone-100 text-stone-750 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all cursor-pointer shadow-xs disabled:opacity-50"
-              title="Descargar todos los pronósticos y datos del Prode"
-            >
-              <span>Descargar Respaldo</span>
-            </button>
             <button
               type="button"
               onClick={() => setIsAdminView(false)}
@@ -331,546 +176,216 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Users Panel (Full width) */}
+        <div className="glass-card p-6 border border-cream-300 bg-white text-left space-y-6 shadow-sm">
+          <div className="border-b border-cream-200 pb-3">
+            <h3 className="text-xs font-black text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
+              <Users className="w-4 h-4 text-gold-500" /> Participantes y Pronósticos
+            </h3>
+          </div>
 
+          <input
+            type="text"
+            placeholder="Buscar participante por nombre..."
+            value={userSearchQuery}
+            onChange={e => setUserSearchQuery(e.target.value)}
+            className="w-full bg-cream-50/30 border border-cream-300 rounded-xl px-3.5 py-2 text-xs text-stone-850 placeholder-stone-450 focus:outline-none focus:border-gold-500 transition-all font-semibold"
+          />
 
-        {/* Dashboard Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Column: Users (2/3 width) */}
-          <div className="lg:col-span-2 glass-card p-6 border border-cream-300 bg-white text-left space-y-6 shadow-sm">
-            <div className="border-b border-cream-200 pb-3 flex justify-between items-center gap-3">
-              <h3 className="text-xs font-black text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
-                <Users className="w-4 h-4 text-gold-500" /> Gestión de Participantes
-              </h3>
-              <button
-                onClick={() => {
-                  setIsCreatingNew(!isCreatingNew);
-                  setEditingProfileId(null);
-                  setNewUsername('');
-                  setNewPassword('');
-                  setNewUserGroupId(adminSelectedGroupId !== 'all' ? adminSelectedGroupId : '');
-                }}
-                className="px-2.5 py-1 bg-stone-900 hover:bg-stone-800 text-white font-bold text-[8.5px] uppercase tracking-widest rounded-lg transition-all cursor-pointer flex items-center gap-1"
-              >
-                <Plus className="w-3 h-3" /> Nuevo Usuario
-              </button>
-            </div>
+          {/* User Table (La Tabla) */}
+          <div className="overflow-x-auto border border-cream-200 rounded-2xl bg-cream-50/5">
+            <table className="w-full border-collapse text-left text-xs text-stone-850">
+              <thead>
+                <tr className="bg-cream-100/50 border-b border-cream-200 uppercase font-black tracking-wider text-stone-450 text-[9px]">
+                  <th className="py-3 px-4 text-center w-12">Pos</th>
+                  <th className="py-3 px-4">Usuario</th>
+                  <th className="py-3 px-4 text-center">Pronósticos</th>
+                  <th className="py-3 px-4 text-center">Puntos</th>
+                  <th className="py-3 px-4 text-center">Campeón</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-cream-150">
+                {sortedParticipants.map((p, index) => {
+                  const initials = p.display_name.substring(0, 2).toUpperCase();
+                  const pPredCount = predictionsCountMap.get(p.id) || 0;
+                  const standing = standingsMap.get(p.id);
+                  const pts = standing ? standing.total_points : 0;
+                  const rank = standing ? standing.rank : index + 1;
+                  const isExpanded = !!expandedPredictions[p.id];
 
-            {adminError && <p className="text-[9px] font-bold text-rose-650 bg-rose-50 border border-rose-200 p-2 rounded-lg text-center leading-tight">{adminError}</p>}
-            {adminSuccess && <p className="text-[9px] font-bold text-emerald-650 bg-emerald-50 border border-emerald-200 p-2 rounded-lg text-center leading-tight">{adminSuccess}</p>}
-            {/* Create User Form */}
-            {isCreatingNew && (
-              <form onSubmit={handleCreateUser} className="p-4 border border-cream-250 bg-cream-50/15 rounded-2xl space-y-3">
-                <h4 className="text-[9.5px] font-black tracking-widest text-stone-450 uppercase mb-2">Crear Nuevo Participante</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div>
-                    <label className="block text-[8px] font-black uppercase tracking-wider text-stone-450 mb-1">Nombre de Usuario</label>
-                    <input
-                      type="text"
-                      placeholder="ej: juanp"
-                      value={newUsername}
-                      onChange={e => setNewUsername(e.target.value)}
-                      className="w-full bg-white border border-cream-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-gold-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[8px] font-black uppercase tracking-wider text-stone-450 mb-1">Contraseña</label>
-                    <div className="relative">
-                      <input
-                        type={showNewPassword ? "text" : "password"}
-                        placeholder="ej: 1234"
-                        value={newPassword}
-                        onChange={e => setNewPassword(e.target.value)}
-                        className="w-full bg-white border border-cream-300 rounded-lg pl-2.5 pr-8 py-1.5 text-xs focus:outline-none focus:border-gold-500"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowNewPassword(!showNewPassword)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-450 hover:text-stone-650 cursor-pointer"
-                        title={showNewPassword ? "Ocultar" : "Mostrar"}
+                  return (
+                    <Fragment key={p.id}>
+                      <tr 
+                        onClick={() => setExpandedPredictions(prev => ({ ...prev, [p.id]: !prev[p.id] }))}
+                        className={`hover:bg-cream-50/20 transition-colors cursor-pointer ${isExpanded ? 'bg-cream-50/10' : ''}`}
                       >
-                        {showNewPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                      </button>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-[8px] font-black uppercase tracking-wider text-stone-450 mb-1">Grupo</label>
-                    <select
-                      value={newUserGroupId}
-                      onChange={e => setNewUserGroupId(e.target.value)}
-                      className="w-full bg-white border border-cream-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-gold-500 font-semibold"
-                    >
-                      <option value="">Ninguno / Sin grupo</option>
-                      {groups.map(g => (
-                        <option key={g.id} value={g.id}>{g.name.toUpperCase()}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className="flex justify-end gap-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsCreatingNew(false)}
-                    className="px-2.5 py-1 border border-cream-300 bg-white hover:bg-cream-100/30 text-stone-700 font-bold text-[8.5px] uppercase tracking-widest rounded-lg transition-all"
-                  >
-                    Cancelar
-                  </button>
-                  <button type="submit" className="px-3 py-1 bg-stone-900 hover:bg-stone-850 text-white font-bold text-[8.5px] uppercase tracking-widest rounded-lg transition-all cursor-pointer">Crear</button>
-                </div>
-              </form>
-            )}
-
-            {/* Edit User Form */}
-            {editingProfileId && (
-              <form onSubmit={handleEditUser} className="p-4 border border-gold-500/30 bg-gold-500/5 rounded-2xl space-y-3">
-                <h4 className="text-[9.5px] font-black tracking-widest text-gold-650 uppercase mb-2">Editar Participante</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div>
-                    <label className="block text-[8px] font-black uppercase tracking-wider text-stone-450 mb-1">Usuario</label>
-                    <input
-                      type="text"
-                      value={editUsername}
-                      onChange={e => setEditUsername(e.target.value)}
-                      className="w-full bg-white border border-cream-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-gold-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[8px] font-black uppercase tracking-wider text-stone-450 mb-1">Contraseña</label>
-                    <div className="relative">
-                      <input
-                        type={showEditPassword ? "text" : "password"}
-                        placeholder="Nueva contraseña"
-                        value={editPassword}
-                        onChange={e => setEditPassword(e.target.value)}
-                        className="w-full bg-white border border-cream-300 rounded-lg pl-2.5 pr-8 py-1.5 text-xs focus:outline-none focus:border-gold-500"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowEditPassword(!showEditPassword)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-450 hover:text-stone-650 cursor-pointer"
-                        title={showEditPassword ? "Ocultar" : "Mostrar"}
-                      >
-                        {showEditPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                      </button>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-[8px] font-black uppercase tracking-wider text-stone-450 mb-1">Grupo</label>
-                    <select
-                      value={editUserGroupId}
-                      onChange={e => setEditUserGroupId(e.target.value)}
-                      className="w-full bg-white border border-cream-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-gold-500 font-semibold"
-                    >
-                      <option value="">Ninguno / Sin grupo</option>
-                      {groups.map(g => (
-                        <option key={g.id} value={g.id}>{g.name.toUpperCase()}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className="flex justify-end gap-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setEditingProfileId(null)}
-                    className="px-2.5 py-1 border border-cream-300 bg-white hover:bg-cream-100/30 text-stone-750 font-bold text-[8.5px] uppercase tracking-widest rounded-lg transition-all"
-                  >
-                    Cancelar
-                  </button>
-                  <button type="submit" className="px-3 py-1 bg-gold-600 hover:bg-gold-700 text-white font-bold text-[8.5px] uppercase tracking-widest rounded-lg transition-all">Guardar Cambios</button>
-                </div>
-              </form>
-            )}
-
-            {/* Filter by Group Selector */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-cream-50/20 border border-cream-250 rounded-xl mb-1">
-              <div className="text-left">
-                <label className="block text-[8px] font-black uppercase tracking-wider text-stone-450">Filtrar por Grupo</label>
-                <span className="text-[10px] text-stone-500 font-medium">Mostrando usuarios asociados a este grupo</span>
-              </div>
-              <select
-                value={adminSelectedGroupId}
-                onChange={e => {
-                  setAdminSelectedGroupId(e.target.value);
-                  setAdminError(null);
-                }}
-                className="bg-white border border-cream-300 rounded-lg px-3 py-1.5 text-xs font-semibold text-stone-750 focus:outline-none focus:border-gold-500 min-w-[160px]"
-              >
-                <option value="all">Todos los usuarios</option>
-                {groups.map(g => (
-                  <option key={g.id} value={g.id}>{g.name.toUpperCase()}</option>
-                ))}
-              </select>
-            </div>
-
-            <input
-              type="text"
-              placeholder="Buscar participante por nombre..."
-              value={userSearchQuery}
-              onChange={e => setUserSearchQuery(e.target.value)}
-              className="w-full bg-cream-50/30 border border-cream-300 rounded-xl px-3.5 py-2 text-xs text-stone-850 placeholder-stone-450 focus:outline-none focus:border-gold-500 transition-all font-semibold"
-            />
-
-            {/* User Table (La Tabla) */}
-            <div className="overflow-x-auto border border-cream-200 rounded-2xl bg-cream-50/5">
-              <table className="w-full border-collapse text-left text-xs text-stone-850">
-                <thead>
-                  <tr className="bg-cream-100/50 border-b border-cream-200 uppercase font-black tracking-wider text-stone-450 text-[9px]">
-                    <th className="py-3 px-4 text-center w-12">Pos</th>
-                    <th className="py-3 px-4">Usuario</th>
-                    <th className="py-3 px-4">Credenciales</th>
-                    <th className="py-3 px-4 text-center">Pronósticos</th>
-                    <th className="py-3 px-4 text-center">Puntos</th>
-                    <th className="py-3 px-4 text-center">Campeón</th>
-                    <th className="py-3 px-4 text-right">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-cream-150">
-                  {sortedParticipants.map((p, index) => {
-                    const initials = p.display_name.substring(0, 2).toUpperCase();
-                    const pPredCount = predictionsCountMap.get(p.id) || 0;
-                    const standing = standingsMap.get(p.id);
-                    const pts = standing ? standing.total_points : 0;
-                    const rank = standing ? standing.rank : index + 1;
-                    const isExpanded = !!expandedPredictions[p.id];
-
-                    return (
-                      <Fragment key={p.id}>
-                        <tr 
-                          onClick={(e) => {
-                            const target = e.target as HTMLElement;
-                            if (target.closest('button') || target.closest('input')) return;
-                            setExpandedPredictions(prev => ({ ...prev, [p.id]: !prev[p.id] }));
-                          }}
-                          className={`hover:bg-cream-50/20 transition-colors cursor-pointer ${isExpanded ? 'bg-cream-50/10' : ''}`}
-                        >
-                          {/* Position */}
-                          <td className="py-3.5 px-4 text-center font-extrabold text-stone-700">
-                            {rank}°
-                          </td>
-                          {/* User Profile */}
-                          <td className="py-3.5 px-4">
-                            <div className="flex items-center gap-2.5">
-                              <span className="w-7 h-7 rounded-full bg-stone-900 flex items-center justify-center text-[10px] font-black text-white uppercase shrink-0">
-                                {initials}
-                              </span>
-                              <div className="flex flex-col">
-                                <div className="flex items-center gap-1.5 flex-wrap">
-                                  <span className="font-bold text-stone-900">{p.display_name}</span>
-                                  {/* Group Badges */}
-                                  {(() => {
-                                    const userGroups = groups.filter(g => groupMembers.some(gm => gm.group_id === g.id && gm.profile_id === p.id));
-                                    return (
-                                      <>
-                                        {userGroups.map(ug => (
-                                          <span key={ug.id} className="text-[6.5px] bg-gold-500/10 border border-gold-500/25 text-gold-700 px-1 py-0.2 rounded font-black uppercase tracking-wider">
-                                            {ug.name}
-                                          </span>
-                                        ))}
-                                        {userGroups.length === 0 && (
-                                          <span className="text-[6.5px] bg-stone-150 border border-stone-250 text-stone-500 px-1 py-0.2 rounded font-bold uppercase tracking-wider">
-                                            Sin grupo
-                                          </span>
-                                        )}
-                                      </>
-                                    );
-                                  })()}
-                                </div>
-                                <span className="text-[9px] text-stone-450 font-semibold">@{p.username || p.display_name.toLowerCase()}</span>
+                        {/* Position */}
+                        <td className="py-3.5 px-4 text-center font-extrabold text-stone-700">
+                          {rank}°
+                        </td>
+                        {/* User Profile */}
+                        <td className="py-3.5 px-4">
+                          <div className="flex items-center gap-2.5">
+                            <span className="w-7 h-7 rounded-full bg-stone-900 flex items-center justify-center text-[10px] font-black text-white uppercase shrink-0">
+                              {initials}
+                            </span>
+                            <div className="flex flex-col">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="font-bold text-stone-900">{p.display_name}</span>
+                                {/* Group Badges */}
+                                {(() => {
+                                  const userGroups = groups.filter(g => groupMembers.some(gm => gm.group_id === g.id && gm.profile_id === p.id));
+                                  return (
+                                    <>
+                                      {userGroups.map(ug => (
+                                        <span key={ug.id} className="text-[6.5px] bg-gold-500/10 border border-gold-500/25 text-gold-700 px-1 py-0.2 rounded font-black uppercase tracking-wider">
+                                          {ug.name}
+                                        </span>
+                                      ))}
+                                      {userGroups.length === 0 && (
+                                        <span className="text-[6.5px] bg-stone-150 border border-stone-250 text-stone-500 px-1 py-0.2 rounded font-bold uppercase tracking-wider">
+                                          Sin grupo
+                                        </span>
+                                      )}
+                                    </>
+                                  );
+                                })()}
                               </div>
+                              <span className="text-[9px] text-stone-450 font-semibold">@{p.username || p.display_name.toLowerCase()}</span>
                             </div>
-                          </td>
-                          {/* Credentials */}
-                          <td className="py-3.5 px-4 text-[10px] text-stone-500 font-semibold font-mono">
-                            <div className="flex items-center gap-1.5">
-                              <span>Pass: {showPasswords[p.id] ? p.password : '••••••••'}</span>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setShowPasswords(prev => ({ ...prev, [p.id]: !prev[p.id] }));
-                                }}
-                                className="p-1 text-stone-400 hover:text-stone-650 cursor-pointer"
-                              >
-                                {showPasswords[p.id] ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
-                              </button>
-                            </div>
-                          </td>
-                          {/* Predictions Count */}
-                          <td className="py-3.5 px-4 text-center">
-                            <span className="text-[10px] font-bold uppercase bg-stone-100 border border-stone-250/50 text-stone-600 px-2 py-0.5 rounded-full">
-                              {pPredCount} / {totalMatchesCount}
-                            </span>
-                          </td>
-                          {/* Points */}
-                          <td className="py-3.5 px-4 text-center">
-                            <span className="text-xs font-black text-gold-700 bg-gold-500/10 border border-gold-500/20 px-2 py-0.5 rounded-full">
-                              {pts} pts
-                            </span>
-                          </td>
-                          {/* Champion Prediction */}
-                          <td className="py-3.5 px-4 text-center">
-                            {(() => {
-                              const team = p.champion_prediction ? teamsMap.get(p.champion_prediction) : null;
-                              return team ? (
-                                <span className="text-[10px] font-bold text-stone-750 bg-cream-50/50 border border-cream-200 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
-                                  <span>{team.flag_emoji}</span>
-                                  <span>{team.name}</span>
-                                </span>
-                              ) : (
-                                <span className="text-[10px] text-stone-400 italic">Ninguno</span>
-                              );
-                            })()}
-                          </td>
-                          {/* Action Buttons */}
-                          <td className="py-3.5 px-4 text-right">
-                            <div className="flex items-center justify-end gap-1.5">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setEditingProfileId(p.id);
-                                  setIsCreatingNew(false);
-                                  setEditUsername(p.username || p.display_name.toLowerCase());
-                                  setEditPassword(p.password || '');
-                                  setShowEditPassword(false);
-                                  const currentMemberRecord = groupMembers.find(gm => gm.profile_id === p.id);
-                                  setEditUserGroupId(currentMemberRecord ? currentMemberRecord.group_id : '');
-                                }}
-                                className="px-2 py-1 border border-cream-300 bg-white hover:bg-cream-105 text-stone-750 font-bold text-[9px] uppercase tracking-widest rounded-lg transition-all cursor-pointer"
-                              >
-                                Editar
-                              </button>
-                              <button
-                                onClick={async (e) => {
-                                  e.stopPropagation();
-                                  if (confirm(`¿Estás seguro de eliminar a ${p.display_name}?`)) {
-                                    await deleteProfile(p.id);
-                                    showSuccess('Usuario eliminado correctamente.');
-                                  }
-                                }}
-                                className="p-1 border border-rose-250 bg-rose-50/50 hover:bg-rose-50 text-rose-650 hover:text-rose-700 font-bold rounded-lg transition-all cursor-pointer"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                        {/* Expanded predictions row */}
-                        {isExpanded && (
-                          <tr className="bg-stone-50/50">
-                            <td colSpan={7} className="p-4 border-t border-cream-200/60">
-                              <div className="space-y-3 text-left">
-                                <div className="flex items-center justify-between gap-2 flex-wrap">
-                                  <h5 className="text-[10px] font-black text-stone-500 uppercase tracking-widest flex items-center gap-1">
-                                    <Trophy className="w-3.5 h-3.5 text-gold-500" /> Pronósticos de {p.display_name}
-                                  </h5>
-                                  {p.champion_prediction && (
-                                    <div className="text-[9px] text-stone-600 font-bold flex items-center gap-1.5 bg-gold-500/10 border border-gold-500/20 rounded px-2.5 py-0.5 uppercase tracking-wide">
-                                      <span>🏆 Campeón Predicho:</span>
-                                      <span className="font-extrabold text-stone-850">
-                                        {(() => {
-                                          const team = teamsMap.get(p.champion_prediction);
-                                          return team ? `${team.flag_emoji} ${team.name}` : p.champion_prediction;
-                                        })()}
-                                      </span>
-                                    </div>
-                                  )}
-                                </div>
-
-                                {(predictionsCountMap.get(p.id) || 0) === 0 ? (
-                                  <p className="text-[10px] text-stone-400 italic py-1 pl-1">No cargó ningún pronóstico todavía.</p>
-                                ) : (
-                                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                                    {matches.map(m => {
-                                      const homeTeam = m.home_team_id ? teamsMap.get(m.home_team_id) : null;
-                                      const awayTeam = m.away_team_id ? teamsMap.get(m.away_team_id) : null;
-                                      const pred = predictionsMap.get(`${p.id}-${m.id}`);
-                                      
-                                      if (!pred) return null;
-                                      
-                                      let points = 0;
-                                      let pointsLabel = '';
-                                      const hasScore = m.home_score !== null && m.home_score !== undefined && m.away_score !== null && m.away_score !== undefined;
-                                      
-                                      if (hasScore && m.status === 'finished') {
-                                        const actHome = m.home_score!;
-                                        const actAway = m.away_score!;
-                                        const predHome = pred.home_score;
-                                        const predAway = pred.away_score;
-                                        
-                                        if (predHome === actHome && predAway === actAway) {
-                                          points = 3;
-                                          pointsLabel = '3 pts (Exacto)';
-                                        } else {
-                                          const actualDiff = actHome - actAway;
-                                          const predDiff = predHome - predAway;
-                                          if (Math.sign(actualDiff) === Math.sign(predDiff)) {
-                                            points = 1;
-                                            pointsLabel = '1 pt (Resultado)';
-                                          } else {
-                                            points = 0;
-                                            pointsLabel = '0 pts';
-                                          }
-                                        }
-                                      }
-
-                                      return (
-                                        <div key={m.id} className="flex items-center justify-between p-2 rounded-xl bg-white border border-cream-200 shadow-3xs text-[10px]">
-                                          <div className="flex items-center gap-1 min-w-[95px] max-w-[130px] truncate">
-                                            <span className="text-[11px] shrink-0">{homeTeam?.flag_emoji}</span>
-                                            <span className="font-bold text-stone-700 shrink-0">{homeTeam?.id}</span>
-                                            <span className="text-stone-300 shrink-0">vs</span>
-                                            <span className="text-[11px] shrink-0">{awayTeam?.flag_emoji}</span>
-                                            <span className="font-bold text-stone-700 shrink-0">{awayTeam?.id}</span>
-                                          </div>
-                                          
-                                          <div className="flex items-center gap-1 px-1.5 py-0.5 bg-cream-50 rounded border border-cream-150 font-bold text-stone-850">
-                                            {pred.home_score} - {pred.away_score}
-                                          </div>
-
-                                          <div className="text-right min-w-[65px] shrink-0">
-                                            {m.status === 'finished' ? (
-                                              <div className="flex flex-col items-end leading-tight">
-                                                <span className="text-[9px] font-medium text-stone-550">Fin: {m.home_score}-{m.away_score}</span>
-                                                <span className={`text-[7.5px] font-black uppercase tracking-wider ${points === 3 ? 'text-emerald-600' : points === 1 ? 'text-blue-600' : 'text-stone-400'}`}>
-                                                  {pointsLabel}
-                                                </span>
-                                              </div>
-                                            ) : m.status === 'live' ? (
-                                              <span className="text-rose-600 font-extrabold flex items-center gap-0.5 text-[8.5px]">
-                                                <span className="w-1 h-1 rounded-full bg-rose-500 animate-pulse" />
-                                                {m.home_score}-{m.away_score}
-                                              </span>
-                                            ) : (
-                                              <span className="text-stone-400 text-[8.5px]">Pendiente</span>
-                                            )}
-                                          </div>
-                                        </div>
-                                      );
-                                    })}
+                          </div>
+                        </td>
+                        {/* Predictions Count */}
+                        <td className="py-3.5 px-4 text-center">
+                          <span className="text-[10px] font-bold uppercase bg-stone-100 border border-stone-250/50 text-stone-600 px-2 py-0.5 rounded-full">
+                            {pPredCount} / {totalMatchesCount}
+                          </span>
+                        </td>
+                        {/* Points */}
+                        <td className="py-3.5 px-4 text-center">
+                          <span className="text-xs font-black text-gold-700 bg-gold-500/10 border border-gold-500/20 px-2 py-0.5 rounded-full">
+                            {pts} pts
+                          </span>
+                        </td>
+                        {/* Champion Prediction */}
+                        <td className="py-3.5 px-4 text-center">
+                          {(() => {
+                            const team = p.champion_prediction ? teamsMap.get(p.champion_prediction) : null;
+                            return team ? (
+                              <span className="text-[10px] font-bold text-stone-750 bg-cream-50/50 border border-cream-200 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
+                                <span>{team.flag_emoji}</span>
+                                <span>{team.name}</span>
+                              </span>
+                            ) : (
+                              <span className="text-[10px] text-stone-450 italic">Ninguno</span>
+                            );
+                          })()}
+                        </td>
+                      </tr>
+                      {/* Expanded predictions row */}
+                      {isExpanded && (
+                        <tr className="bg-stone-50/50">
+                          <td colSpan={5} className="p-4 border-t border-cream-200/60">
+                            <div className="space-y-3 text-left">
+                              <div className="flex items-center justify-between gap-2 flex-wrap">
+                                <h5 className="text-[10px] font-black text-stone-550 uppercase tracking-widest flex items-center gap-1">
+                                  <Trophy className="w-3.5 h-3.5 text-gold-500" /> Pronósticos de {p.display_name}
+                                </h5>
+                                {p.champion_prediction && (
+                                  <div className="text-[9px] text-stone-650 font-bold flex items-center gap-1.5 bg-gold-500/10 border border-gold-500/20 rounded px-2.5 py-0.5 uppercase tracking-wide">
+                                    <span>🏆 Campeón Predicho:</span>
+                                    <span className="font-extrabold text-stone-850">
+                                      {(() => {
+                                        const team = teamsMap.get(p.champion_prediction);
+                                        return team ? `${team.flag_emoji} ${team.name}` : p.champion_prediction;
+                                      })()}
+                                    </span>
                                   </div>
                                 )}
                               </div>
-                            </td>
-                          </tr>
-                        )}
-                      </Fragment>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
 
-          {/* Right Column: Groups (1/3 width) */}
-          <div className="glass-card p-6 border border-cream-300 bg-white text-left space-y-6 shadow-sm">
-            <div className="border-b border-cream-200 pb-3 flex justify-between items-center gap-3">
-              <h3 className="text-xs font-black text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
-                <Users className="w-4 h-4 text-gold-500" /> Gestión de Grupos
-              </h3>
-              <button
-                onClick={() => {
-                  setIsCreatingGroup(!isCreatingGroup);
-                  setNewGroupName('');
-                  setNewGroupCode('');
-                  setGroupError(null);
-                }}
-                className="px-2.5 py-1 bg-stone-900 hover:bg-stone-800 text-white font-bold text-[8.5px] uppercase tracking-widest rounded-lg transition-all cursor-pointer flex items-center gap-1"
-              >
-                <Plus className="w-3 h-3" /> Nuevo Grupo
-              </button>
-            </div>
+                              {(predictionsCountMap.get(p.id) || 0) === 0 ? (
+                                <p className="text-[10px] text-stone-400 italic py-1 pl-1">No cargó ningún pronóstico todavía.</p>
+                              ) : (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                                  {matches.map(m => {
+                                    const homeTeam = m.home_team_id ? teamsMap.get(m.home_team_id) : null;
+                                    const awayTeam = m.away_team_id ? teamsMap.get(m.away_team_id) : null;
+                                    const pred = predictionsMap.get(`${p.id}-${m.id}`);
+                                    
+                                    if (!pred) return null;
+                                    
+                                    let points = 0;
+                                    let pointsLabel = '';
+                                    const hasScore = m.home_score !== null && m.home_score !== undefined && m.away_score !== null && m.away_score !== undefined;
+                                    
+                                    if (hasScore && m.status === 'finished') {
+                                      const actHome = m.home_score!;
+                                      const actAway = m.away_score!;
+                                      const predHome = pred.home_score;
+                                      const predAway = pred.away_score;
+                                      
+                                      if (predHome === actHome && predAway === actAway) {
+                                        points = 3;
+                                        pointsLabel = '3 pts (Exacto)';
+                                      } else {
+                                        const actualDiff = actHome - actAway;
+                                        const predDiff = predHome - predAway;
+                                        if (Math.sign(actualDiff) === Math.sign(predDiff)) {
+                                          points = 1;
+                                          pointsLabel = '1 pt (Resultado)';
+                                        } else {
+                                          points = 0;
+                                          pointsLabel = '0 pts';
+                                        }
+                                      }
+                                    }
 
-            {groupError && <p className="text-[9px] font-bold text-rose-650 bg-rose-50 border border-rose-200 p-2 rounded-lg text-center leading-tight">{groupError}</p>}
-            {groupSuccess && <p className="text-[9px] font-bold text-emerald-650 bg-emerald-50 border border-emerald-200 p-2 rounded-lg text-center leading-tight">{groupSuccess}</p>}
+                                    return (
+                                      <div key={m.id} className="flex items-center justify-between p-2 rounded-xl bg-white border border-cream-200 shadow-3xs text-[10px]">
+                                        <div className="flex items-center gap-1 min-w-[95px] max-w-[130px] truncate">
+                                          <span className="text-[11px] shrink-0">{homeTeam?.flag_emoji}</span>
+                                          <span className="font-bold text-stone-750 shrink-0">{homeTeam?.id}</span>
+                                          <span className="text-stone-300 shrink-0">vs</span>
+                                          <span className="text-[11px] shrink-0">{awayTeam?.flag_emoji}</span>
+                                          <span className="font-bold text-stone-750 shrink-0">{awayTeam?.id}</span>
+                                        </div>
+                                        
+                                        <div className="flex items-center gap-1 px-1.5 py-0.5 bg-cream-50 rounded border border-cream-150 font-bold text-stone-850">
+                                          {pred.home_score} - {pred.away_score}
+                                        </div>
 
-            {/* Create Group Form */}
-            {isCreatingGroup && (
-              <form onSubmit={handleCreateGroupSubmit} className="p-4 border border-cream-250 bg-cream-50/15 rounded-2xl space-y-3">
-                <h4 className="text-[9.5px] font-black tracking-widest text-stone-450 uppercase mb-2">Crear Nuevo Grupo</h4>
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-[8px] font-black uppercase tracking-wider text-stone-450 mb-1">Nombre del Grupo</label>
-                    <input
-                      type="text"
-                      placeholder="ej: FLIA. LEVY"
-                      value={newGroupName}
-                      onChange={e => setNewGroupName(e.target.value)}
-                      className="w-full bg-white border border-cream-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-gold-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[8px] font-black uppercase tracking-wider text-stone-450 mb-1">Código de Invitación</label>
-                    <input
-                      type="text"
-                      placeholder="ej: LEVY26"
-                      value={newGroupCode}
-                      onChange={e => setNewGroupCode(e.target.value)}
-                      className="w-full bg-white border border-cream-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-gold-500 uppercase font-bold"
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-end gap-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsCreatingGroup(false)}
-                    className="px-2.5 py-1 border border-cream-300 bg-white hover:bg-cream-100/30 text-stone-750 font-bold text-[8.5px] uppercase tracking-widest rounded-lg transition-all"
-                  >
-                    Cancelar
-                  </button>
-                  <button type="submit" className="px-3 py-1 bg-stone-900 hover:bg-stone-850 text-white font-bold text-[8.5px] uppercase tracking-widest rounded-lg transition-all cursor-pointer">Crear Grupo</button>
-                </div>
-              </form>
-            )}
-
-            {/* Groups List */}
-            <div className="divide-y divide-cream-150 border border-cream-200 rounded-2xl overflow-hidden bg-cream-50/5">
-              {groups.length === 0 ? (
-                <p className="p-4 text-xs text-stone-450 italic text-center">No hay grupos creados.</p>
-              ) : (
-                groups.map(g => {
-                  const isGroupExpanded = !!expandedGroups[g.id];
-                  const members = groupMembers
-                    .filter(gm => gm.group_id === g.id)
-                    .map(gm => profiles.find(p => p.id === gm.profile_id))
-                    .filter(Boolean) as typeof profiles;
-
-                  return (
-                    <div key={g.id} className="p-4 hover:bg-cream-50/10 transition-colors">
-                      <div className="flex justify-between items-center gap-2">
-                        <div>
-                          <h4 className="text-xs font-black text-stone-900 uppercase">{g.name}</h4>
-                          <div className="flex gap-2 mt-1 text-[8.5px] text-stone-440 font-bold uppercase tracking-wider">
-                            <span>Código: <strong className="text-gold-650 font-black select-all">{g.invite_code}</strong></span>
-                            <span>•</span>
-                            <span>{members.length} miembros</span>
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => setExpandedGroups(prev => ({ ...prev, [g.id]: !prev[g.id] }))}
-                          className="px-2.5 py-1 border border-cream-300 bg-white hover:bg-cream-100 text-stone-750 font-bold text-[8px] uppercase tracking-widest rounded-lg transition-all cursor-pointer shrink-0"
-                        >
-                          {isGroupExpanded ? 'Ocultar' : 'Ver'}
-                        </button>
-                      </div>
-                      {isGroupExpanded && (
-                        <div className="mt-3 pl-3 border-l-2 border-gold-500/30 text-[10px] text-stone-650 space-y-1.5">
-                          <strong className="text-[7.5px] text-stone-450 uppercase font-black tracking-widest block">Lista de Miembros:</strong>
-                          {members.length === 0 ? (
-                            <span className="italic text-stone-400">Sin miembros aún.</span>
-                          ) : (
-                            members.map(m => (
-                              <div key={m.id} className="flex justify-between items-center py-0.5">
-                                <span>• {m.display_name}</span>
-                                <span className="text-[8px] text-stone-400 uppercase font-bold font-mono">User: {m.username}</span>
-                              </div>
-                            ))
-                          )}
-                        </div>
+                                        <div className="text-right min-w-[65px] shrink-0">
+                                          {m.status === 'finished' ? (
+                                            <div className="flex flex-col items-end leading-tight">
+                                              <span className="text-[9px] font-medium text-stone-550">Fin: {m.home_score}-{m.away_score}</span>
+                                              <span className={`text-[7.5px] font-black uppercase tracking-wider ${points === 3 ? 'text-emerald-600' : points === 1 ? 'text-blue-600' : 'text-stone-400'}`}>
+                                                {pointsLabel}
+                                              </span>
+                                            </div>
+                                          ) : m.status === 'live' ? (
+                                            <span className="text-rose-600 font-extrabold flex items-center gap-0.5 text-[8.5px]">
+                                              <span className="w-1 h-1 rounded-full bg-rose-500 animate-pulse" />
+                                              {m.home_score}-{m.away_score}
+                                            </span>
+                                          ) : (
+                                            <span className="text-stone-400 text-[8.5px]">Pendiente</span>
+                                          )}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
                       )}
-                    </div>
+                    </Fragment>
                   );
-                })
-              )}
-            </div>
+                })}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
