@@ -812,14 +812,6 @@ export const useStore = create<TournamentState>((set, get) => ({
     if (typeof window !== 'undefined') {
       localStorage.setItem('prode_matches', JSON.stringify(updatedMatches));
     }
-
-    if (!isDemoMode && supabase) {
-      await supabase.from('matches').update({
-        home_score: homeScore,
-        away_score: awayScore,
-        status
-      }).eq('id', matchId);
-    }
   },
 
   updateTeamStage: async (teamId: string, stage: Team['stage_reached']) => {
