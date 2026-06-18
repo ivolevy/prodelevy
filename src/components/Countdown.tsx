@@ -35,11 +35,7 @@ export default function Countdown() {
   }, []);
 
   if (timeLeft.isOver) {
-    return (
-      <div className="w-full text-center py-2.5 px-4 rounded-xl bg-stone-100 border border-cream-300 text-stone-700 text-[10px] font-bold uppercase tracking-widest shadow-sm">
-        ¡EL MUNDIAL DE LA FAMILIA YA COMENZÓ!
-      </div>
-    );
+    return null;
   }
 
   return (
