@@ -49,17 +49,28 @@ export async function POST(req: Request) {
               headers: {
                 'X-Auth-Token': footballDataApiKey,
               },
-              next: { revalidate: 300 } // Cache for 5 minutes
+              cache: 'no-store'
             });
 
             if (response.ok) {
               const data = await response.json();
               if (data.matches && Array.isArray(data.matches)) {
                 syncedResults = dbMatches.map((m: any) => {
-                  const apiMatch = data.matches.find((apiM: any) => 
+                  let apiMatch = data.matches.find((apiM: any) => 
                     apiM.homeTeam?.tla === m.home_team_id && 
                     apiM.awayTeam?.tla === m.away_team_id
                   );
+                  let isSwapped = false;
+
+                  if (!apiMatch) {
+                    apiMatch = data.matches.find((apiM: any) => 
+                      apiM.homeTeam?.tla === m.away_team_id && 
+                      apiM.awayTeam?.tla === m.home_team_id
+                    );
+                    if (apiMatch) {
+                      isSwapped = true;
+                    }
+                  }
 
                   if (apiMatch) {
                     let status: 'upcoming' | 'live' | 'finished' = 'upcoming';
@@ -69,8 +80,16 @@ export async function POST(req: Request) {
                       status = 'finished';
                     }
 
-                    const home_score = apiMatch.score?.fullTime?.home !== undefined ? apiMatch.score.fullTime.home : null;
-                    const away_score = apiMatch.score?.fullTime?.away !== undefined ? apiMatch.score.fullTime.away : null;
+                    let home_score = null;
+                    let away_score = null;
+
+                    if (isSwapped) {
+                      home_score = apiMatch.score?.fullTime?.away !== undefined ? apiMatch.score.fullTime.away : null;
+                      away_score = apiMatch.score?.fullTime?.home !== undefined ? apiMatch.score.fullTime.home : null;
+                    } else {
+                      home_score = apiMatch.score?.fullTime?.home !== undefined ? apiMatch.score.fullTime.home : null;
+                      away_score = apiMatch.score?.fullTime?.away !== undefined ? apiMatch.score.fullTime.away : null;
+                    }
 
                     return {
                       id: m.id,
@@ -91,10 +110,33 @@ export async function POST(req: Request) {
           }
         }
 
-        // 2. Fallback to Gemini if Football-Data failed or wasn't configured
-        if (syncedResults.length === 0 && geminiApiKey) {
+        // 2. Try Gemini for any matches that should be finished but don't have results in syncedResults, or if Football-Data failed
+        const nowMs = Date.now();
+        const pendingOrMissingResults = dbMatches.filter((m: any) => {
+          let timeStr = m.hora_arg || '';
+          if (!timeStr.includes('-') && !timeStr.includes('+') && !timeStr.includes('Z')) {
+            timeStr = timeStr + '-03:00';
+          }
+          const matchStart = new Date(`${m.fecha}T${timeStr}`).getTime();
+          const shouldBePlayed = (nowMs - matchStart) > 2 * 60 * 60 * 1000; // 2 hours since start
+
+          if (!shouldBePlayed) return false;
+
+          const syncResult = syncedResults.find((sr: any) => sr.id === m.id);
+          const hasScore = syncResult 
+            ? (syncResult.home_score !== null && syncResult.away_score !== null)
+            : (m.home_score !== null && m.away_score !== null);
+          const isFinished = syncResult
+            ? syncResult.status === 'finished'
+            : m.status === 'finished';
+
+          return !hasScore || !isFinished;
+        });
+
+        if (pendingOrMissingResults.length > 0 && geminiApiKey) {
           try {
-            const matchesListText = dbMatches
+            console.log(`Using Gemini to sync ${pendingOrMissingResults.length} missing matches...`);
+            const matchesListText = pendingOrMissingResults
               .map((m: any) => `ID ${m.id}: ${m.home_team_id} vs ${m.away_team_id} (Fecha: ${m.fecha})`)
               .join('\n');
 
@@ -131,14 +173,28 @@ export async function POST(req: Request) {
                 if (cleaned.startsWith('```')) {
                   cleaned = cleaned.replace(/^```(json)?/, '').replace(/```$/, '').trim();
                 }
-                syncedResults = JSON.parse(cleaned);
-                syncSource = 'gemini';
+                const geminiResults = JSON.parse(cleaned);
+
+                for (const geminiRes of geminiResults) {
+                  const idx = syncedResults.findIndex((sr: any) => sr.id === geminiRes.id);
+                  if (idx > -1) {
+                    syncedResults[idx] = {
+                      ...syncedResults[idx],
+                      home_score: geminiRes.home_score !== null ? geminiRes.home_score : syncedResults[idx].home_score,
+                      away_score: geminiRes.away_score !== null ? geminiRes.away_score : syncedResults[idx].away_score,
+                      status: geminiRes.status || syncedResults[idx].status
+                    };
+                  } else {
+                    syncedResults.push(geminiRes);
+                  }
+                }
+                syncSource = syncSource ? `${syncSource} + gemini` : 'gemini';
               }
             } else {
               console.warn('Gemini API failed, status:', response.status);
             }
           } catch (err) {
-            console.error('Error fetching from Gemini:', err);
+            console.error('Error fetching from Gemini for missing matches:', err);
           }
         }
 

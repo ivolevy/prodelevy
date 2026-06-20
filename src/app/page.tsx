@@ -2,7 +2,6 @@
 
 import { useState, useEffect, Fragment } from 'react';
 import { useStore } from '@/lib/store';
-import Countdown from '@/components/Countdown';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -432,24 +431,13 @@ export default function Home() {
         </h1>
       </div>
 
-      {/* Countdown Strip */}
-      <div 
-        id="tour-step-0" 
-        className={`transition-all duration-300 ${
-          showTour && tourStep === 0 ? 'relative bg-white rounded-3xl p-2 shadow-2xl ring-4 ring-gold-500 scale-[1.01]' : ''
-        }`}
-        style={showTour && tourStep === 0 ? { zIndex: 51 } : undefined}
-      >
-        <Countdown />
-      </div>
-
       {/* Champion Prediction Banner */}
       <div 
         id="champion-banner" 
         className={`glass-card p-5 border border-cream-300 shadow-sm bg-white flex flex-col md:flex-row justify-between items-center gap-4 relative overflow-hidden transition-all duration-300 ${
-          showTour && tourStep === 1 ? 'relative shadow-2xl ring-4 ring-gold-500 scale-[1.01]' : ''
+          showTour && tourStep === 0 ? 'relative shadow-2xl ring-4 ring-gold-500 scale-[1.01]' : ''
         }`}
-        style={showTour && tourStep === 1 ? { zIndex: 51 } : undefined}
+        style={showTour && tourStep === 0 ? { zIndex: 51 } : undefined}
       >
         <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-gold-500/10 to-transparent rounded-full -mr-8 -mt-8 pointer-events-none" />
         <div className="space-y-1 text-left w-full md:w-auto">
@@ -572,13 +560,7 @@ export default function Home() {
       ) : null}
 
       {/* PWA Mobile Installation Guide */}
-      <div 
-        id="tour-step-4"
-        className={`transition-all duration-300 ${
-          showTour && tourStep === 4 ? 'relative bg-white rounded-3xl p-1 shadow-2xl ring-4 ring-gold-500 scale-[1.01]' : ''
-        }`}
-        style={showTour && tourStep === 4 ? { zIndex: 51 } : undefined}
-      >
+      <div>
         {!isStandalone && (
           <div className="glass-card border border-cream-300 shadow-sm bg-white relative overflow-hidden max-w-5xl mx-auto text-left transition-all duration-300">
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-cream-200/20 to-transparent rounded-full -mr-12 -mt-12 pointer-events-none" />
@@ -660,9 +642,9 @@ export default function Home() {
         <div 
           id="standings-column" 
           className={`lg:col-span-2 space-y-3 transition-all duration-300 ${
-            showTour && tourStep === 2 ? 'relative bg-white rounded-3xl p-3 shadow-2xl ring-4 ring-gold-500 scale-[1.01]' : ''
+            showTour && tourStep === 1 ? 'relative bg-white rounded-3xl p-3 shadow-2xl ring-4 ring-gold-500 scale-[1.01]' : ''
           }`}
-          style={showTour && tourStep === 2 ? { zIndex: 51 } : undefined}
+          style={showTour && tourStep === 1 ? { zIndex: 51 } : undefined}
         >
           <div className="border-b border-cream-200 pb-1.5 flex justify-between items-center gap-2">
             <div className="flex items-center gap-2.5">
@@ -736,10 +718,7 @@ export default function Home() {
         {/* Right Column: Próximos Partidos */}
         <div 
           id="fixture-column" 
-          className={`lg:col-span-1 space-y-3 transition-all duration-300 ${
-            showTour && tourStep === 3 ? 'relative bg-white rounded-3xl p-3 shadow-2xl ring-4 ring-gold-500 scale-[1.01]' : ''
-          }`}
-          style={showTour && tourStep === 3 ? { zIndex: 51 } : undefined}
+          className="lg:col-span-1 space-y-3"
         >
           <div className="flex justify-between items-end border-b border-cream-200 pb-1.5">
             <h3 className="text-[10px] text-stone-450 uppercase tracking-widest font-black">PRÓXIMOS PARTIDOS</h3>

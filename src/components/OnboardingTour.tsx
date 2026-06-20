@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useStore } from '@/lib/store';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Trophy, Users, Calendar, Settings, ArrowRight, X, FileText } from 'lucide-react';
+import { Trophy, Users, Calendar, Settings, ArrowRight, X, FileText } from 'lucide-react';
 
 interface TourStepConfig {
   step: number;
@@ -19,21 +19,13 @@ const TOUR_STEPS: TourStepConfig[] = [
   {
     step: 0,
     path: '/',
-    elementId: 'tour-step-0',
-    title: '¡Puntapié Inicial!',
-    description: 'Te damos la bienvenida al Prode Mundial USA-MEX 26′. Este es el contador de cuenta regresiva para el inicio del torneo. ¡El mundial empieza pronto!',
-    icon: Sparkles
-  },
-  {
-    step: 1,
-    path: '/',
     elementId: 'champion-banner',
     title: 'Elegí tu Campeón (+10 pts)',
     description: 'Antes del comienzo del mundial, tenés que registrar cuál selección creés que ganará la Copa del Mundo. Si acertás, ¡recibís 10 puntos extra!',
     icon: Trophy
   },
   {
-    step: 2,
+    step: 1,
     path: '/',
     elementId: 'standings-column',
     title: 'Tabla de Posiciones',
@@ -41,7 +33,7 @@ const TOUR_STEPS: TourStepConfig[] = [
     icon: Users
   },
   {
-    step: 3,
+    step: 2,
     path: '/matches',
     elementId: 'matches-tabs',
     title: 'Secciones del Fixture',
@@ -49,7 +41,7 @@ const TOUR_STEPS: TourStepConfig[] = [
     icon: FileText
   },
   {
-    step: 4,
+    step: 3,
     path: '/matches',
     elementId: 'matches-list',
     title: 'Carga de Pronósticos',
@@ -57,7 +49,7 @@ const TOUR_STEPS: TourStepConfig[] = [
     icon: Calendar
   },
   {
-    step: 5,
+    step: 4,
     path: '/rules',
     elementId: 'rules-container',
     title: 'Reglamento y Puntos',
@@ -65,7 +57,7 @@ const TOUR_STEPS: TourStepConfig[] = [
     icon: Trophy
   },
   {
-    step: 6,
+    step: 5,
     path: '/profile',
     elementId: 'notifications-card',
     title: 'Alertas Móviles',
