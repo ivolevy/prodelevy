@@ -69,6 +69,7 @@ export const INITIAL_TEAMS: Team[] = [
 ];
 
 export const INITIAL_MATCHES: Match[] = [
+  // --- FECHA 1 ---
   // Group A
   { id: 1, group_letter: 'A', home_team_id: 'MEX', away_team_id: 'RSA', fecha: '2026-06-11', hora_arg: '16:00:00-03:00', estadio: 'Mexico City Stadium', ciudad: 'Ciudad de México', pais: 'México', status: 'upcoming', phase: 'Fase de Grupos' },
   { id: 2, group_letter: 'A', home_team_id: 'KOR', away_team_id: 'CZE', fecha: '2026-06-11', hora_arg: '23:00:00-03:00', estadio: 'Estadio Guadalajara', ciudad: 'Guadalajara', pais: 'México', status: 'upcoming', phase: 'Fase de Grupos' },
@@ -104,7 +105,83 @@ export const INITIAL_MATCHES: Match[] = [
   { id: 22, group_letter: 'K', home_team_id: 'UZB', away_team_id: 'COL', fecha: '2026-06-17', hora_arg: '17:00:00-03:00', estadio: 'Houston Stadium', ciudad: 'Houston', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' },
   // Group L
   { id: 23, group_letter: 'L', home_team_id: 'ENG', away_team_id: 'CRO', fecha: '2026-06-17', hora_arg: '20:00:00-03:00', estadio: 'Philadelphia Stadium', ciudad: 'Philadelphia', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' },
-  { id: 24, group_letter: 'L', home_team_id: 'GHA', away_team_id: 'PAN', fecha: '2026-06-17', hora_arg: '23:00:00-03:00', estadio: 'BC Place', ciudad: 'Vancouver', pais: 'Canadá', status: 'upcoming', phase: 'Fase de Grupos' }
+  { id: 24, group_letter: 'L', home_team_id: 'GHA', away_team_id: 'PAN', fecha: '2026-06-17', hora_arg: '23:00:00-03:00', estadio: 'BC Place', ciudad: 'Vancouver', pais: 'Canadá', status: 'upcoming', phase: 'Fase de Grupos' },
+
+  // --- FECHA 2 ---
+  // Group A
+  { id: 25, group_letter: 'A', home_team_id: 'MEX', away_team_id: 'KOR', fecha: '2026-06-18', hora_arg: '16:00:00-03:00', estadio: 'Mexico City Stadium', ciudad: 'Ciudad de México', pais: 'México', status: 'upcoming', phase: 'Fase de Grupos' },
+  { id: 26, group_letter: 'A', home_team_id: 'RSA', away_team_id: 'CZE', fecha: '2026-06-18', hora_arg: '19:00:00-03:00', estadio: 'Estadio Guadalajara', ciudad: 'Guadalajara', pais: 'México', status: 'upcoming', phase: 'Fase de Grupos' },
+  // Group B
+  { id: 27, group_letter: 'B', home_team_id: 'CAN', away_team_id: 'QAT', fecha: '2026-06-18', hora_arg: '20:00:00-03:00', estadio: 'Toronto Stadium', ciudad: 'Toronto', pais: 'Canadá', status: 'upcoming', phase: 'Fase de Grupos' },
+  { id: 28, group_letter: 'B', home_team_id: 'BIH', away_team_id: 'SUI', fecha: '2026-06-18', hora_arg: '23:00:00-03:00', estadio: 'BC Place', ciudad: 'Vancouver', pais: 'Canadá', status: 'upcoming', phase: 'Fase de Grupos' },
+  // Group C
+  { id: 29, group_letter: 'C', home_team_id: 'BRA', away_team_id: 'HAI', fecha: '2026-06-19', hora_arg: '14:00:00-03:00', estadio: 'New York New Jersey Stadium', ciudad: 'New York / New Jersey', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' },
+  { id: 30, group_letter: 'C', home_team_id: 'MAR', away_team_id: 'SCO', fecha: '2026-06-19', hora_arg: '17:00:00-03:00', estadio: 'Boston Stadium', ciudad: 'Boston', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' },
+  // Group D
+  { id: 31, group_letter: 'D', home_team_id: 'USA', away_team_id: 'AUS', fecha: '2026-06-19', hora_arg: '20:00:00-03:00', estadio: 'Los Angeles Stadium', ciudad: 'Los Ángeles', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' },
+  { id: 32, group_letter: 'D', home_team_id: 'PAR', away_team_id: 'TUR', fecha: '2026-06-19', hora_arg: '23:00:00-03:00', estadio: 'BC Place', ciudad: 'Vancouver', pais: 'Canadá', status: 'upcoming', phase: 'Fase de Grupos' },
+  // Group E
+  { id: 33, group_letter: 'E', home_team_id: 'GER', away_team_id: 'CIV', fecha: '2026-06-20', hora_arg: '14:00:00-03:00', estadio: 'Houston Stadium', ciudad: 'Houston', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' },
+  { id: 34, group_letter: 'E', home_team_id: 'CUW', away_team_id: 'ECU', fecha: '2026-06-20', hora_arg: '17:00:00-03:00', estadio: 'Philadelphia Stadium', ciudad: 'Philadelphia', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' },
+  // Group F
+  { id: 35, group_letter: 'F', home_team_id: 'NED', away_team_id: 'SWE', fecha: '2026-06-20', hora_arg: '20:00:00-03:00', estadio: 'Dallas Stadium', ciudad: 'Dallas', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' },
+  { id: 36, group_letter: 'F', home_team_id: 'JPN', away_team_id: 'TUN', fecha: '2026-06-20', hora_arg: '23:00:00-03:00', estadio: 'Estadio Monterrey', ciudad: 'Monterrey', pais: 'México', status: 'upcoming', phase: 'Fase de Grupos' },
+  // Group G
+  { id: 37, group_letter: 'G', home_team_id: 'BEL', away_team_id: 'IRN', fecha: '2026-06-21', hora_arg: '14:00:00-03:00', estadio: 'Dallas Stadium', ciudad: 'Dallas', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' },
+  { id: 38, group_letter: 'G', home_team_id: 'EGY', away_team_id: 'NZL', fecha: '2026-06-21', hora_arg: '17:00:00-03:00', estadio: 'Estadio Guadalajara', ciudad: 'Guadalajara', pais: 'México', status: 'upcoming', phase: 'Fase de Grupos' },
+  // Group H
+  { id: 39, group_letter: 'H', home_team_id: 'ESP', away_team_id: 'KSA', fecha: '2026-06-21', hora_arg: '20:00:00-03:00', estadio: 'Mexico City Stadium', ciudad: 'Ciudad de México', pais: 'México', status: 'upcoming', phase: 'Fase de Grupos' },
+  { id: 40, group_letter: 'H', home_team_id: 'CPV', away_team_id: 'URU', fecha: '2026-06-21', hora_arg: '23:00:00-03:00', estadio: 'Los Angeles Stadium', ciudad: 'Los Ángeles', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' },
+  // Group I
+  { id: 41, group_letter: 'I', home_team_id: 'FRA', away_team_id: 'IRQ', fecha: '2026-06-22', hora_arg: '14:00:00-03:00', estadio: 'Boston Stadium', ciudad: 'Boston', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' },
+  { id: 42, group_letter: 'I', home_team_id: 'SEN', away_team_id: 'NOR', fecha: '2026-06-22', hora_arg: '17:00:00-03:00', estadio: 'Toronto Stadium', ciudad: 'Toronto', pais: 'Canadá', status: 'upcoming', phase: 'Fase de Grupos' },
+  // Group J
+  { id: 43, group_letter: 'J', home_team_id: 'ARG', away_team_id: 'AUT', fecha: '2026-06-22', hora_arg: '20:00:00-03:00', estadio: 'New York New Jersey Stadium', ciudad: 'New York / New Jersey', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' },
+  { id: 44, group_letter: 'J', home_team_id: 'ALG', away_team_id: 'JOR', fecha: '2026-06-22', hora_arg: '23:00:00-03:00', estadio: 'Estadio Monterrey', ciudad: 'Monterrey', pais: 'México', status: 'upcoming', phase: 'Fase de Grupos' },
+  // Group K
+  { id: 45, group_letter: 'K', home_team_id: 'POR', away_team_id: 'UZB', fecha: '2026-06-23', hora_arg: '14:00:00-03:00', estadio: 'San Francisco Bay Area Stadium', ciudad: 'San Francisco', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' },
+  { id: 46, group_letter: 'K', home_team_id: 'COD', away_team_id: 'COL', fecha: '2026-06-23', hora_arg: '17:00:00-03:00', estadio: 'Houston Stadium', ciudad: 'Houston', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' },
+  // Group L
+  { id: 47, group_letter: 'L', home_team_id: 'ENG', away_team_id: 'GHA', fecha: '2026-06-23', hora_arg: '20:00:00-03:00', estadio: 'Philadelphia Stadium', ciudad: 'Philadelphia', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' },
+  { id: 48, group_letter: 'L', home_team_id: 'CRO', away_team_id: 'PAN', fecha: '2026-06-23', hora_arg: '23:00:00-03:00', estadio: 'BC Place', ciudad: 'Vancouver', pais: 'Canadá', status: 'upcoming', phase: 'Fase de Grupos' },
+
+  // --- FECHA 3 ---
+  // Group A
+  { id: 49, group_letter: 'A', home_team_id: 'MEX', away_team_id: 'CZE', fecha: '2026-06-24', hora_arg: '22:00:00-03:00', estadio: 'Mexico City Stadium', ciudad: 'Ciudad de México', pais: 'México', status: 'upcoming', phase: 'Fase de Grupos' },
+  { id: 50, group_letter: 'A', home_team_id: 'RSA', away_team_id: 'KOR', fecha: '2026-06-24', hora_arg: '22:00:00-03:00', estadio: 'Estadio Monterrey', ciudad: 'Monterrey', pais: 'México', status: 'upcoming', phase: 'Fase de Grupos' },
+  // Group B
+  { id: 51, group_letter: 'B', home_team_id: 'CAN', away_team_id: 'SUI', fecha: '2026-06-24', hora_arg: '17:00:00-03:00', estadio: 'BC Place', ciudad: 'Vancouver', pais: 'Canadá', status: 'upcoming', phase: 'Fase de Grupos' },
+  { id: 52, group_letter: 'B', home_team_id: 'BIH', away_team_id: 'QAT', fecha: '2026-06-24', hora_arg: '17:00:00-03:00', estadio: 'Seattle Stadium', ciudad: 'Seattle', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' },
+  // Group C
+  { id: 53, group_letter: 'C', home_team_id: 'BRA', away_team_id: 'SCO', fecha: '2026-06-24', hora_arg: '20:00:00-03:00', estadio: 'Miami Stadium', ciudad: 'Miami', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' },
+  { id: 54, group_letter: 'C', home_team_id: 'MAR', away_team_id: 'HAI', fecha: '2026-06-24', hora_arg: '20:00:00-03:00', estadio: 'Atlanta Stadium', ciudad: 'Atlanta', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' },
+  // Group D
+  { id: 55, group_letter: 'D', home_team_id: 'USA', away_team_id: 'TUR', fecha: '2026-06-25', hora_arg: '23:00:00-03:00', estadio: 'Los Angeles Stadium', ciudad: 'Los Ángeles', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' },
+  { id: 56, group_letter: 'D', home_team_id: 'PAR', away_team_id: 'AUS', fecha: '2026-06-25', hora_arg: '23:00:00-03:00', estadio: "Levi's Stadium", ciudad: 'San Francisco', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' },
+  // Group E
+  { id: 57, group_letter: 'E', home_team_id: 'GER', away_team_id: 'ECU', fecha: '2026-06-25', hora_arg: '17:00:00-03:00', estadio: 'Houston Stadium', ciudad: 'Houston', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' },
+  { id: 58, group_letter: 'E', home_team_id: 'CUW', away_team_id: 'CIV', fecha: '2026-06-25', hora_arg: '17:00:00-03:00', estadio: 'Lincoln Financial Field', ciudad: 'Philadelphia', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' },
+  // Group F
+  { id: 59, group_letter: 'F', home_team_id: 'NED', away_team_id: 'TUN', fecha: '2026-06-25', hora_arg: '20:00:00-03:00', estadio: 'Arrowhead Stadium', ciudad: 'Kansas City', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' },
+  { id: 60, group_letter: 'F', home_team_id: 'JPN', away_team_id: 'SWE', fecha: '2026-06-25', hora_arg: '20:00:00-03:00', estadio: 'AT&T Stadium', ciudad: 'Dallas', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' },
+  // Group G
+  { id: 61, group_letter: 'G', home_team_id: 'BEL', away_team_id: 'NZL', fecha: '2026-06-26', hora_arg: '17:00:00-03:00', estadio: 'BC Place', ciudad: 'Vancouver', pais: 'Canadá', status: 'upcoming', phase: 'Fase de Grupos' },
+  { id: 62, group_letter: 'G', home_team_id: 'EGY', away_team_id: 'IRN', fecha: '2026-06-26', hora_arg: '17:00:00-03:00', estadio: 'Seattle Stadium', ciudad: 'Seattle', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' },
+  // Group H
+  { id: 63, group_letter: 'H', home_team_id: 'ESP', away_team_id: 'URU', fecha: '2026-06-26', hora_arg: '23:00:00-03:00', estadio: 'Estadio Akron', ciudad: 'Guadalajara', pais: 'México', status: 'upcoming', phase: 'Fase de Grupos' },
+  { id: 64, group_letter: 'H', home_team_id: 'CPV', away_team_id: 'KSA', fecha: '2026-06-26', hora_arg: '23:00:00-03:00', estadio: 'NRG Stadium', ciudad: 'Houston', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' },
+  // Group I
+  { id: 65, group_letter: 'I', home_team_id: 'FRA', away_team_id: 'NOR', fecha: '2026-06-26', hora_arg: '20:00:00-03:00', estadio: 'Gillette Stadium', ciudad: 'Boston', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' },
+  { id: 66, group_letter: 'I', home_team_id: 'SEN', away_team_id: 'IRQ', fecha: '2026-06-26', hora_arg: '20:00:00-03:00', estadio: 'BMO Field', ciudad: 'Toronto', pais: 'Canadá', status: 'upcoming', phase: 'Fase de Grupos' },
+  // Group J
+  { id: 67, group_letter: 'J', home_team_id: 'ARG', away_team_id: 'JOR', fecha: '2026-06-27', hora_arg: '23:00:00-03:00', estadio: 'AT&T Stadium', ciudad: 'Dallas', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' },
+  { id: 68, group_letter: 'J', home_team_id: 'ALG', away_team_id: 'AUT', fecha: '2026-06-27', hora_arg: '23:00:00-03:00', estadio: 'Arrowhead Stadium', ciudad: 'Kansas City', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' },
+  // Group K
+  { id: 69, group_letter: 'K', home_team_id: 'POR', away_team_id: 'COL', fecha: '2026-06-27', hora_arg: '17:00:00-03:00', estadio: 'Hard Rock Stadium', ciudad: 'Miami', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' },
+  { id: 70, group_letter: 'K', home_team_id: 'COD', away_team_id: 'UZB', fecha: '2026-06-27', hora_arg: '17:00:00-03:00', estadio: 'Mercedes-Benz Stadium', ciudad: 'Atlanta', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' },
+  // Group L
+  { id: 71, group_letter: 'L', home_team_id: 'ENG', away_team_id: 'PAN', fecha: '2026-06-27', hora_arg: '20:00:00-03:00', estadio: 'MetLife Stadium', ciudad: 'New York / New Jersey', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' },
+  { id: 72, group_letter: 'L', home_team_id: 'CRO', away_team_id: 'GHA', fecha: '2026-06-27', hora_arg: '20:00:00-03:00', estadio: 'Lincoln Financial Field', ciudad: 'Philadelphia', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' }
 ];
 
 export const INITIAL_PROFILES: Profile[] = [
