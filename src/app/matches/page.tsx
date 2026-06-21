@@ -244,16 +244,17 @@ function MatchesPageContent() {
       return false;
     }
 
-    // 2. Date/Fecha Round Filter
-    // In WC 2026, Matchday 1 corresponds to Matches 1 to 24 (Groups A-L first matches)
-    if (activeDateFilter === 'FECHA_1') {
-      return match.id >= 1 && match.id <= 24;
-    }
-    if (activeDateFilter === 'FECHA_2') {
-      return match.id >= 25 && match.id <= 48; // placeholder range for next matches
-    }
-    if (activeDateFilter === 'FECHA_3') {
-      return match.id >= 49 && match.id <= 72; // placeholder range
+    // 2. Date/Fecha Round Filter (only apply if activeFilter is 'ALL')
+    if (activeFilter === 'ALL') {
+      if (activeDateFilter === 'FECHA_1') {
+        return match.id >= 1 && match.id <= 24;
+      }
+      if (activeDateFilter === 'FECHA_2') {
+        return match.id >= 25 && match.id <= 48;
+      }
+      if (activeDateFilter === 'FECHA_3') {
+        return match.id >= 49 && match.id <= 72;
+      }
     }
 
     return true;
@@ -332,30 +333,32 @@ function MatchesPageContent() {
             </div>
 
             {/* Fecha (Round) filters (Premium text pill rows) */}
-            <div className="flex gap-2 self-center sm:self-auto overflow-x-auto py-1">
-              {[
-                { id: 'ALL', label: 'Ver Todo' },
-                { id: 'FECHA_1', label: 'Fecha 1' },
-                { id: 'FECHA_2', label: 'Fecha 2' },
-                { id: 'FECHA_3', label: 'Fecha 3' },
-              ].map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveDateFilter(tab.id as any)}
-                  className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all shrink-0 border cursor-pointer ${
-                    activeDateFilter === tab.id
-                      ? 'bg-gold-500/10 border-gold-500/30 text-gold-650 font-black'
-                      : 'bg-white border-cream-300 text-stone-500 hover:text-stone-800'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
+            {activeFilter === 'ALL' && (
+              <div className="flex gap-2 self-center sm:self-auto overflow-x-auto py-1">
+                {[
+                  { id: 'ALL', label: 'Ver Todo' },
+                  { id: 'FECHA_1', label: 'Fecha 1' },
+                  { id: 'FECHA_2', label: 'Fecha 2' },
+                  { id: 'FECHA_3', label: 'Fecha 3' },
+                ].map(tab => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveDateFilter(tab.id as any)}
+                    className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all shrink-0 border cursor-pointer ${
+                      activeDateFilter === tab.id
+                        ? 'bg-gold-500/10 border-gold-500/30 text-gold-650 font-black'
+                        : 'bg-white border-cream-300 text-stone-500 hover:text-stone-800'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
-          {((activeDateFilter === 'FECHA_2' && !matches.some(m => m.id >= 25 && m.id <= 48)) || 
-            (activeDateFilter === 'FECHA_3' && !matches.some(m => m.id >= 49 && m.id <= 72))) ? (
+          {((activeFilter === 'ALL' && activeDateFilter === 'FECHA_2' && !matches.some(m => m.id >= 25 && m.id <= 48)) || 
+            (activeFilter === 'ALL' && activeDateFilter === 'FECHA_3' && !matches.some(m => m.id >= 49 && m.id <= 72))) ? (
             <div className="text-center py-20 bg-cream-50/20 border border-dashed border-cream-300 rounded-3xl p-6 shadow-2xs">
               <Calendar className="w-8 h-8 text-stone-300 mx-auto mb-3" />
               <h4 className="text-xs font-black uppercase text-stone-800 tracking-wider">Próximamente</h4>
@@ -777,37 +780,19 @@ function MatchesPageContent() {
                       <div className={`w-5 h-5 flex items-center justify-center text-xs ${badgeColor}`}>
                         {badge}
                       </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="w-5 h-5 rounded-full bg-cream-200 flex items-center justify-center text-[8px] font-bold text-stone-600">
-                            {initials}
-                          </span>
-                          <div className="flex flex-col">
-                            <div className="flex items-center gap-1.5">
-                              <h4 className={`text-xs font-bold ${isCurrentUser ? 'text-stone-900' : 'text-stone-700'}`}>
-                                {standing.display_name}
-                              </h4>
-                              {isCurrentUser && (
-                                <span className="text-[7px] font-bold uppercase tracking-widest text-gold-650 bg-gold-500/10 px-1.5 rounded border border-gold-500/25">Tú</span>
-                              )}
-                            </div>
-                            {championTeam && (
-                              <span className="text-[7.5px] text-gold-650 font-black mt-0.5 leading-none">
-                                Campeón: {championTeam.flag_emoji} {championTeam.name}
-                              </span>
+                      <div className="flex items-center gap-2">
+                        <span className="w-5 h-5 rounded-full bg-cream-200 flex items-center justify-center text-[8px] font-bold text-stone-600">
+                          {initials}
+                        </span>
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-1.5">
+                            <h4 className={`text-xs font-bold ${isCurrentUser ? 'text-stone-900' : 'text-stone-700'}`}>
+                              {standing.display_name}
+                            </h4>
+                            {isCurrentUser && (
+                              <span className="text-[7px] font-bold uppercase tracking-widest text-gold-650 bg-gold-500/10 px-1.5 rounded border border-gold-500/25">Tú</span>
                             )}
                           </div>
-                        </div>
-                        
-                        {/* Prediction Stats Detail */}
-                        <div className="flex gap-3 mt-2 items-center text-[8px] font-bold text-stone-450 uppercase tracking-wider">
-                          <span>
-                            Exactos: <strong className="text-stone-700">{standing.exact_guesses}</strong> (3 pts)
-                          </span>
-                          <span className="w-1 h-1 rounded-full bg-cream-300" />
-                          <span>
-                            Resultados: <strong className="text-stone-700">{standing.outcome_guesses}</strong> (1 pt)
-                          </span>
                         </div>
                       </div>
                     </div>
