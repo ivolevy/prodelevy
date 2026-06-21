@@ -244,8 +244,8 @@ function MatchesPageContent() {
       return false;
     }
 
-    // 2. Date/Fecha Round Filter (only apply if activeFilter is 'ALL')
-    if (activeFilter === 'ALL') {
+    // 2. Date/Fecha Round Filter (only apply if activeFilter is 'ALL' or 'finished')
+    if (activeFilter === 'ALL' || activeFilter === 'finished') {
       if (activeDateFilter === 'FECHA_1') {
         return match.id >= 1 && match.id <= 24;
       }
@@ -333,7 +333,7 @@ function MatchesPageContent() {
             </div>
 
             {/* Fecha (Round) filters (Premium text pill rows) */}
-            {activeFilter === 'ALL' && (
+            {(activeFilter === 'ALL' || activeFilter === 'finished') && (
               <div className="flex gap-2 self-center sm:self-auto overflow-x-auto py-1">
                 {[
                   { id: 'ALL', label: 'Ver Todo' },
@@ -357,8 +357,8 @@ function MatchesPageContent() {
             )}
           </div>
 
-          {((activeFilter === 'ALL' && activeDateFilter === 'FECHA_2' && !matches.some(m => m.id >= 25 && m.id <= 48)) || 
-            (activeFilter === 'ALL' && activeDateFilter === 'FECHA_3' && !matches.some(m => m.id >= 49 && m.id <= 72))) ? (
+          {(((activeFilter === 'ALL' || activeFilter === 'finished') && activeDateFilter === 'FECHA_2' && !matches.some(m => m.id >= 25 && m.id <= 48)) || 
+            ((activeFilter === 'ALL' || activeFilter === 'finished') && activeDateFilter === 'FECHA_3' && !matches.some(m => m.id >= 49 && m.id <= 72))) ? (
             <div className="text-center py-20 bg-cream-50/20 border border-dashed border-cream-300 rounded-3xl p-6 shadow-2xs">
               <Calendar className="w-8 h-8 text-stone-300 mx-auto mb-3" />
               <h4 className="text-xs font-black uppercase text-stone-800 tracking-wider">Próximamente</h4>
