@@ -744,12 +744,6 @@ function MatchesPageContent() {
         );
         return (
           <div className="space-y-3 max-w-xl mx-auto animate-in fade-in duration-200">
-            <div className="border-b border-cream-200 pb-1.5 flex justify-between items-center gap-2">
-              <div className="flex items-center gap-2">
-                <h3 className="text-[10px] text-stone-450 uppercase tracking-widest font-black">Mesa del Prode</h3>
-              </div>
-              <span className="text-[8px] font-bold text-stone-400 uppercase tracking-wider">Posiciones</span>
-            </div>
             <div className="space-y-3">
               <AnimatePresence initial={false}>
                 {filteredStandings.map((standing, index) => {
