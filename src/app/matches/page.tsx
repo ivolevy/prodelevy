@@ -143,7 +143,7 @@ function MatchesPageContent() {
       return { text: 'Cerrado', color: 'text-rose-500', isLocked: true };
     }
     
-    if (diffHours < 24) {
+    if (diffHours < 1) {
       return { text: 'Cerrado', color: 'text-rose-600', isLocked: true };
     }
     
@@ -677,7 +677,7 @@ function MatchesPageContent() {
                     {isPredictable && (
                       <div className="bg-cream-100/10 border-t border-cream-200 px-4 py-2 flex items-center gap-1.5 text-[8.5px] text-stone-400 font-semibold italic">
                         <Users className="w-3 h-3 text-stone-300" />
-                        <span>Los pronósticos de los rivales se revelarán 24 hs antes del partido.</span>
+                        <span>Los pronósticos de los rivales se revelarán 1 hora antes del partido.</span>
                       </div>
                     )}
 

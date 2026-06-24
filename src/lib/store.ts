@@ -267,7 +267,7 @@ export function isMatchPredictable(match: Match): boolean {
 
   const now = new Date().getTime();
   const diffHours = (matchTime - now) / (1000 * 60 * 60);
-  return diffHours >= 24;
+  return diffHours >= 1;
 }
 
 function encodeProfileAvatar(username: string, password?: string, avatarUrl?: string, championPrediction?: string): string {
@@ -916,10 +916,10 @@ export const useStore = create<TournamentState>((set, get) => ({
   savePrediction: async (profileId: string, matchId: number, homeScore: number, awayScore: number) => {
     const { isDemoMode, predictions, matches, profiles } = get();
 
-    // Enforce the 24 hours lock
+    // Enforce the 1 hour lock
     const match = matches.find(m => m.id === matchId);
     if (match && !isMatchPredictable(match)) {
-      throw new Error('La predicción está cerrada para este partido (cierre de 24hs).');
+      throw new Error('La predicción está cerrada para este partido (cierre de 1h).');
     }
 
     // Validate prediction scores are between 0 and 20
