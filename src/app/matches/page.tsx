@@ -4,7 +4,7 @@ import { useStore, isMatchPredictable } from '@/lib/store';
 import { useState, Suspense, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Calendar, MapPin, Check, ChevronDown, ChevronUp, Lock, Unlock, Users, Trophy, ArrowRight } from 'lucide-react';
+import { Calendar, Check, ChevronDown, ChevronUp, Lock, Unlock, Users, Trophy, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Match } from '@/lib/types';
 import BracketView from '@/components/BracketView';
@@ -500,10 +500,6 @@ function MatchesPageContent() {
                         <span className="flex items-center gap-1 text-stone-500 whitespace-nowrap shrink-0">
                           <Calendar className="w-3.5 h-3.5 text-stone-405 shrink-0" />
                           {match.fecha}
-                        </span>
-                        <span className="flex items-center gap-1 min-w-0 max-w-[120px] sm:max-w-[160px] text-stone-500">
-                          <MapPin className="w-3.5 h-3.5 text-stone-405 shrink-0" />
-                          <span className="truncate">{match.ciudad}, {match.pais}</span>
                         </span>
                       </div>
 
