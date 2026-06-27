@@ -811,7 +811,12 @@ export const useStore = create<TournamentState>((set, get) => ({
       });
 
       const teams = storedTeams ? JSON.parse(storedTeams) : INITIAL_TEAMS;
-      const matches = storedMatches ? JSON.parse(storedMatches) : INITIAL_MATCHES;
+      let matches = storedMatches ? JSON.parse(storedMatches) : INITIAL_MATCHES;
+      if (matches.length < INITIAL_MATCHES.length) {
+        const missingMatches = INITIAL_MATCHES.filter(im => !matches.some((m: any) => m.id === im.id));
+        matches = [...matches, ...missingMatches];
+        localStorage.setItem('prode_matches', JSON.stringify(matches));
+      }
 
       // Deduplicate profiles by username and build ID mapping to unify duplicate profiles
       const uniqueProfiles: Profile[] = [];

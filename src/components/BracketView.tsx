@@ -1,8 +1,15 @@
 'use client';
 
-import { Trophy, Shield, GitCommit } from 'lucide-react';
+import { useStore } from '@/lib/store';
+import { Trophy, Shield, Calendar } from 'lucide-react';
 
 export default function BracketView() {
+  const matches = useStore(state => state.matches);
+  const teams = useStore(state => state.teams);
+
+  // Get all matches for the 16avos de Final (Round of 32) phase
+  const last32Matches = matches.filter(m => m.phase === '16avos de Final' || (m.id >= 73 && m.id <= 88));
+
   const phases = [
     { name: '16avos de Final', description: '32 Equipos', active: true },
     { name: 'Octavos de Final', description: '16 Equipos', active: false },
@@ -10,6 +17,9 @@ export default function BracketView() {
     { name: 'Semifinales', description: '4 Equipos', active: false },
     { name: 'Gran Final', description: '2 Equipos', active: false }
   ];
+
+  // Helper to fetch team details
+  const getTeam = (teamId: string) => teams.find(t => t.id === teamId);
 
   return (
     <div className="w-full space-y-6 text-left">
@@ -23,62 +33,137 @@ export default function BracketView() {
         </span>
       </div>
 
-      {/* Main Coming Soon Card */}
-      <div className="w-full max-w-xl mx-auto bg-white border border-cream-300 rounded-3xl p-8 shadow-[0_12px_45px_rgba(0,0,0,0.02)] relative overflow-hidden text-center mt-6">
-        <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-gold-500/5 to-transparent rounded-full -mr-16 -mt-16 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-cream-100/10 to-transparent rounded-full -ml-12 -mb-12 pointer-events-none" />
-
-        <div className="flex justify-center mb-5">
-          <div className="w-16 h-16 rounded-full bg-gold-500/10 flex items-center justify-center text-gold-650 animate-pulse">
-            <Trophy className="w-8 h-8" />
-          </div>
+      {/* Visual Road/Timeline of Phases */}
+      <div className="bg-cream-50/40 p-4 rounded-3xl border border-cream-200">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+          {phases.map((phase, idx) => (
+            <div 
+              key={idx} 
+              className={`p-3 rounded-2xl border text-center transition-all ${
+                phase.active 
+                  ? 'bg-gold-500/10 border-gold-500/30 shadow-3xs' 
+                  : 'bg-white/50 border-cream-200/50'
+              }`}
+            >
+              <span className={`block text-[9px] font-black uppercase ${
+                phase.active ? 'text-gold-700' : 'text-stone-700'
+              }`}>
+                {phase.name}
+              </span>
+              <span className="block text-[7.5px] font-bold text-stone-400 uppercase mt-0.5">
+                {phase.description}
+              </span>
+            </div>
+          ))}
         </div>
+      </div>
 
-        <span className="inline-block text-[8.5px] bg-gold-500/10 border border-gold-500/25 text-gold-700 px-3 py-0.5 rounded-full font-black uppercase tracking-widest mb-3">
-          Próximamente
-        </span>
-
-        <h2 className="text-lg font-black text-stone-900 uppercase tracking-tight">
-          Fase Eliminatoria (16avos de Final)
-        </h2>
-        
-        <p className="text-[11px] text-stone-500 mt-2.5 leading-relaxed max-w-md mx-auto">
-          El cuadro final y los cruces de eliminación directa se definirán automáticamente a medida que se jueguen los partidos y se definan los clasificados de la Fase de Grupos.
-        </p>
-
-        {/* Visual Road/Timeline of Phases */}
-        <div className="mt-8 border-t border-cream-200 pt-6">
-          <h4 className="text-[9px] font-black tracking-widest text-stone-400 uppercase mb-5 text-left pl-1">
-            Camino a la Gloria
+      {/* 16avos Matches Grid */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between pl-1">
+          <h4 className="text-[9.5px] font-black tracking-widest text-stone-800 uppercase flex items-center gap-1.5">
+            <Trophy className="w-4 h-4 text-gold-500" /> Partidos de 16avos de Final
           </h4>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
-            {phases.map((phase, idx) => (
-              <div 
-                key={idx} 
-                className={`relative p-3 rounded-2xl border text-center transition-all ${
-                  phase.active 
-                    ? 'bg-gold-500/10 border-gold-500/30 shadow-2xs' 
-                    : 'bg-stone-50/50 border-cream-200'
-                }`}
-              >
-                {/* Connector dot */}
-                <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 bg-white px-1">
-                  <GitCommit className={`w-3.5 h-3.5 ${phase.active ? 'text-gold-500' : 'text-stone-300'}`} />
-                </div>
-
-                <span className={`block text-[9px] font-black uppercase ${
-                  phase.active ? 'text-gold-700' : 'text-stone-700'
-                } mt-1`}>
-                  {phase.name}
-                </span>
-                <span className="block text-[8px] font-bold text-stone-450 uppercase mt-0.5">
-                  {phase.description}
-                </span>
-              </div>
-            ))}
-          </div>
+          <span className="text-[8.5px] text-stone-450 font-bold uppercase tracking-wider bg-cream-100 px-2 py-0.5 rounded-lg border border-cream-200">
+            {last32Matches.length} Partidos
+          </span>
         </div>
+
+        {last32Matches.length === 0 ? (
+          <div className="text-center py-12 bg-white border border-cream-300 rounded-3xl p-6">
+            <p className="text-[11px] text-stone-500">No hay partidos cargados para esta fase.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {last32Matches.map(match => {
+              const homeTeam = getTeam(match.home_team_id);
+              const awayTeam = getTeam(match.away_team_id);
+              
+              const isFinished = match.status === 'finished';
+              const isLive = match.status === 'live';
+
+              return (
+                <div 
+                  key={match.id}
+                  className={`p-4 rounded-2xl border bg-white flex flex-col justify-between shadow-2xs hover:border-cream-400 transition-all ${
+                    isLive ? 'border-rose-400 bg-rose-50/5' : 'border-cream-300'
+                  }`}
+                >
+                  {/* Top info row */}
+                  <div className="flex justify-between items-center text-[7.5px] uppercase font-black text-stone-400 tracking-wider mb-3">
+                    <span>Partido {match.id}</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="flex items-center gap-1 font-bold lowercase text-stone-500">
+                        <Calendar className="w-3 h-3 text-stone-400" /> {match.fecha}
+                      </span>
+                      {isLive ? (
+                        <span className="bg-rose-50 text-rose-600 border border-rose-200 px-1.5 py-0.5 rounded animate-pulse">VIVO</span>
+                      ) : isFinished ? (
+                        <span className="bg-cream-200 text-stone-650 px-1.5 py-0.5 rounded">Finalizado</span>
+                      ) : (
+                        <span className="bg-cream-100 text-stone-500 px-1.5 py-0.5 rounded">Próximo</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Scoreboard line */}
+                  <div className="flex items-center justify-between py-1">
+                    {/* Home Team */}
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <span className="text-xl shrink-0" role="img" aria-label={homeTeam?.name || 'Home'}>
+                        {homeTeam?.flag_emoji || (match.home_team_id ? '🏳️' : '⏳')}
+                      </span>
+                      <span className="text-[11px] font-extrabold text-stone-850 truncate">
+                        {homeTeam?.name || match.home_team_id || 'A confirmar'}
+                      </span>
+                    </div>
+
+                    {/* Score / VS Display */}
+                    <div className="flex flex-col items-center px-3 min-w-[70px] text-center">
+                      {isFinished || isLive ? (
+                        <div className="flex flex-col items-center">
+                          <span className="text-sm font-black text-stone-900 tracking-wider">
+                            {match.home_score} - {match.away_score}
+                          </span>
+                          {match.home_penalty_score !== null && match.home_penalty_score !== undefined && (
+                            <span className="text-[8.5px] font-black text-rose-600 tracking-tight mt-0.5">
+                              ({match.home_penalty_score}-{match.away_penalty_score} PK)
+                            </span>
+                          )}
+                          {match.home_extra_score !== null && match.home_extra_score !== undefined && (match.home_penalty_score === null || match.home_penalty_score === undefined) && (
+                            <span className="text-[7.5px] font-black text-gold-650 tracking-tight mt-0.5 uppercase">
+                              {match.home_extra_score}-{match.away_extra_score} TE
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-[8px] font-bold text-stone-400 bg-cream-100 border border-cream-200 px-2 py-0.5 rounded-md">
+                          {match.hora_arg.split('-')[0].substring(0, 5)} hs
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Away Team */}
+                    <div className="flex items-center gap-2 flex-1 min-w-0 justify-end text-right">
+                      <span className="text-[11px] font-extrabold text-stone-850 truncate">
+                        {awayTeam?.name || match.away_team_id || 'A confirmar'}
+                      </span>
+                      <span className="text-xl shrink-0" role="img" aria-label={awayTeam?.name || 'Away'}>
+                        {awayTeam?.flag_emoji || (match.away_team_id ? '🏳️' : '⏳')}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Venue info line */}
+                  <div className="border-t border-cream-100 pt-2.5 mt-2.5 flex justify-between items-center text-[7.5px] font-bold text-stone-450 uppercase tracking-wider">
+                    <span>{match.estadio}, {match.ciudad}</span>
+                    <span>{match.pais}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

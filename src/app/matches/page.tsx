@@ -294,31 +294,33 @@ function MatchesPageContent() {
   const [activeDateFilter, setActiveDateFilter] = useState<'ALL' | 'FECHA_1' | 'FECHA_2' | 'FECHA_3' | '16AVOS'>('ALL');
 
   const filteredMatches = matches.filter(match => {
-    // 1. Status Filter
-    if (activeFilter === 'upcoming' && match.status !== 'upcoming') {
-      return false;
-    }
-    if (activeFilter === 'live' && match.status !== 'live') {
-      return false;
-    }
-    if (activeFilter === 'finished' && match.status !== 'finished') {
-      return false;
+    const is16avosFilter = activeDateFilter === '16AVOS';
+
+    // 1. Status Filter (skip status check for 16avos to ensure they always show when selected)
+    if (!is16avosFilter) {
+      if (activeFilter === 'upcoming' && match.status !== 'upcoming') {
+        return false;
+      }
+      if (activeFilter === 'live' && match.status !== 'live') {
+        return false;
+      }
+      if (activeFilter === 'finished' && match.status !== 'finished') {
+        return false;
+      }
     }
 
-    // 2. Date/Fecha Round Filter (only apply if activeFilter is 'ALL' or 'finished')
-    if (activeFilter === 'ALL' || activeFilter === 'finished') {
-      if (activeDateFilter === 'FECHA_1') {
-        return match.id >= 1 && match.id <= 24;
-      }
-      if (activeDateFilter === 'FECHA_2') {
-        return match.id >= 25 && match.id <= 48;
-      }
-      if (activeDateFilter === 'FECHA_3') {
-        return match.id >= 49 && match.id <= 72;
-      }
-      if (activeDateFilter === '16AVOS') {
-        return match.id >= 73 && match.id <= 88;
-      }
+    // 2. Date/Fecha Round Filter
+    if (activeDateFilter === 'FECHA_1') {
+      return match.id >= 1 && match.id <= 24;
+    }
+    if (activeDateFilter === 'FECHA_2') {
+      return match.id >= 25 && match.id <= 48;
+    }
+    if (activeDateFilter === 'FECHA_3') {
+      return match.id >= 49 && match.id <= 72;
+    }
+    if (activeDateFilter === '16AVOS') {
+      return match.id >= 73 && match.id <= 88;
     }
 
     return true;
