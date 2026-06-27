@@ -143,13 +143,27 @@ export default function StoreInitializer({ children }: { children: React.ReactNo
             const scoreChanged =
               currentMatch.home_score !== item.home_score ||
               currentMatch.away_score !== item.away_score;
+            const extraChanged =
+              currentMatch.home_extra_score !== item.home_extra_score ||
+              currentMatch.away_extra_score !== item.away_extra_score ||
+              currentMatch.home_penalty_score !== item.home_penalty_score ||
+              currentMatch.away_penalty_score !== item.away_penalty_score;
+            const teamsChanged =
+              currentMatch.home_team_id !== item.home_team_id ||
+              currentMatch.away_team_id !== item.away_team_id;
 
-            if (statusChanged || scoreChanged) {
+            if (statusChanged || scoreChanged || extraChanged || teamsChanged) {
               await updateMatchScore(
                 item.id,
                 item.home_score,
                 item.away_score,
-                item.status
+                item.status,
+                item.home_extra_score,
+                item.away_extra_score,
+                item.home_penalty_score,
+                item.away_penalty_score,
+                item.home_team_id,
+                item.away_team_id
               );
             }
           }

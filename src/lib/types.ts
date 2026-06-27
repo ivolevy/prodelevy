@@ -42,6 +42,10 @@ export interface Match {
   away_score?: number | null;
   status: 'upcoming' | 'live' | 'finished';
   phase: string;
+  home_extra_score?: number | null;
+  away_extra_score?: number | null;
+  home_penalty_score?: number | null;
+  away_penalty_score?: number | null;
 }
 
 export interface Prediction {
@@ -51,6 +55,10 @@ export interface Prediction {
   home_score: number;
   away_score: number;
   created_at?: string;
+  home_extra_score?: number | null;
+  away_extra_score?: number | null;
+  home_penalty_score?: number | null;
+  away_penalty_score?: number | null;
 }
 
 export interface Standing {

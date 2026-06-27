@@ -26,6 +26,11 @@ function MatchesPageContent() {
   const [predHome, setPredHome] = useState<string>('');
   const [predAway, setPredAway] = useState<string>('');
   const [selectedGroupId, setSelectedGroupId] = useState<string>('all');
+  const [predHomeExtra, setPredHomeExtra] = useState<string>('');
+  const [predAwayExtra, setPredAwayExtra] = useState<string>('');
+  const [predHomePenalty, setPredHomePenalty] = useState<string>('');
+  const [predAwayPenalty, setPredAwayPenalty] = useState<string>('');
+  const [definitionMethod, setDefinitionMethod] = useState<'extra_time' | 'penalties' | null>(null);
 
   useEffect(() => {
     if (currentProfileId && userGroups.length > 0) {
@@ -73,9 +78,25 @@ function MatchesPageContent() {
       if (existing) {
         setPredHome(String(existing.home_score));
         setPredAway(String(existing.away_score));
+        setPredHomeExtra(existing.home_extra_score !== null && existing.home_extra_score !== undefined ? String(existing.home_extra_score) : '');
+        setPredAwayExtra(existing.away_extra_score !== null && existing.away_extra_score !== undefined ? String(existing.away_extra_score) : '');
+        setPredHomePenalty(existing.home_penalty_score !== null && existing.home_penalty_score !== undefined ? String(existing.home_penalty_score) : '');
+        setPredAwayPenalty(existing.away_penalty_score !== null && existing.away_penalty_score !== undefined ? String(existing.away_penalty_score) : '');
+        if (existing.home_penalty_score !== null && existing.home_penalty_score !== undefined) {
+          setDefinitionMethod('penalties');
+        } else if (existing.home_extra_score !== null && existing.home_extra_score !== undefined) {
+          setDefinitionMethod('extra_time');
+        } else {
+          setDefinitionMethod(null);
+        }
       } else {
         setPredHome('');
         setPredAway('');
+        setPredHomeExtra('');
+        setPredAwayExtra('');
+        setPredHomePenalty('');
+        setPredAwayPenalty('');
+        setDefinitionMethod(null);
       }
       setPredictingMatchId(matchId);
     }
@@ -108,9 +129,49 @@ function MatchesPageContent() {
       return;
     }
 
+    const match = matches.find(m => m.id === matchId);
+    const isElimination = match && match.phase !== 'Fase de Grupos';
+    const isDraw = h === a;
+
+    let hExtra: number | null = null;
+    let aExtra: number | null = null;
+    let hPenalty: number | null = null;
+    let aPenalty: number | null = null;
+
+    if (isElimination && isDraw) {
+      if (!definitionMethod) {
+        setValidationError('Seleccioná el método de definición (Tiempo Extra o Penales)');
+        return;
+      }
+
+      if (definitionMethod === 'extra_time') {
+        hExtra = parseInt(predHomeExtra);
+        aExtra = parseInt(predAwayExtra);
+        if (isNaN(hExtra) || isNaN(aExtra) || hExtra < 0 || aExtra < 0 || hExtra > 20 || aExtra > 20) {
+          setValidationError('Ingresá el marcador del tiempo suplementario (0-20)');
+          return;
+        }
+        if (hExtra === aExtra) {
+          setValidationError('El tiempo suplementario no puede terminar empatado. Elegí Penales.');
+          return;
+        }
+      } else if (definitionMethod === 'penalties') {
+        hPenalty = parseInt(predHomePenalty);
+        aPenalty = parseInt(predAwayPenalty);
+        if (isNaN(hPenalty) || isNaN(aPenalty) || hPenalty < 0 || aPenalty < 0 || hPenalty > 20 || aPenalty > 20) {
+          setValidationError('Ingresá el marcador de los penales (0-20)');
+          return;
+        }
+        if (hPenalty === aPenalty) {
+          setValidationError('La tanda de penales debe tener un ganador.');
+          return;
+        }
+      }
+    }
+
     setValidationError(null);
     try {
-      await savePrediction(currentProfileId, matchId, h, a);
+      await savePrediction(currentProfileId, matchId, h, a, hExtra, aExtra, hPenalty, aPenalty);
       setPredictingMatchId(null);
       setSaveSuccess('¡Pronóstico guardado con éxito!');
       setTimeout(() => setSaveSuccess(null), 3000);
@@ -230,7 +291,7 @@ function MatchesPageContent() {
   };
 
   const groups = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
-  const [activeDateFilter, setActiveDateFilter] = useState<'ALL' | 'FECHA_1' | 'FECHA_2' | 'FECHA_3'>('ALL');
+  const [activeDateFilter, setActiveDateFilter] = useState<'ALL' | 'FECHA_1' | 'FECHA_2' | 'FECHA_3' | '16AVOS'>('ALL');
 
   const filteredMatches = matches.filter(match => {
     // 1. Status Filter
@@ -254,6 +315,9 @@ function MatchesPageContent() {
       }
       if (activeDateFilter === 'FECHA_3') {
         return match.id >= 49 && match.id <= 72;
+      }
+      if (activeDateFilter === '16AVOS') {
+        return match.id >= 73 && match.id <= 88;
       }
     }
 
@@ -340,6 +404,7 @@ function MatchesPageContent() {
                   { id: 'FECHA_1', label: 'Fecha 1' },
                   { id: 'FECHA_2', label: 'Fecha 2' },
                   { id: 'FECHA_3', label: 'Fecha 3' },
+                  { id: '16AVOS', label: '16avos' },
                 ].map(tab => (
                   <button
                     key={tab.id}
@@ -358,12 +423,13 @@ function MatchesPageContent() {
           </div>
 
           {(((activeFilter === 'ALL' || activeFilter === 'finished') && activeDateFilter === 'FECHA_2' && !matches.some(m => m.id >= 25 && m.id <= 48)) || 
-            ((activeFilter === 'ALL' || activeFilter === 'finished') && activeDateFilter === 'FECHA_3' && !matches.some(m => m.id >= 49 && m.id <= 72))) ? (
+            ((activeFilter === 'ALL' || activeFilter === 'finished') && activeDateFilter === 'FECHA_3' && !matches.some(m => m.id >= 49 && m.id <= 72)) ||
+            ((activeFilter === 'ALL' || activeFilter === 'finished') && activeDateFilter === '16AVOS' && !matches.some(m => m.id >= 73 && m.id <= 88))) ? (
             <div className="text-center py-20 bg-cream-50/20 border border-dashed border-cream-300 rounded-3xl p-6 shadow-2xs">
               <Calendar className="w-8 h-8 text-stone-300 mx-auto mb-3" />
               <h4 className="text-xs font-black uppercase text-stone-800 tracking-wider">Próximamente</h4>
               <p className="text-[11px] text-stone-500 mt-1 leading-relaxed max-w-xs mx-auto">
-                Los partidos e información oficial para la {activeDateFilter === 'FECHA_2' ? 'Fecha 2' : 'Fecha 3'} estarán disponibles una vez finalizada la fecha anterior.
+                Los partidos e información oficial para la {activeDateFilter === 'FECHA_2' ? 'Fecha 2' : activeDateFilter === 'FECHA_3' ? 'Fecha 3' : 'ronda de 16avos'} estarán disponibles próximamente.
               </p>
             </div>
           ) : filteredMatches.length === 0 ? (
@@ -386,16 +452,40 @@ function MatchesPageContent() {
                   const actAway = match.away_score;
                   const predHome = prediction.home_score;
                   const predAway = prediction.away_score;
+                  const isElim = match.phase !== 'Fase de Grupos';
+                  const mult = isElim ? 2 : 1;
+
+                  let bonusPoints = 0;
+                  if (isElim && actHome === actAway && predHome === predAway) {
+                    const actualWentToPenalties = match.home_penalty_score !== null && match.home_penalty_score !== undefined;
+                    const actualWentToExtraTime = match.home_extra_score !== null && match.home_extra_score !== undefined;
+                    const predWentToPenalties = prediction.home_penalty_score !== null && prediction.home_penalty_score !== undefined;
+                    const predWentToExtraTime = prediction.home_extra_score !== null && prediction.home_extra_score !== undefined;
+
+                    if (actualWentToPenalties && predWentToPenalties) {
+                      if (match.home_penalty_score === prediction.home_penalty_score && match.away_penalty_score === prediction.away_penalty_score) {
+                        bonusPoints = 2;
+                      } else if (Math.sign(match.home_penalty_score! - match.away_penalty_score!) === Math.sign(prediction.home_penalty_score! - prediction.away_penalty_score!)) {
+                        bonusPoints = 1;
+                      }
+                    } else if (actualWentToExtraTime && !actualWentToPenalties && predWentToExtraTime && !predWentToPenalties) {
+                      if (match.home_extra_score === prediction.home_extra_score && match.away_extra_score === prediction.away_extra_score) {
+                        bonusPoints = 2;
+                      } else if (Math.sign(match.home_extra_score! - match.away_extra_score!) === Math.sign(prediction.home_extra_score! - prediction.away_extra_score!)) {
+                        bonusPoints = 1;
+                      }
+                    }
+                  }
 
                   if (predHome === actHome && predAway === actAway) {
                     predictionHighlightClass = 'prediction-exact';
-                    predictionPointsLabel = 'Exacto (+3)';
+                    predictionPointsLabel = `Exacto (+${3 * mult + bonusPoints})`;
                   } else if (Math.sign(actHome - actAway) === Math.sign(predHome - predAway)) {
                     predictionHighlightClass = 'prediction-outcome';
-                    predictionPointsLabel = 'Resultado (+1)';
+                    predictionPointsLabel = `Resultado (+${1 * mult + bonusPoints})`;
                   } else {
                     predictionHighlightClass = 'prediction-miss';
-                    predictionPointsLabel = 'Sin acierto (+0)';
+                    predictionPointsLabel = bonusPoints > 0 ? `Bonus (+${bonusPoints})` : 'Sin acierto (+0)';
                   }
                 }
 
@@ -459,20 +549,32 @@ function MatchesPageContent() {
                     <div className="p-4 flex items-center justify-between">
                       {/* Home Team */}
                       <div className="flex-1 flex flex-col items-center text-center space-y-1">
-                        <span className="text-2xl" role="img" aria-label={homeTeam?.name || match.home_team_id}>
-                          {homeTeam?.flag_emoji || '🏳️'}
+                        <span className="text-2xl" role="img" aria-label={homeTeam?.name || match.home_team_id || 'A confirmar'}>
+                          {homeTeam?.flag_emoji || (match.home_team_id ? '🏳️' : '⏳')}
                         </span>
                         <span className="text-xs font-bold text-stone-800 truncate max-w-[110px]">
-                          {homeTeam?.name || match.home_team_id}
+                          {homeTeam?.name || match.home_team_id || 'A confirmar'}
                         </span>
                       </div>
 
                       {/* Score or Divider */}
                       <div className="flex flex-col items-center px-4">
                         {match.status === 'finished' || match.status === 'live' ? (
-                          <span className="text-xl font-bold text-stone-900 tracking-widest leading-none">
-                            {match.home_score} - {match.away_score}
-                          </span>
+                          <div className="flex flex-col items-center">
+                            <span className="text-xl font-bold text-stone-900 tracking-widest leading-none">
+                              {match.home_score} - {match.away_score}
+                            </span>
+                            {match.home_penalty_score !== null && match.home_penalty_score !== undefined && (
+                              <span className="text-[9.5px] font-black text-rose-600 tracking-wide mt-1">
+                                ({match.home_penalty_score} - {match.away_penalty_score} Pen)
+                              </span>
+                            )}
+                            {match.home_extra_score !== null && match.home_extra_score !== undefined && (match.home_penalty_score === null || match.home_penalty_score === undefined) && (
+                              <span className="text-[8.5px] font-black text-gold-650 tracking-wider mt-1 uppercase">
+                                {match.home_extra_score} - {match.away_extra_score} T.E.
+                              </span>
+                            )}
+                          </div>
                         ) : (
                           <div className="flex flex-col items-center">
                             <span className="text-[8px] text-stone-400 font-bold uppercase tracking-widest leading-none mb-1">VS</span>
@@ -485,11 +587,11 @@ function MatchesPageContent() {
 
                       {/* Away Team */}
                       <div className="flex-1 flex flex-col items-center text-center space-y-1">
-                        <span className="text-2xl" role="img" aria-label={awayTeam?.name || match.away_team_id}>
-                          {awayTeam?.flag_emoji || '🏳️'}
+                        <span className="text-2xl" role="img" aria-label={awayTeam?.name || match.away_team_id || 'A confirmar'}>
+                          {awayTeam?.flag_emoji || (match.away_team_id ? '🏳️' : '⏳')}
                         </span>
                         <span className="text-xs font-bold text-stone-800 truncate max-w-[110px]">
-                          {awayTeam?.name || match.away_team_id}
+                          {awayTeam?.name || match.away_team_id || 'A confirmar'}
                         </span>
                       </div>
                     </div>
@@ -519,7 +621,10 @@ function MatchesPageContent() {
                             {predictingMatchId === match.id
                               ? 'Cerrar'
                               : prediction 
-                                ? `Editar: ${prediction.home_score} - ${prediction.away_score}` 
+                                ? `Editar: ${prediction.home_score} - ${prediction.away_score}${
+                                    prediction.home_penalty_score !== null && prediction.home_penalty_score !== undefined ? ` (${prediction.home_penalty_score}-${prediction.away_penalty_score} Pen)` :
+                                    prediction.home_extra_score !== null && prediction.home_extra_score !== undefined ? ` (${prediction.home_extra_score}-${prediction.away_extra_score} TE)` : ''
+                                  }` 
                                 : 'Pronosticar'}
                           </span>
                           {predictingMatchId === match.id ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -533,7 +638,13 @@ function MatchesPageContent() {
                                 ? 'bg-cream-100/60 text-stone-600 border-cream-250' 
                                 : 'bg-stone-50 text-stone-400 border-stone-200/50'
                             }`}>
-                              {prediction ? `Mío: ${prediction.home_score}-${prediction.away_score}` : 'Sin pronóstico'}
+                              {prediction ? (
+                                <span>
+                                  Mío: {prediction.home_score}-{prediction.away_score}
+                                  {prediction.home_penalty_score !== null && prediction.home_penalty_score !== undefined && ` (${prediction.home_penalty_score}-${prediction.away_penalty_score} PK)`}
+                                  {prediction.home_extra_score !== null && prediction.home_extra_score !== undefined && ` (${prediction.home_extra_score}-${prediction.away_extra_score} TE)`}
+                                </span>
+                              ) : 'Sin pronóstico'}
                             </span>
                             <button
                               onClick={() => setExpandedCompetitors(prev => ({ ...prev, [match.id]: !prev[match.id] }))}
@@ -576,7 +687,7 @@ function MatchesPageContent() {
                               <div className="flex items-center justify-center gap-4 w-full">
                                 {/* Home Input */}
                                 <div className="flex-1 flex items-center justify-end gap-2.5">
-                                  <span className="text-[10px] font-bold text-stone-500 tracking-wider">{match.home_team_id}</span>
+                                  <span className="text-[10px] font-bold text-stone-500 tracking-wider">{match.home_team_id || 'TBD'}</span>
                                   <input 
                                     type="text"
                                     inputMode="numeric"
@@ -601,14 +712,133 @@ function MatchesPageContent() {
                                     className="w-14 h-12 text-center bg-white border border-cream-300 rounded-2xl text-xl font-extrabold text-stone-900 focus:outline-none focus:border-gold-550 focus:ring-4 focus:ring-gold-550/10 transition-all shadow-xs" 
                                     placeholder="-"
                                   />
-                                  <span className="text-[10px] font-bold text-stone-500 tracking-wider">{match.away_team_id}</span>
+                                  <span className="text-[10px] font-bold text-stone-500 tracking-wider">{match.away_team_id || 'TBD'}</span>
                                 </div>
                               </div>
+
+                              {/* Knockout definition section */}
+                              {match.phase !== 'Fase de Grupos' && predHome && predAway && parseInt(predHome) === parseInt(predAway) && (
+                                <motion.div 
+                                  initial={{ opacity: 0, y: -10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  className="w-full space-y-4 border-t border-cream-200 pt-3"
+                                >
+                                  <div className="flex flex-col items-center gap-1.5">
+                                    <span className="text-[8.5px] uppercase font-black text-stone-450 tracking-wider">Definición del Partido</span>
+                                    <div className="flex bg-cream-100 p-0.5 rounded-xl border border-cream-250 gap-0.5">
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setDefinitionMethod('extra_time');
+                                          setPredHomePenalty('');
+                                          setPredAwayPenalty('');
+                                        }}
+                                        className={`px-3 py-1.5 rounded-lg text-[8px] font-extrabold uppercase tracking-wider transition-all cursor-pointer ${
+                                          definitionMethod === 'extra_time'
+                                            ? 'bg-stone-900 text-white shadow-2xs'
+                                            : 'text-stone-500 hover:text-stone-800'
+                                        }`}
+                                      >
+                                        Tiempo Extra
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setDefinitionMethod('penalties');
+                                          setPredHomeExtra('');
+                                          setPredAwayExtra('');
+                                        }}
+                                        className={`px-3 py-1.5 rounded-lg text-[8px] font-extrabold uppercase tracking-wider transition-all cursor-pointer ${
+                                          definitionMethod === 'penalties'
+                                            ? 'bg-stone-900 text-white shadow-2xs'
+                                            : 'text-stone-500 hover:text-stone-800'
+                                        }`}
+                                      >
+                                        Penales
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                  {definitionMethod === 'extra_time' && (
+                                    <motion.div 
+                                      initial={{ opacity: 0, y: 5 }}
+                                      animate={{ opacity: 1, y: 0 }}
+                                      className="flex flex-col items-center gap-2"
+                                    >
+                                      <span className="text-[7.5px] uppercase font-black text-gold-650 tracking-widest">Goles en Suplementario (120')</span>
+                                      <div className="flex items-center justify-center gap-3 w-full">
+                                        <div className="flex-1 flex items-center justify-end gap-2">
+                                          <span className="text-[9px] font-bold text-stone-450">{match.home_team_id || 'L'}</span>
+                                          <input
+                                            type="text"
+                                            inputMode="numeric"
+                                            pattern="[0-9]*"
+                                            value={predHomeExtra}
+                                            onChange={(e) => handleScoreChange(e.target.value, setPredHomeExtra)}
+                                            className="w-10 h-9 text-center bg-white border border-cream-300 rounded-xl text-sm font-extrabold text-stone-900 focus:outline-none focus:border-gold-550 transition-all shadow-3xs"
+                                            placeholder="-"
+                                          />
+                                        </div>
+                                        <span className="text-stone-400 font-bold">:</span>
+                                        <div className="flex-1 flex items-center justify-start gap-2">
+                                          <input
+                                            type="text"
+                                            inputMode="numeric"
+                                            pattern="[0-9]*"
+                                            value={predAwayExtra}
+                                            onChange={(e) => handleScoreChange(e.target.value, setPredAwayExtra)}
+                                            className="w-10 h-9 text-center bg-white border border-cream-300 rounded-xl text-sm font-extrabold text-stone-900 focus:outline-none focus:border-gold-550 transition-all shadow-3xs"
+                                            placeholder="-"
+                                          />
+                                          <span className="text-[9px] font-bold text-stone-450">{match.away_team_id || 'V'}</span>
+                                        </div>
+                                      </div>
+                                    </motion.div>
+                                  )}
+
+                                  {definitionMethod === 'penalties' && (
+                                    <motion.div 
+                                      initial={{ opacity: 0, y: 5 }}
+                                      animate={{ opacity: 1, y: 0 }}
+                                      className="flex flex-col items-center gap-2"
+                                    >
+                                      <span className="text-[7.5px] uppercase font-black text-rose-600 tracking-widest">Marcador de Penales</span>
+                                      <div className="flex items-center justify-center gap-3 w-full">
+                                        <div className="flex-1 flex items-center justify-end gap-2">
+                                          <span className="text-[9px] font-bold text-stone-450">{match.home_team_id || 'L'}</span>
+                                          <input
+                                            type="text"
+                                            inputMode="numeric"
+                                            pattern="[0-9]*"
+                                            value={predHomePenalty}
+                                            onChange={(e) => handleScoreChange(e.target.value, setPredHomePenalty)}
+                                            className="w-10 h-9 text-center bg-white border border-cream-300 rounded-xl text-sm font-extrabold text-stone-900 focus:outline-none focus:border-gold-550 transition-all shadow-3xs"
+                                            placeholder="PK"
+                                          />
+                                        </div>
+                                        <span className="text-stone-400 font-bold">:</span>
+                                        <div className="flex-1 flex items-center justify-start gap-2">
+                                          <input
+                                            type="text"
+                                            inputMode="numeric"
+                                            pattern="[0-9]*"
+                                            value={predAwayPenalty}
+                                            onChange={(e) => handleScoreChange(e.target.value, setPredAwayPenalty)}
+                                            className="w-10 h-9 text-center bg-white border border-cream-300 rounded-xl text-sm font-extrabold text-stone-900 focus:outline-none focus:border-gold-550 transition-all shadow-3xs"
+                                            placeholder="PK"
+                                          />
+                                          <span className="text-[9px] font-bold text-stone-450">{match.away_team_id || 'V'}</span>
+                                        </div>
+                                      </div>
+                                    </motion.div>
+                                  )}
+                                </motion.div>
+                              )}
 
                               {/* Save Button */}
                               <button
                                 onClick={() => handleSavePrediction(match.id)}
-                                className="w-full h-11 bg-stone-900 hover:bg-stone-800 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-md transition-all flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                                className="w-full h-11 bg-stone-900 hover:bg-stone-800 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-md transition-all flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] cursor-pointer animate-none"
                               >
                                 <Check className="w-4 h-4 text-emerald-400 stroke-[3]" />
                                 <span>Confirmar Pronóstico</span>
@@ -659,7 +889,13 @@ function MatchesPageContent() {
                                     <span className="truncate text-stone-705">{prof.display_name}</span>
                                   </div>
                                   <span className="font-mono text-stone-900 text-right shrink-0">
-                                    {profPred ? `${profPred.home_score}-${profPred.away_score}` : '-'}
+                                    {profPred ? (
+                                      <span>
+                                        {profPred.home_score}-{profPred.away_score}
+                                        {profPred.home_penalty_score !== null && profPred.home_penalty_score !== undefined && ` (${profPred.home_penalty_score}-${profPred.away_penalty_score} PK)`}
+                                        {profPred.home_extra_score !== null && profPred.home_extra_score !== undefined && ` (${profPred.home_extra_score}-${profPred.away_extra_score} TE)`}
+                                      </span>
+                                    ) : '-'}
                                   </span>
                                 </div>
                               );

@@ -49,10 +49,13 @@ export function updateStandings(
         return;
       }
 
+      const isElimination = match.phase !== 'Fase de Grupos';
+      const pointsMultiplier = isElimination ? 2 : 1;
+
       // 1. Exact Match
       if (predHome === actHome && predAway === actAway) {
         exactGuesses++;
-        totalPoints += 3;
+        totalPoints += 3 * pointsMultiplier;
       } 
       // 2. Correct Outcome (Winner or Draw) but incorrect score
       else {
@@ -64,7 +67,47 @@ export function updateStandings(
         
         if (correctOutcome) {
           outcomeGuesses++;
-          totalPoints += 1;
+          totalPoints += 1 * pointsMultiplier;
+        }
+      }
+
+      // 3. Extra Time / Penalties guessing (only applies to elimination matches that ended in a draw at 90')
+      if (isElimination && actHome === actAway) {
+        // Did the user also predict a draw at 90'?
+        const predictedDraw = predHome === predAway;
+        
+        if (predictedDraw) {
+          // Check if actual went to penalties
+          const actualWentToPenalties = match.home_penalty_score !== null && match.home_penalty_score !== undefined && match.away_penalty_score !== null && match.away_penalty_score !== undefined;
+          // Check if actual went to extra time (but not penalties)
+          const actualWentToExtraTime = match.home_extra_score !== null && match.home_extra_score !== undefined && match.away_extra_score !== null && match.away_extra_score !== undefined;
+          
+          const predWentToPenalties = pred.home_penalty_score !== null && pred.home_penalty_score !== undefined && pred.away_penalty_score !== null && pred.away_penalty_score !== undefined;
+          const predWentToExtraTime = pred.home_extra_score !== null && pred.home_extra_score !== undefined && pred.away_extra_score !== null && pred.away_extra_score !== undefined;
+          
+          if (actualWentToPenalties && predWentToPenalties) {
+            const actPenHome = match.home_penalty_score!;
+            const actPenAway = match.away_penalty_score!;
+            const predPenHome = pred.home_penalty_score!;
+            const predPenAway = pred.away_penalty_score!;
+            
+            if (actPenHome === predPenHome && actPenAway === predPenAway) {
+              totalPoints += 2; // Exact penalty score
+            } else if (Math.sign(actPenHome - actPenAway) === Math.sign(predPenHome - predPenAway)) {
+              totalPoints += 1; // Correct penalty winner
+            }
+          } else if (actualWentToExtraTime && !actualWentToPenalties && predWentToExtraTime && !predWentToPenalties) {
+            const actExtHome = match.home_extra_score!;
+            const actExtAway = match.away_extra_score!;
+            const predExtHome = pred.home_extra_score!;
+            const predExtAway = pred.away_extra_score!;
+            
+            if (actExtHome === predExtHome && actExtAway === predExtAway) {
+              totalPoints += 2; // Exact extra time score
+            } else if (Math.sign(actExtHome - actExtAway) === Math.sign(predExtHome - predExtAway)) {
+              totalPoints += 1; // Correct extra time winner
+            }
+          }
         }
       }
     });

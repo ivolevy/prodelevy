@@ -181,7 +181,25 @@ export const INITIAL_MATCHES: Match[] = [
   { id: 70, group_letter: 'K', home_team_id: 'COD', away_team_id: 'UZB', fecha: '2026-06-27', hora_arg: '17:00:00-03:00', estadio: 'Mercedes-Benz Stadium', ciudad: 'Atlanta', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' },
   // Group L
   { id: 71, group_letter: 'L', home_team_id: 'ENG', away_team_id: 'PAN', fecha: '2026-06-27', hora_arg: '20:00:00-03:00', estadio: 'MetLife Stadium', ciudad: 'New York / New Jersey', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' },
-  { id: 72, group_letter: 'L', home_team_id: 'CRO', away_team_id: 'GHA', fecha: '2026-06-27', hora_arg: '20:00:00-03:00', estadio: 'Lincoln Financial Field', ciudad: 'Philadelphia', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' }
+  { id: 72, group_letter: 'L', home_team_id: 'CRO', away_team_id: 'GHA', fecha: '2026-06-27', hora_arg: '20:00:00-03:00', estadio: 'Lincoln Financial Field', ciudad: 'Philadelphia', pais: 'Estados Unidos', status: 'upcoming', phase: 'Fase de Grupos' },
+  
+  // --- 16avos de Final ---
+  { id: 73, home_team_id: 'RSA', away_team_id: 'CAN', fecha: '2026-06-28', hora_arg: '16:00:00-03:00', estadio: 'Los Angeles Stadium', ciudad: 'Los Ángeles', pais: 'Estados Unidos', status: 'upcoming', phase: '16avos de Final' },
+  { id: 74, home_team_id: 'BRA', away_team_id: 'JPN', fecha: '2026-06-29', hora_arg: '14:00:00-03:00', estadio: 'Houston Stadium', ciudad: 'Houston', pais: 'Estados Unidos', status: 'upcoming', phase: '16avos de Final' },
+  { id: 75, home_team_id: 'GER', away_team_id: '', fecha: '2026-06-29', hora_arg: '17:30:00-03:00', estadio: 'Boston Stadium', ciudad: 'Boston', pais: 'Estados Unidos', status: 'upcoming', phase: '16avos de Final' },
+  { id: 76, home_team_id: 'NED', away_team_id: 'MAR', fecha: '2026-06-30', hora_arg: '22:00:00-03:00', estadio: 'Estadio Monterrey', ciudad: 'Monterrey', pais: 'México', status: 'upcoming', phase: '16avos de Final' },
+  { id: 77, home_team_id: 'CIV', away_team_id: '', fecha: '2026-06-30', hora_arg: '14:00:00-03:00', estadio: 'Atlanta Stadium', ciudad: 'Atlanta', pais: 'Estados Unidos', status: 'upcoming', phase: '16avos de Final' },
+  { id: 78, home_team_id: '', away_team_id: '', fecha: '2026-06-30', hora_arg: '18:00:00-03:00', estadio: 'Philadelphia Stadium', ciudad: 'Philadelphia', pais: 'Estados Unidos', status: 'upcoming', phase: '16avos de Final' },
+  { id: 79, home_team_id: 'MEX', away_team_id: '', fecha: '2026-07-01', hora_arg: '22:00:00-03:00', estadio: 'Mexico City Stadium', ciudad: 'Ciudad de México', pais: 'México', status: 'upcoming', phase: '16avos de Final' },
+  { id: 80, home_team_id: '', away_team_id: '', fecha: '2026-07-01', hora_arg: '13:00:00-03:00', estadio: 'Toronto Stadium', ciudad: 'Toronto', pais: 'Canadá', status: 'upcoming', phase: '16avos de Final' },
+  { id: 81, home_team_id: '', away_team_id: '', fecha: '2026-07-01', hora_arg: '17:00:00-03:00', estadio: 'San Francisco Bay Area Stadium', ciudad: 'San Francisco', pais: 'Estados Unidos', status: 'upcoming', phase: '16avos de Final' },
+  { id: 82, home_team_id: 'USA', away_team_id: 'BIH', fecha: '2026-07-02', hora_arg: '21:00:00-03:00', estadio: 'Seattle Stadium', ciudad: 'Seattle', pais: 'Estados Unidos', status: 'upcoming', phase: '16avos de Final' },
+  { id: 83, home_team_id: '', away_team_id: '', fecha: '2026-07-02', hora_arg: '16:00:00-03:00', estadio: 'Dallas Stadium', ciudad: 'Dallas', pais: 'Estados Unidos', status: 'upcoming', phase: '16avos de Final' },
+  { id: 84, home_team_id: '', away_team_id: '', fecha: '2026-07-02', hora_arg: '20:00:00-03:00', estadio: 'Kansas City Stadium', ciudad: 'Kansas City', pais: 'Estados Unidos', status: 'upcoming', phase: '16avos de Final' },
+  { id: 85, home_team_id: 'SUI', away_team_id: '', fecha: '2026-07-03', hora_arg: '23:00:00-03:00', estadio: 'Vancouver Stadium', ciudad: 'Vancouver', pais: 'Canadá', status: 'upcoming', phase: '16avos de Final' },
+  { id: 86, home_team_id: 'AUS', away_team_id: '', fecha: '2026-07-03', hora_arg: '15:00:00-03:00', estadio: 'Estadio Guadalajara', ciudad: 'Guadalajara', pais: 'México', status: 'upcoming', phase: '16avos de Final' },
+  { id: 87, home_team_id: 'ARG', away_team_id: '', fecha: '2026-07-03', hora_arg: '19:00:00-03:00', estadio: 'Miami Stadium', ciudad: 'Miami', pais: 'Estados Unidos', status: 'upcoming', phase: '16avos de Final' },
+  { id: 88, home_team_id: '', away_team_id: '', fecha: '2026-07-04', hora_arg: '22:30:00-03:00', estadio: 'New York New Jersey Stadium', ciudad: 'New York / New Jersey', pais: 'Estados Unidos', status: 'upcoming', phase: '16avos de Final' }
 ];
 
 export const INITIAL_PROFILES: Profile[] = [
@@ -309,9 +327,29 @@ interface TournamentState {
   // Actions
   initStore: (forceLoading?: boolean, skipSync?: boolean) => Promise<void>;
   setCurrentProfile: (id: string) => void;
-  updateMatchScore: (matchId: number, homeScore: number | null, awayScore: number | null, status: Match['status']) => Promise<void>;
+  updateMatchScore: (
+    matchId: number,
+    homeScore: number | null,
+    awayScore: number | null,
+    status: Match['status'],
+    homeExtraScore?: number | null,
+    awayExtraScore?: number | null,
+    homePenaltyScore?: number | null,
+    awayPenaltyScore?: number | null,
+    homeTeamId?: string | null,
+    awayTeamId?: string | null
+  ) => Promise<void>;
   updateTeamStage: (teamId: string, stage: Team['stage_reached']) => Promise<void>;
-  savePrediction: (profileId: string, matchId: number, homeScore: number, awayScore: number) => Promise<void>;
+  savePrediction: (
+    profileId: string,
+    matchId: number,
+    homeScore: number,
+    awayScore: number,
+    homeExtraScore?: number | null,
+    awayExtraScore?: number | null,
+    homePenaltyScore?: number | null,
+    awayPenaltyScore?: number | null
+  ) => Promise<void>;
   resetToDefaults: () => Promise<void>;
   autoSeedPredictions: () => Promise<void>;
   addProfile: (displayName: string, username?: string, password?: string, groupId?: string) => Promise<void>;
@@ -873,12 +911,34 @@ export const useStore = create<TournamentState>((set, get) => ({
     }
   },
 
-  updateMatchScore: async (matchId: number, homeScore: number | null, awayScore: number | null, status: Match['status']) => {
-    const { isDemoMode, matches, predictions, profiles } = get();
+  updateMatchScore: async (
+    matchId: number,
+    homeScore: number | null,
+    awayScore: number | null,
+    status: Match['status'],
+    homeExtraScore?: number | null,
+    awayExtraScore?: number | null,
+    homePenaltyScore?: number | null,
+    awayPenaltyScore?: number | null,
+    homeTeamId?: string | null,
+    awayTeamId?: string | null
+  ) => {
+    const { matches, predictions, profiles } = get();
 
     const updatedMatches = matches.map(m => 
       m.id === matchId 
-        ? { ...m, home_score: homeScore, away_score: awayScore, status } 
+        ? { 
+            ...m, 
+            home_score: homeScore, 
+            away_score: awayScore, 
+            status,
+            home_extra_score: homeExtraScore !== undefined ? homeExtraScore : m.home_extra_score,
+            away_extra_score: awayExtraScore !== undefined ? awayExtraScore : m.away_extra_score,
+            home_penalty_score: homePenaltyScore !== undefined ? homePenaltyScore : m.home_penalty_score,
+            away_penalty_score: awayPenaltyScore !== undefined ? awayPenaltyScore : m.away_penalty_score,
+            home_team_id: homeTeamId !== undefined && homeTeamId !== null ? homeTeamId : m.home_team_id,
+            away_team_id: awayTeamId !== undefined && awayTeamId !== null ? awayTeamId : m.away_team_id
+          } 
         : m
     );
 
@@ -913,7 +973,16 @@ export const useStore = create<TournamentState>((set, get) => ({
     }
   },
 
-  savePrediction: async (profileId: string, matchId: number, homeScore: number, awayScore: number) => {
+  savePrediction: async (
+    profileId: string,
+    matchId: number,
+    homeScore: number,
+    awayScore: number,
+    homeExtraScore?: number | null,
+    awayExtraScore?: number | null,
+    homePenaltyScore?: number | null,
+    awayPenaltyScore?: number | null
+  ) => {
     const { isDemoMode, predictions, matches, profiles } = get();
 
     // Enforce the 1 hour lock
@@ -927,18 +996,43 @@ export const useStore = create<TournamentState>((set, get) => ({
       throw new Error('Los resultados deben estar entre 0 y 20.');
     }
 
+    // If extra time or penalty scores are passed, validate them
+    if (homeExtraScore !== undefined && homeExtraScore !== null && (homeExtraScore < 0 || homeExtraScore > 20)) {
+      throw new Error('Los resultados deben estar entre 0 y 20.');
+    }
+    if (awayExtraScore !== undefined && awayExtraScore !== null && (awayExtraScore < 0 || awayExtraScore > 20)) {
+      throw new Error('Los resultados deben estar entre 0 y 20.');
+    }
+    if (homePenaltyScore !== undefined && homePenaltyScore !== null && (homePenaltyScore < 0 || homePenaltyScore > 20)) {
+      throw new Error('Los resultados deben estar entre 0 y 20.');
+    }
+    if (awayPenaltyScore !== undefined && awayPenaltyScore !== null && (awayPenaltyScore < 0 || awayPenaltyScore > 20)) {
+      throw new Error('Los resultados deben estar entre 0 y 20.');
+    }
+
     const existingIdx = predictions.findIndex(p => p.participant_id === profileId && p.match_id === matchId);
     let updatedPredictions = [...predictions];
 
+    const newPredData = {
+      home_score: homeScore,
+      away_score: awayScore,
+      home_extra_score: homeExtraScore !== undefined ? homeExtraScore : null,
+      away_extra_score: awayExtraScore !== undefined ? awayExtraScore : null,
+      home_penalty_score: homePenaltyScore !== undefined ? homePenaltyScore : null,
+      away_penalty_score: awayPenaltyScore !== undefined ? awayPenaltyScore : null
+    };
+
     if (existingIdx > -1) {
-      updatedPredictions[existingIdx] = { ...updatedPredictions[existingIdx], home_score: homeScore, away_score: awayScore };
+      updatedPredictions[existingIdx] = { 
+        ...updatedPredictions[existingIdx], 
+        ...newPredData
+      };
     } else {
       updatedPredictions.push({
         id: Math.random().toString(36).substring(7),
         participant_id: profileId,
         match_id: matchId,
-        home_score: homeScore,
-        away_score: awayScore
+        ...newPredData
       });
     }
 
@@ -955,7 +1049,11 @@ export const useStore = create<TournamentState>((set, get) => ({
         participant_id: profileId,
         match_id: matchId,
         home_score: homeScore,
-        away_score: awayScore
+        away_score: awayScore,
+        home_extra_score: homeExtraScore !== undefined ? homeExtraScore : null,
+        away_extra_score: awayExtraScore !== undefined ? awayExtraScore : null,
+        home_penalty_score: homePenaltyScore !== undefined ? homePenaltyScore : null,
+        away_penalty_score: awayPenaltyScore !== undefined ? awayPenaltyScore : null
       });
     }
   },

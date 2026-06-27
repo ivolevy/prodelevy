@@ -82,19 +82,71 @@ export async function POST(req: Request) {
 
                     let home_score = null;
                     let away_score = null;
+                    let home_extra_score = null;
+                    let away_extra_score = null;
+                    let home_penalty_score = null;
+                    let away_penalty_score = null;
 
-                    if (isSwapped) {
-                      home_score = apiMatch.score?.fullTime?.away !== undefined ? apiMatch.score.fullTime.away : null;
-                      away_score = apiMatch.score?.fullTime?.home !== undefined ? apiMatch.score.fullTime.home : null;
+                    const score = apiMatch.score;
+                    const duration = score?.duration; // 'REGULAR', 'EXTRA_TIME', 'PENALTY_SHOOTOUT'
+
+                    if (duration === 'REGULAR') {
+                      if (isSwapped) {
+                        home_score = score?.fullTime?.away !== undefined ? score.fullTime.away : null;
+                        away_score = score?.fullTime?.home !== undefined ? score.fullTime.home : null;
+                      } else {
+                        home_score = score?.fullTime?.home !== undefined ? score.fullTime.home : null;
+                        away_score = score?.fullTime?.away !== undefined ? score.fullTime.away : null;
+                      }
+                    } else if (duration === 'EXTRA_TIME') {
+                      if (isSwapped) {
+                        home_score = score?.regularTime?.away !== undefined ? score.regularTime.away : (score?.fullTime?.away !== undefined ? score.fullTime.away : null);
+                        away_score = score?.regularTime?.home !== undefined ? score.regularTime.home : (score?.fullTime?.home !== undefined ? score.fullTime.home : null);
+                        home_extra_score = score?.fullTime?.away !== undefined ? score.fullTime.away : null;
+                        away_extra_score = score?.fullTime?.home !== undefined ? score.fullTime.home : null;
+                      } else {
+                        home_score = score?.regularTime?.home !== undefined ? score.regularTime.home : (score?.fullTime?.home !== undefined ? score.fullTime.home : null);
+                        away_score = score?.regularTime?.away !== undefined ? score.regularTime.away : (score?.fullTime?.away !== undefined ? score.fullTime.away : null);
+                        home_extra_score = score?.fullTime?.home !== undefined ? score.fullTime.home : null;
+                        away_extra_score = score?.fullTime?.away !== undefined ? score.fullTime.away : null;
+                      }
+                    } else if (duration === 'PENALTY_SHOOTOUT') {
+                      if (isSwapped) {
+                        home_score = score?.regularTime?.away !== undefined ? score.regularTime.away : null;
+                        away_score = score?.regularTime?.home !== undefined ? score.regularTime.home : null;
+                        home_extra_score = score?.extraTime?.away !== undefined ? score.extraTime.away : null;
+                        away_extra_score = score?.extraTime?.home !== undefined ? score.extraTime.home : null;
+                        home_penalty_score = score?.penalties?.away !== undefined ? score.penalties.away : null;
+                        away_penalty_score = score?.penalties?.home !== undefined ? score.penalties.home : null;
+                      } else {
+                        home_score = score?.regularTime?.home !== undefined ? score.regularTime.home : null;
+                        away_score = score?.regularTime?.away !== undefined ? score.regularTime.away : null;
+                        home_extra_score = score?.extraTime?.home !== undefined ? score.extraTime.home : null;
+                        away_extra_score = score?.extraTime?.away !== undefined ? score.extraTime.away : null;
+                        home_penalty_score = score?.penalties?.home !== undefined ? score.penalties.home : null;
+                        away_penalty_score = score?.penalties?.away !== undefined ? score.penalties.away : null;
+                      }
                     } else {
-                      home_score = apiMatch.score?.fullTime?.home !== undefined ? apiMatch.score.fullTime.home : null;
-                      away_score = apiMatch.score?.fullTime?.away !== undefined ? apiMatch.score.fullTime.away : null;
+                      // Fallback
+                      if (isSwapped) {
+                        home_score = score?.fullTime?.away !== undefined ? score.fullTime.away : null;
+                        away_score = score?.fullTime?.home !== undefined ? score.fullTime.home : null;
+                      } else {
+                        home_score = score?.fullTime?.home !== undefined ? score.fullTime.home : null;
+                        away_score = score?.fullTime?.away !== undefined ? score.fullTime.away : null;
+                      }
                     }
 
                     return {
                       id: m.id,
+                      home_team_id: isSwapped ? (apiMatch.awayTeam?.tla || null) : (apiMatch.homeTeam?.tla || null),
+                      away_team_id: isSwapped ? (apiMatch.homeTeam?.tla || null) : (apiMatch.awayTeam?.tla || null),
                       home_score,
                       away_score,
+                      home_extra_score,
+                      away_extra_score,
+                      home_penalty_score,
+                      away_penalty_score,
                       status
                     };
                   }
@@ -137,10 +189,16 @@ export async function POST(req: Request) {
           try {
             console.log(`Using Gemini to sync ${pendingOrMissingResults.length} missing matches...`);
             const matchesListText = pendingOrMissingResults
-              .map((m: any) => `ID ${m.id}: ${m.home_team_id} vs ${m.away_team_id} (Fecha: ${m.fecha})`)
+              .map((m: any) => `ID ${m.id}: ${m.home_team_id || 'TBD'} vs ${m.away_team_id || 'TBD'} (Fecha: ${m.fecha})`)
               .join('\n');
 
-            const prompt = `Buscá en la web los resultados oficiales de la Copa del Mundo de la FIFA 2026 para los siguientes partidos:\n${matchesListText}\n\nDevolvé los puntajes actuales (home_score y away_score si ya jugaron o están jugando) y el estado correcto ('upcoming' si no empezó, 'live' si está en juego, 'finished' si terminó). Si no jugaron, home_score y away_score deben ser null.\n\nDevolvé el resultado ÚNICAMENTE como una lista/array JSON válido sin comentarios ni código markdown de formato. No agregues nada más que el JSON válido de la forma: [{"id": 1, "home_score": null, "away_score": null, "status": "upcoming"}]`;
+            const prompt = `Buscá en la web los resultados oficiales de la Copa del Mundo de la FIFA 2026 para los siguientes partidos:\n${matchesListText}
+
+Si el partido es de eliminación directa (16avos, octavos, etc.) y terminó empatado en los 90 minutos, devolvé el puntaje a los 90 minutos en home_score y away_score. Además, indicá el resultado del tiempo suplementario (goles de cada equipo al final de los 120 minutos en home_extra_score y away_extra_score) y, si fue a penales, los goles convertidos en la tanda en home_penalty_score y away_penalty_score.
+Si se definieron los equipos clasificados que antes estaban vacíos o null, indicá los códigos de 3 letras de los equipos en home_team_id y away_team_id.
+
+Devolvé el resultado ÚNICAMENTE como una lista/array JSON válido sin comentarios ni código de formato. No agregues nada más que el JSON válido de la forma:
+[{"id": 73, "home_team_id": "RSA", "away_team_id": "CAN", "home_score": 1, "away_score": 1, "home_extra_score": 1, "away_extra_score": 1, "home_penalty_score": 4, "away_penalty_score": 3, "status": "finished"}]`;
 
             const response = await fetch(
               `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`,
@@ -177,15 +235,27 @@ export async function POST(req: Request) {
 
                 for (const geminiRes of geminiResults) {
                   const idx = syncedResults.findIndex((sr: any) => sr.id === geminiRes.id);
+                  const newFields = {
+                    home_team_id: geminiRes.home_team_id || null,
+                    away_team_id: geminiRes.away_team_id || null,
+                    home_score: geminiRes.home_score !== undefined ? geminiRes.home_score : null,
+                    away_score: geminiRes.away_score !== undefined ? geminiRes.away_score : null,
+                    home_extra_score: geminiRes.home_extra_score !== undefined ? geminiRes.home_extra_score : null,
+                    away_extra_score: geminiRes.away_extra_score !== undefined ? geminiRes.away_extra_score : null,
+                    home_penalty_score: geminiRes.home_penalty_score !== undefined ? geminiRes.home_penalty_score : null,
+                    away_penalty_score: geminiRes.away_penalty_score !== undefined ? geminiRes.away_penalty_score : null,
+                    status: geminiRes.status || 'upcoming'
+                  };
                   if (idx > -1) {
                     syncedResults[idx] = {
                       ...syncedResults[idx],
-                      home_score: geminiRes.home_score !== null ? geminiRes.home_score : syncedResults[idx].home_score,
-                      away_score: geminiRes.away_score !== null ? geminiRes.away_score : syncedResults[idx].away_score,
-                      status: geminiRes.status || syncedResults[idx].status
+                      ...newFields
                     };
                   } else {
-                    syncedResults.push(geminiRes);
+                    syncedResults.push({
+                      id: geminiRes.id,
+                      ...newFields
+                    });
                   }
                 }
                 syncSource = syncSource ? `${syncSource} + gemini` : 'gemini';
@@ -207,15 +277,32 @@ export async function POST(req: Request) {
 
             const scoreChanged = dbMatch.home_score !== item.home_score || dbMatch.away_score !== item.away_score;
             const statusChanged = dbMatch.status !== item.status;
+            const extraChanged = 
+              dbMatch.home_extra_score !== item.home_extra_score ||
+              dbMatch.away_extra_score !== item.away_extra_score ||
+              dbMatch.home_penalty_score !== item.home_penalty_score ||
+              dbMatch.away_penalty_score !== item.away_penalty_score;
+            const teamsChanged = 
+              (item.home_team_id && dbMatch.home_team_id !== item.home_team_id) || 
+              (item.away_team_id && dbMatch.away_team_id !== item.away_team_id);
 
-            if (scoreChanged || statusChanged) {
+            if (scoreChanged || statusChanged || extraChanged || teamsChanged) {
+              const updateData: any = {
+                home_score: item.home_score,
+                away_score: item.away_score,
+                home_extra_score: item.home_extra_score,
+                away_extra_score: item.away_extra_score,
+                home_penalty_score: item.home_penalty_score,
+                away_penalty_score: item.away_penalty_score,
+                status: item.status
+              };
+
+              if (item.home_team_id) updateData.home_team_id = item.home_team_id;
+              if (item.away_team_id) updateData.away_team_id = item.away_team_id;
+
               const { error: updateError } = await supabaseAdmin
                 .from('matches')
-                .update({
-                  home_score: item.home_score,
-                  away_score: item.away_score,
-                  status: item.status
-                })
+                .update(updateData)
                 .eq('id', item.id);
 
               if (updateError) {
@@ -234,7 +321,7 @@ export async function POST(req: Request) {
     // Always return the latest matches from the database
     const { data: latestMatches, error: fetchError } = await supabaseAdmin
       .from('matches')
-      .select('id, home_score, away_score, status')
+      .select('id, home_team_id, away_team_id, home_score, away_score, home_extra_score, away_extra_score, home_penalty_score, away_penalty_score, status')
       .order('id', { ascending: true });
 
     if (fetchError) {
