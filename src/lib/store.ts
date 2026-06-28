@@ -186,20 +186,20 @@ export const INITIAL_MATCHES: Match[] = [
   // --- 16avos de Final ---
   { id: 73, home_team_id: 'RSA', away_team_id: 'CAN', fecha: '2026-06-28', hora_arg: '16:00:00-03:00', estadio: 'Los Angeles Stadium', ciudad: 'Los Ángeles', pais: 'Estados Unidos', status: 'upcoming', phase: '16avos de Final' },
   { id: 74, home_team_id: 'BRA', away_team_id: 'JPN', fecha: '2026-06-29', hora_arg: '14:00:00-03:00', estadio: 'Houston Stadium', ciudad: 'Houston', pais: 'Estados Unidos', status: 'upcoming', phase: '16avos de Final' },
-  { id: 75, home_team_id: 'GER', away_team_id: '', fecha: '2026-06-29', hora_arg: '17:30:00-03:00', estadio: 'Boston Stadium', ciudad: 'Boston', pais: 'Estados Unidos', status: 'upcoming', phase: '16avos de Final' },
+  { id: 75, home_team_id: 'GER', away_team_id: 'PAR', fecha: '2026-06-29', hora_arg: '17:30:00-03:00', estadio: 'Boston Stadium', ciudad: 'Boston', pais: 'Estados Unidos', status: 'upcoming', phase: '16avos de Final' },
   { id: 76, home_team_id: 'NED', away_team_id: 'MAR', fecha: '2026-06-30', hora_arg: '22:00:00-03:00', estadio: 'Estadio Monterrey', ciudad: 'Monterrey', pais: 'México', status: 'upcoming', phase: '16avos de Final' },
-  { id: 77, home_team_id: 'CIV', away_team_id: '', fecha: '2026-06-30', hora_arg: '14:00:00-03:00', estadio: 'Atlanta Stadium', ciudad: 'Atlanta', pais: 'Estados Unidos', status: 'upcoming', phase: '16avos de Final' },
-  { id: 78, home_team_id: '', away_team_id: '', fecha: '2026-06-30', hora_arg: '18:00:00-03:00', estadio: 'Philadelphia Stadium', ciudad: 'Philadelphia', pais: 'Estados Unidos', status: 'upcoming', phase: '16avos de Final' },
-  { id: 79, home_team_id: 'MEX', away_team_id: '', fecha: '2026-07-01', hora_arg: '22:00:00-03:00', estadio: 'Mexico City Stadium', ciudad: 'Ciudad de México', pais: 'México', status: 'upcoming', phase: '16avos de Final' },
-  { id: 80, home_team_id: '', away_team_id: '', fecha: '2026-07-01', hora_arg: '13:00:00-03:00', estadio: 'Toronto Stadium', ciudad: 'Toronto', pais: 'Canadá', status: 'upcoming', phase: '16avos de Final' },
-  { id: 81, home_team_id: '', away_team_id: '', fecha: '2026-07-01', hora_arg: '17:00:00-03:00', estadio: 'San Francisco Bay Area Stadium', ciudad: 'San Francisco', pais: 'Estados Unidos', status: 'upcoming', phase: '16avos de Final' },
+  { id: 77, home_team_id: 'CIV', away_team_id: 'NOR', fecha: '2026-06-30', hora_arg: '14:00:00-03:00', estadio: 'Atlanta Stadium', ciudad: 'Atlanta', pais: 'Estados Unidos', status: 'upcoming', phase: '16avos de Final' },
+  { id: 78, home_team_id: 'FRA', away_team_id: 'SWE', fecha: '2026-06-30', hora_arg: '18:00:00-03:00', estadio: 'Philadelphia Stadium', ciudad: 'Philadelphia', pais: 'Estados Unidos', status: 'upcoming', phase: '16avos de Final' },
+  { id: 79, home_team_id: 'MEX', away_team_id: 'ECU', fecha: '2026-07-01', hora_arg: '22:00:00-03:00', estadio: 'Mexico City Stadium', ciudad: 'Ciudad de México', pais: 'México', status: 'upcoming', phase: '16avos de Final' },
+  { id: 80, home_team_id: 'ENG', away_team_id: 'COD', fecha: '2026-07-01', hora_arg: '13:00:00-03:00', estadio: 'Toronto Stadium', ciudad: 'Toronto', pais: 'Canadá', status: 'upcoming', phase: '16avos de Final' },
+  { id: 81, home_team_id: 'BEL', away_team_id: 'SEN', fecha: '2026-07-01', hora_arg: '17:00:00-03:00', estadio: 'San Francisco Bay Area Stadium', ciudad: 'San Francisco', pais: 'Estados Unidos', status: 'upcoming', phase: '16avos de Final' },
   { id: 82, home_team_id: 'USA', away_team_id: 'BIH', fecha: '2026-07-02', hora_arg: '21:00:00-03:00', estadio: 'Seattle Stadium', ciudad: 'Seattle', pais: 'Estados Unidos', status: 'upcoming', phase: '16avos de Final' },
-  { id: 83, home_team_id: '', away_team_id: '', fecha: '2026-07-02', hora_arg: '16:00:00-03:00', estadio: 'Dallas Stadium', ciudad: 'Dallas', pais: 'Estados Unidos', status: 'upcoming', phase: '16avos de Final' },
-  { id: 84, home_team_id: '', away_team_id: '', fecha: '2026-07-02', hora_arg: '20:00:00-03:00', estadio: 'Kansas City Stadium', ciudad: 'Kansas City', pais: 'Estados Unidos', status: 'upcoming', phase: '16avos de Final' },
-  { id: 85, home_team_id: 'SUI', away_team_id: '', fecha: '2026-07-03', hora_arg: '23:00:00-03:00', estadio: 'Vancouver Stadium', ciudad: 'Vancouver', pais: 'Canadá', status: 'upcoming', phase: '16avos de Final' },
-  { id: 86, home_team_id: 'AUS', away_team_id: '', fecha: '2026-07-03', hora_arg: '15:00:00-03:00', estadio: 'Estadio Guadalajara', ciudad: 'Guadalajara', pais: 'México', status: 'upcoming', phase: '16avos de Final' },
-  { id: 87, home_team_id: 'ARG', away_team_id: '', fecha: '2026-07-03', hora_arg: '19:00:00-03:00', estadio: 'Miami Stadium', ciudad: 'Miami', pais: 'Estados Unidos', status: 'upcoming', phase: '16avos de Final' },
-  { id: 88, home_team_id: '', away_team_id: '', fecha: '2026-07-04', hora_arg: '22:30:00-03:00', estadio: 'New York New Jersey Stadium', ciudad: 'New York / New Jersey', pais: 'Estados Unidos', status: 'upcoming', phase: '16avos de Final' }
+  { id: 83, home_team_id: 'ESP', away_team_id: 'AUT', fecha: '2026-07-02', hora_arg: '16:00:00-03:00', estadio: 'Dallas Stadium', ciudad: 'Dallas', pais: 'Estados Unidos', status: 'upcoming', phase: '16avos de Final' },
+  { id: 84, home_team_id: 'POR', away_team_id: 'CRO', fecha: '2026-07-02', hora_arg: '20:00:00-03:00', estadio: 'Kansas City Stadium', ciudad: 'Kansas City', pais: 'Estados Unidos', status: 'upcoming', phase: '16avos de Final' },
+  { id: 85, home_team_id: 'SUI', away_team_id: 'ALG', fecha: '2026-07-03', hora_arg: '23:00:00-03:00', estadio: 'Vancouver Stadium', ciudad: 'Vancouver', pais: 'Canadá', status: 'upcoming', phase: '16avos de Final' },
+  { id: 86, home_team_id: 'AUS', away_team_id: 'EGY', fecha: '2026-07-03', hora_arg: '15:00:00-03:00', estadio: 'Estadio Guadalajara', ciudad: 'Guadalajara', pais: 'México', status: 'upcoming', phase: '16avos de Final' },
+  { id: 87, home_team_id: 'ARG', away_team_id: 'CPV', fecha: '2026-07-03', hora_arg: '19:00:00-03:00', estadio: 'Miami Stadium', ciudad: 'Miami', pais: 'Estados Unidos', status: 'upcoming', phase: '16avos de Final' },
+  { id: 88, home_team_id: 'COL', away_team_id: 'GHA', fecha: '2026-07-04', hora_arg: '22:30:00-03:00', estadio: 'New York New Jersey Stadium', ciudad: 'New York / New Jersey', pais: 'Estados Unidos', status: 'upcoming', phase: '16avos de Final' }
 ];
 
 export const INITIAL_PROFILES: Profile[] = [
