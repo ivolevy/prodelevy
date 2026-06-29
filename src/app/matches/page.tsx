@@ -185,6 +185,11 @@ function MatchesPageContent() {
       return { text: 'Cerrado', color: 'text-stone-400', isLocked: true };
     }
     
+    // Special bypass for Brazil vs Japan (match id 74) to allow late predictions
+    if (match.id === 74) {
+      return { text: 'Abierto', color: 'text-emerald-600', isLocked: false };
+    }
+    
     let hora = match.hora_arg || '';
     if (/[-+][0-9]{2}$/.test(hora)) {
       hora = hora + ':00';
