@@ -292,6 +292,19 @@ function MatchesPageContent() {
 
   const groups = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
   const [activeDateFilter, setActiveDateFilter] = useState<'ALL' | 'FECHA_1' | 'FECHA_2' | 'FECHA_3' | '16AVOS'>('ALL');
+  const [isFirstPhaseOpen, setIsFirstPhaseOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isFirstPhaseOpen) return;
+    const handleDocumentClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.first-phase-dropdown-container')) {
+        setIsFirstPhaseOpen(false);
+      }
+    };
+    document.addEventListener('click', handleDocumentClick);
+    return () => document.removeEventListener('click', handleDocumentClick);
+  }, [isFirstPhaseOpen]);
 
   const filteredMatches = matches.filter(match => {
     const is16avosFilter = activeDateFilter === '16AVOS';
@@ -399,29 +412,101 @@ function MatchesPageContent() {
             </div>
 
             {/* Fecha (Round) filters (Premium text pill rows) */}
-            {(activeFilter === 'ALL' || activeFilter === 'finished') && (
-              <div className="flex gap-2 self-center sm:self-auto overflow-x-auto py-1">
-                {[
-                  { id: 'ALL', label: 'Ver Todo' },
-                  { id: 'FECHA_1', label: 'Fecha 1' },
-                  { id: 'FECHA_2', label: 'Fecha 2' },
-                  { id: 'FECHA_3', label: 'Fecha 3' },
-                  { id: '16AVOS', label: '16avos' },
-                ].map(tab => (
+            {(activeFilter === 'ALL' || activeFilter === 'finished') && (() => {
+              const isFirstPhaseActive = ['FECHA_1', 'FECHA_2', 'FECHA_3'].includes(activeDateFilter);
+              const getFirstPhaseLabel = () => {
+                if (activeDateFilter === 'FECHA_1') return '1era Fase (Fecha 1)';
+                if (activeDateFilter === 'FECHA_2') return '1era Fase (Fecha 2)';
+                if (activeDateFilter === 'FECHA_3') return '1era Fase (Fecha 3)';
+                return '1era Fase';
+              };
+
+              return (
+                <div className="flex gap-2 self-center sm:self-auto overflow-visible py-1 items-center">
+                  {/* Ver Todo */}
                   <button
-                    key={tab.id}
-                    onClick={() => setActiveDateFilter(tab.id as any)}
+                    onClick={() => {
+                      setActiveDateFilter('ALL');
+                      setIsFirstPhaseOpen(false);
+                    }}
                     className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all shrink-0 border cursor-pointer ${
-                      activeDateFilter === tab.id
+                      activeDateFilter === 'ALL'
                         ? 'bg-gold-500/10 border-gold-500/30 text-gold-650 font-black'
                         : 'bg-white border-cream-300 text-stone-500 hover:text-stone-800'
                     }`}
                   >
-                    {tab.label}
+                    Ver Todo
                   </button>
-                ))}
-              </div>
-            )}
+
+                  {/* 1era Fase Dropdown */}
+                  <div className="relative shrink-0 first-phase-dropdown-container">
+                    <button
+                      onClick={() => setIsFirstPhaseOpen(!isFirstPhaseOpen)}
+                      className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all border cursor-pointer flex items-center gap-1 ${
+                        isFirstPhaseActive
+                          ? 'bg-gold-500/10 border-gold-500/30 text-gold-650 font-black'
+                          : 'bg-white border-cream-300 text-stone-500 hover:text-stone-800'
+                      }`}
+                    >
+                      <span>{getFirstPhaseLabel()}</span>
+                      {isFirstPhaseOpen ? (
+                        <ChevronUp className="w-3 h-3 text-current shrink-0" />
+                      ) : (
+                        <ChevronDown className="w-3 h-3 text-current shrink-0" />
+                      )}
+                    </button>
+
+                    <AnimatePresence>
+                      {isFirstPhaseOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 5, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 5, scale: 0.95 }}
+                          transition={{ duration: 0.15 }}
+                          className="absolute left-0 mt-1.5 w-36 bg-white border border-cream-300 rounded-xl shadow-lg z-50 overflow-hidden py-1"
+                        >
+                          {[
+                            { id: 'FECHA_1', label: 'Fecha 1' },
+                            { id: 'FECHA_2', label: 'Fecha 2' },
+                            { id: 'FECHA_3', label: 'Fecha 3' },
+                          ].map(subTab => (
+                            <button
+                              key={subTab.id}
+                              onClick={() => {
+                                setActiveDateFilter(subTab.id as any);
+                                setIsFirstPhaseOpen(false);
+                              }}
+                              className={`w-full text-left px-4 py-2 text-[9px] font-bold uppercase tracking-widest transition-all cursor-pointer ${
+                                activeDateFilter === subTab.id
+                                  ? 'bg-gold-500/10 text-gold-650 font-black'
+                                  : 'text-stone-500 hover:bg-cream-50 hover:text-stone-850'
+                              }`}
+                            >
+                              {subTab.label}
+                            </button>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+
+                  {/* 16avos */}
+                  <button
+                    onClick={() => {
+                      setActiveDateFilter('16AVOS');
+                      setIsFirstPhaseOpen(false);
+                    }}
+                    className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all shrink-0 border cursor-pointer ${
+                      activeDateFilter === '16AVOS'
+                        ? 'bg-gold-500/10 border-gold-500/30 text-gold-650 font-black'
+                        : 'bg-white border-cream-300 text-stone-500 hover:text-stone-800'
+                    }`}
+                  >
+                    16avos
+                  </button>
+                </div>
+              );
+            })()}
           </div>
 
           {(((activeFilter === 'ALL' || activeFilter === 'finished') && activeDateFilter === 'FECHA_2' && !matches.some(m => m.id >= 25 && m.id <= 48)) || 
