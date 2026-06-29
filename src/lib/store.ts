@@ -272,9 +272,6 @@ export const INITIAL_GROUP_MEMBERS: GroupMember[] = [
 export function isMatchPredictable(match: Match): boolean {
   if (match.status !== 'upcoming') return false;
 
-  // Special bypass for Brazil vs Japan (match id 74) to allow late predictions
-  if (match.id == 74) return true;
-
   let hora = match.hora_arg || '';
   if (/[-+][0-9]{2}$/.test(hora)) {
     hora = hora + ':00';
@@ -287,8 +284,8 @@ export function isMatchPredictable(match: Match): boolean {
   }
 
   const now = new Date().getTime();
-  const diffHours = (matchTime - now) / (1000 * 60 * 60);
-  return diffHours >= 1;
+  const diffMinutes = (matchTime - now) / (1000 * 60);
+  return diffMinutes >= 10;
 }
 
 function encodeProfileAvatar(username: string, password?: string, avatarUrl?: string, championPrediction?: string): string {
@@ -993,10 +990,10 @@ export const useStore = create<TournamentState>((set, get) => ({
   ) => {
     const { isDemoMode, predictions, matches, profiles } = get();
 
-    // Enforce the 1 hour lock
+    // Enforce the 10 minutes lock
     const match = matches.find(m => m.id === matchId);
     if (match && !isMatchPredictable(match)) {
-      throw new Error('La predicción está cerrada para este partido (cierre de 1h).');
+      throw new Error('La predicción está cerrada para este partido (cierre de 10 min).');
     }
 
     // Validate prediction scores are between 0 and 20

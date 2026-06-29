@@ -185,11 +185,6 @@ function MatchesPageContent() {
       return { text: 'Cerrado', color: 'text-stone-400', isLocked: true };
     }
     
-    // Special bypass for Brazil vs Japan (match id 74) to allow late predictions
-    if (match.id == 74) {
-      return { text: 'Abierto', color: 'text-emerald-600', isLocked: false };
-    }
-    
     let hora = match.hora_arg || '';
     if (/[-+][0-9]{2}$/.test(hora)) {
       hora = hora + ':00';
@@ -203,13 +198,13 @@ function MatchesPageContent() {
     
     const now = new Date().getTime();
     const diffMs = matchTime - now;
-    const diffHours = diffMs / (1000 * 60 * 60);
+    const diffMinutes = diffMs / (1000 * 60);
     
-    if (diffHours < 0) {
+    if (diffMinutes < 0) {
       return { text: 'Cerrado', color: 'text-rose-500', isLocked: true };
     }
     
-    if (diffHours < 1) {
+    if (diffMinutes < 10) {
       return { text: 'Cerrado', color: 'text-rose-600', isLocked: true };
     }
     
@@ -916,7 +911,7 @@ function MatchesPageContent() {
                     {isPredictable && (
                       <div className="bg-cream-100/10 border-t border-cream-200 px-4 py-2 flex items-center gap-1.5 text-[8.5px] text-stone-400 font-semibold italic">
                         <Users className="w-3 h-3 text-stone-300" />
-                        <span>Los pronósticos de los rivales se revelarán 1 hora antes del partido.</span>
+                        <span>Los pronósticos de los rivales se revelarán 10 minutos antes del partido.</span>
                       </div>
                     )}
 

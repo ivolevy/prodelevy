@@ -99,7 +99,7 @@ export default function RulesPage() {
         <div className="glass-card p-6 border border-cream-300 shadow-sm bg-white space-y-4">
           <div className="flex gap-3 items-center border-b border-cream-200 pb-3">
             <Clock className="w-5 h-5 text-gold-500" />
-            <h3 className="text-sm font-bold text-stone-850 uppercase tracking-wider">Límite de Tiempo (1 Hora)</h3>
+            <h3 className="text-sm font-bold text-stone-850 uppercase tracking-wider">Límite de Tiempo (10 Minutos)</h3>
           </div>
 
           <p className="text-xs text-stone-700 leading-relaxed">
@@ -109,7 +109,7 @@ export default function RulesPage() {
           <ul className="space-y-3 text-xs text-stone-750">
             <li className="flex items-start gap-2">
               <span className="text-rose-500 font-bold">•</span>
-              <span><strong>Cierre Automático:</strong> Las predicciones para cada partido se bloquean estrictamente <strong>1 hora antes</strong> del horario oficial de inicio del partido.</span>
+              <span><strong>Cierre Automático:</strong> Las predicciones para cada partido se bloquean estrictamente <strong>10 minutos antes</strong> del horario oficial de inicio del partido.</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-rose-500 font-bold">•</span>
