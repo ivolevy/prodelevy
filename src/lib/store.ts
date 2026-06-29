@@ -273,7 +273,7 @@ export function isMatchPredictable(match: Match): boolean {
   if (match.status !== 'upcoming') return false;
 
   // Special bypass for Brazil vs Japan (match id 74) to allow late predictions
-  if (match.id === 74) return true;
+  if (match.id == 74) return true;
 
   let hora = match.hora_arg || '';
   if (/[-+][0-9]{2}$/.test(hora)) {

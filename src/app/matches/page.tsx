@@ -186,7 +186,7 @@ function MatchesPageContent() {
     }
     
     // Special bypass for Brazil vs Japan (match id 74) to allow late predictions
-    if (match.id === 74) {
+    if (match.id == 74) {
       return { text: 'Abierto', color: 'text-emerald-600', isLocked: false };
     }
     
