@@ -341,6 +341,9 @@ ON CONFLICT (id) DO UPDATE SET
     group_letter = EXCLUDED.group_letter, 
     flag_emoji = EXCLUDED.flag_emoji;
 
+-- Update team stages for qualified teams to Octavos
+UPDATE public.teams SET stage_reached = 'octavos' WHERE id IN ('CAN', 'MAR', 'PAR', 'FRA', 'BRA', 'NOR', 'MEX', 'ENG', 'USA', 'BEL', 'POR', 'ESP', 'ARG', 'EGY', 'SUI', 'COL');
+
 -- Seed Initial Fixture (Matches 1 to 24)
 INSERT INTO public.matches (id, group_letter, home_team_id, away_team_id, fecha, hora_arg, estadio, ciudad, pais, status, phase) VALUES
 (1, 'A', 'MEX', 'RSA', '2026-06-11', '16:00:00-03:00', 'Mexico City Stadium', 'Ciudad de México', 'México', 'upcoming', 'Fase de Grupos'),
@@ -400,6 +403,73 @@ ON CONFLICT (id) DO UPDATE SET
     estadio = EXCLUDED.estadio,
     ciudad = EXCLUDED.ciudad,
     pais = EXCLUDED.pais;
+
+-- Seed Matches 49 to 96 (Group stage round 3, 16avos, and 8avos)
+INSERT INTO public.matches (id, group_letter, home_team_id, away_team_id, fecha, hora_arg, estadio, ciudad, pais, home_score, away_score, home_extra_score, away_extra_score, home_penalty_score, away_penalty_score, status, phase) VALUES
+(49, 'A', 'MEX', 'CZE', '2026-06-24', '22:00:00-03', 'Mexico City Stadium', 'Ciudad de México', 'México', 3, 0, NULL, NULL, NULL, NULL, 'finished', 'Fase de Grupos'),
+(50, 'A', 'RSA', 'KOR', '2026-06-24', '22:00:00-03', 'Estadio Monterrey', 'Monterrey', 'México', 1, 0, NULL, NULL, NULL, NULL, 'finished', 'Fase de Grupos'),
+(51, 'B', 'CAN', 'SUI', '2026-06-24', '17:00:00-03', 'BC Place', 'Vancouver', 'Canadá', 1, 2, NULL, NULL, NULL, NULL, 'finished', 'Fase de Grupos'),
+(52, 'B', 'BIH', 'QAT', '2026-06-24', '17:00:00-03', 'Seattle Stadium', 'Seattle', 'Estados Unidos', 3, 1, NULL, NULL, NULL, NULL, 'finished', 'Fase de Grupos'),
+(53, 'C', 'BRA', 'SCO', '2026-06-24', '20:00:00-03', 'Miami Stadium', 'Miami', 'Estados Unidos', 3, 0, NULL, NULL, NULL, NULL, 'finished', 'Fase de Grupos'),
+(54, 'C', 'MAR', 'HAI', '2026-06-24', '20:00:00-03', 'Atlanta Stadium', 'Atlanta', 'Estados Unidos', 4, 2, NULL, NULL, NULL, NULL, 'finished', 'Fase de Grupos'),
+(55, 'D', 'USA', 'TUR', '2026-06-25', '23:00:00-03', 'Los Angeles Stadium', 'Los Ángeles', 'Estados Unidos', 2, 3, NULL, NULL, NULL, NULL, 'finished', 'Fase de Grupos'),
+(56, 'D', 'PAR', 'AUS', '2026-06-25', '23:00:00-03', 'Levi''s Stadium', 'San Francisco', 'Estados Unidos', 0, 0, NULL, NULL, NULL, NULL, 'finished', 'Fase de Grupos'),
+(57, 'E', 'GER', 'ECU', '2026-06-25', '17:00:00-03', 'Houston Stadium', 'Houston', 'Estados Unidos', 1, 2, NULL, NULL, NULL, NULL, 'finished', 'Fase de Grupos'),
+(58, 'E', 'CUW', 'CIV', '2026-06-25', '17:00:00-03', 'Lincoln Financial Field', 'Philadelphia', 'Estados Unidos', 0, 2, NULL, NULL, NULL, NULL, 'finished', 'Fase de Grupos'),
+(59, 'F', 'NED', 'TUN', '2026-06-25', '20:00:00-03', 'Arrowhead Stadium', 'Kansas City', 'Estados Unidos', 3, 1, NULL, NULL, NULL, NULL, 'finished', 'Fase de Grupos'),
+(60, 'F', 'JPN', 'SWE', '2026-06-25', '20:00:00-03', 'AT&T Stadium', 'Dallas', 'Estados Unidos', 1, 1, NULL, NULL, NULL, NULL, 'finished', 'Fase de Grupos'),
+(61, 'G', 'BEL', 'NZL', '2026-06-26', '17:00:00-03', 'BC Place', 'Vancouver', 'Canadá', 5, 1, NULL, NULL, NULL, NULL, 'finished', 'Fase de Grupos'),
+(62, 'G', 'EGY', 'IRN', '2026-06-26', '17:00:00-03', 'Seattle Stadium', 'Seattle', 'Estados Unidos', 1, 1, NULL, NULL, NULL, NULL, 'finished', 'Fase de Grupos'),
+(63, 'H', 'ESP', 'URU', '2026-06-26', '23:00:00-03', 'Estadio Akron', 'Guadalajara', 'México', 1, 0, NULL, NULL, NULL, NULL, 'finished', 'Fase de Grupos'),
+(64, 'H', 'CPV', 'KSA', '2026-06-26', '23:00:00-03', 'NRG Stadium', 'Houston', 'Estados Unidos', 0, 0, NULL, NULL, NULL, NULL, 'finished', 'Fase de Grupos'),
+(65, 'I', 'FRA', 'NOR', '2026-06-26', '20:00:00-03', 'Gillette Stadium', 'Boston', 'Estados Unidos', 4, 1, NULL, NULL, NULL, NULL, 'finished', 'Fase de Grupos'),
+(66, 'I', 'SEN', 'IRQ', '2026-06-26', '20:00:00-03', 'BMO Field', 'Toronto', 'Canadá', 5, 0, NULL, NULL, NULL, NULL, 'finished', 'Fase de Grupos'),
+(67, 'J', 'ARG', 'JOR', '2026-06-27', '23:00:00-03', 'AT&T Stadium', 'Dallas', 'Estados Unidos', 3, 1, NULL, NULL, NULL, NULL, 'finished', 'Fase de Grupos'),
+(68, 'J', 'ALG', 'AUT', '2026-06-27', '23:00:00-03', 'Arrowhead Stadium', 'Kansas City', 'Estados Unidos', 3, 3, NULL, NULL, NULL, NULL, 'finished', 'Fase de Grupos'),
+(69, 'K', 'POR', 'COL', '2026-06-27', '17:00:00-03', 'Hard Rock Stadium', 'Miami', 'Estados Unidos', 0, 0, NULL, NULL, NULL, NULL, 'finished', 'Fase de Grupos'),
+(70, 'K', 'COD', 'UZB', '2026-06-27', '17:00:00-03', 'Mercedes-Benz Stadium', 'Atlanta', 'Estados Unidos', 3, 1, NULL, NULL, NULL, NULL, 'finished', 'Fase de Grupos'),
+(71, 'L', 'ENG', 'PAN', '2026-06-27', '20:00:00-03', 'MetLife Stadium', 'New York / New Jersey', 'Estados Unidos', 2, 0, NULL, NULL, NULL, NULL, 'finished', 'Fase de Grupos'),
+(72, 'L', 'CRO', 'GHA', '2026-06-27', '20:00:00-03', 'Lincoln Financial Field', 'Philadelphia', 'Estados Unidos', 2, 1, NULL, NULL, NULL, NULL, 'finished', 'Fase de Grupos'),
+(73, NULL, 'RSA', 'CAN', '2026-06-28', '16:00:00-03', 'Los Angeles Stadium', 'Los Ángeles', 'Estados Unidos', 0, 1, NULL, NULL, NULL, NULL, 'finished', '16avos de Final'),
+(74, NULL, 'BRA', 'JPN', '2026-06-29', '14:00:00-03', 'Houston Stadium', 'Houston', 'Estados Unidos', 2, 1, NULL, NULL, NULL, NULL, 'finished', '16avos de Final'),
+(75, NULL, 'GER', 'PAR', '2026-06-29', '17:30:00-03', 'Boston Stadium', 'Boston', 'Estados Unidos', 1, 1, 1, 1, 3, 4, 'finished', '16avos de Final'),
+(76, NULL, 'NED', 'MAR', '2026-06-30', '22:00:00-03', 'Estadio Monterrey', 'Monterrey', 'México', 1, 1, 1, 1, 2, 3, 'finished', '16avos de Final'),
+(77, NULL, 'CIV', 'NOR', '2026-06-30', '14:00:00-03', 'Atlanta Stadium', 'Atlanta', 'Estados Unidos', 1, 2, NULL, NULL, NULL, NULL, 'finished', '16avos de Final'),
+(78, NULL, 'FRA', 'SWE', '2026-06-30', '18:00:00-03', 'Philadelphia Stadium', 'Philadelphia', 'Estados Unidos', 3, 0, NULL, NULL, NULL, NULL, 'finished', '16avos de Final'),
+(79, NULL, 'MEX', 'ECU', '2026-07-01', '22:00:00-03', 'Mexico City Stadium', 'Ciudad de México', 'México', 2, 0, NULL, NULL, NULL, NULL, 'finished', '16avos de Final'),
+(80, NULL, 'ENG', 'COD', '2026-07-01', '13:00:00-03', 'Toronto Stadium', 'Toronto', 'Canadá', 2, 1, NULL, NULL, NULL, NULL, 'finished', '16avos de Final'),
+(81, NULL, 'BEL', 'SEN', '2026-07-01', '17:00:00-03', 'San Francisco Bay Area Stadium', 'San Francisco', 'Estados Unidos', 2, 2, 3, 2, NULL, NULL, 'finished', '16avos de Final'),
+(82, NULL, 'USA', 'BIH', '2026-07-02', '21:00:00-03', 'Seattle Stadium', 'Seattle', 'Estados Unidos', 2, 0, NULL, NULL, NULL, NULL, 'finished', '16avos de Final'),
+(83, NULL, 'ESP', 'AUT', '2026-07-02', '16:00:00-03', 'Dallas Stadium', 'Dallas', 'Estados Unidos', 3, 0, NULL, NULL, NULL, NULL, 'finished', '16avos de Final'),
+(84, NULL, 'POR', 'CRO', '2026-07-02', '20:00:00-03', 'Kansas City Stadium', 'Kansas City', 'Estados Unidos', 2, 1, NULL, NULL, NULL, NULL, 'finished', '16avos de Final'),
+(85, NULL, 'SUI', 'ALG', '2026-07-03', '23:00:00-03', 'Vancouver Stadium', 'Vancouver', 'Canadá', 2, 0, NULL, NULL, NULL, NULL, 'finished', '16avos de Final'),
+(86, NULL, 'AUS', 'EGY', '2026-07-03', '15:00:00-03', 'Estadio Guadalajara', 'Guadalajara', 'México', 1, 1, 1, 1, 2, 4, 'finished', '16avos de Final'),
+(87, NULL, 'ARG', 'CPV', '2026-07-03', '19:00:00-03', 'Miami Stadium', 'Miami', 'Estados Unidos', 1, 1, 3, 2, NULL, NULL, 'finished', '16avos de Final'),
+(88, NULL, 'COL', 'GHA', '2026-07-04', '22:30:00-03', 'New York New Jersey Stadium', 'New York / New Jersey', 'Estados Unidos', 1, 0, NULL, NULL, NULL, NULL, 'finished', '16avos de Final'),
+(89, NULL, 'CAN', 'MAR', '2026-07-04', '14:00:00-03', 'Estadio A definir', 'A definir', 'USA/CAN/MEX', NULL, NULL, NULL, NULL, NULL, NULL, 'upcoming', 'Octavos de Final'),
+(90, NULL, 'PAR', 'FRA', '2026-07-04', '18:00:00-03', 'Estadio A definir', 'A definir', 'USA/CAN/MEX', NULL, NULL, NULL, NULL, NULL, NULL, 'upcoming', 'Octavos de Final'),
+(91, NULL, 'BRA', 'NOR', '2026-07-05', '17:00:00-03', 'Estadio A definir', 'A definir', 'USA/CAN/MEX', NULL, NULL, NULL, NULL, NULL, NULL, 'upcoming', 'Octavos de Final'),
+(92, NULL, 'MEX', 'ENG', '2026-07-05', '21:00:00-03', 'Estadio A definir', 'A definir', 'USA/CAN/MEX', NULL, NULL, NULL, NULL, NULL, NULL, 'upcoming', 'Octavos de Final'),
+(93, NULL, 'USA', 'BEL', '2026-07-06', '21:00:00-03', 'Estadio A definir', 'A definir', 'USA/CAN/MEX', NULL, NULL, NULL, NULL, NULL, NULL, 'upcoming', 'Octavos de Final'),
+(94, NULL, 'POR', 'ESP', '2026-07-06', '16:00:00-03', 'Estadio A definir', 'A definir', 'USA/CAN/MEX', NULL, NULL, NULL, NULL, NULL, NULL, 'upcoming', 'Octavos de Final'),
+(95, NULL, 'ARG', 'EGY', '2026-07-07', '13:00:00-03', 'Estadio A definir', 'A definir', 'USA/CAN/MEX', NULL, NULL, NULL, NULL, NULL, NULL, 'upcoming', 'Octavos de Final'),
+(96, NULL, 'SUI', 'COL', '2026-07-07', '17:00:00-03', 'Estadio A definir', 'A definir', 'USA/CAN/MEX', NULL, NULL, NULL, NULL, NULL, NULL, 'upcoming', 'Octavos de Final')
+ON CONFLICT (id) DO UPDATE SET
+    home_team_id = EXCLUDED.home_team_id,
+    away_team_id = EXCLUDED.away_team_id,
+    fecha = EXCLUDED.fecha,
+    hora_arg = EXCLUDED.hora_arg,
+    estadio = EXCLUDED.estadio,
+    ciudad = EXCLUDED.ciudad,
+    pais = EXCLUDED.pais,
+    home_score = EXCLUDED.home_score,
+    away_score = EXCLUDED.away_score,
+    home_extra_score = EXCLUDED.home_extra_score,
+    away_extra_score = EXCLUDED.away_extra_score,
+    home_penalty_score = EXCLUDED.home_penalty_score,
+    away_penalty_score = EXCLUDED.away_penalty_score,
+    status = EXCLUDED.status,
+    phase = EXCLUDED.phase;
 
 -- Trigger to create profile after auth.users creation
 CREATE OR REPLACE FUNCTION public.handle_new_user()
