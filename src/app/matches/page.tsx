@@ -291,7 +291,7 @@ function MatchesPageContent() {
   };
 
   const groups = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
-  const [activeDateFilter, setActiveDateFilter] = useState<'ALL' | 'FECHA_1' | 'FECHA_2' | 'FECHA_3' | '16AVOS'>('ALL');
+  const [activeDateFilter, setActiveDateFilter] = useState<'ALL' | 'FECHA_1' | 'FECHA_2' | 'FECHA_3' | '16AVOS' | 'OCTAVOS'>('ALL');
   const [isFirstPhaseOpen, setIsFirstPhaseOpen] = useState(false);
 
   useEffect(() => {
@@ -307,10 +307,10 @@ function MatchesPageContent() {
   }, [isFirstPhaseOpen]);
 
   const filteredMatches = matches.filter(match => {
-    const is16avosFilter = activeDateFilter === '16AVOS';
+    const isKnockoutFilter = activeDateFilter === '16AVOS' || activeDateFilter === 'OCTAVOS';
 
-    // 1. Status Filter (skip status check for 16avos to ensure they always show when selected)
-    if (!is16avosFilter) {
+    // 1. Status Filter (skip status check for knockout stages to ensure they always show when selected)
+    if (!isKnockoutFilter) {
       if (activeFilter === 'upcoming' && match.status !== 'upcoming') {
         return false;
       }
@@ -334,6 +334,9 @@ function MatchesPageContent() {
     }
     if (activeDateFilter === '16AVOS') {
       return match.id >= 73 && match.id <= 88;
+    }
+    if (activeDateFilter === 'OCTAVOS') {
+      return match.id >= 89 && match.id <= 96;
     }
 
     return true;
@@ -504,6 +507,21 @@ function MatchesPageContent() {
                   >
                     16avos
                   </button>
+
+                  {/* 8avos */}
+                  <button
+                    onClick={() => {
+                      setActiveDateFilter('OCTAVOS');
+                      setIsFirstPhaseOpen(false);
+                    }}
+                    className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all shrink-0 border cursor-pointer ${
+                      activeDateFilter === 'OCTAVOS'
+                        ? 'bg-gold-500/10 border-gold-500/30 text-gold-650 font-black'
+                        : 'bg-white border-cream-300 text-stone-500 hover:text-stone-800'
+                    }`}
+                  >
+                    8avos
+                  </button>
                 </div>
               );
             })()}
@@ -511,12 +529,13 @@ function MatchesPageContent() {
 
           {(((activeFilter === 'ALL' || activeFilter === 'finished') && activeDateFilter === 'FECHA_2' && !matches.some(m => m.id >= 25 && m.id <= 48)) || 
             ((activeFilter === 'ALL' || activeFilter === 'finished') && activeDateFilter === 'FECHA_3' && !matches.some(m => m.id >= 49 && m.id <= 72)) ||
-            ((activeFilter === 'ALL' || activeFilter === 'finished') && activeDateFilter === '16AVOS' && !matches.some(m => m.id >= 73 && m.id <= 88))) ? (
+            ((activeFilter === 'ALL' || activeFilter === 'finished') && activeDateFilter === '16AVOS' && !matches.some(m => m.id >= 73 && m.id <= 88)) ||
+            ((activeFilter === 'ALL' || activeFilter === 'finished') && activeDateFilter === 'OCTAVOS' && !matches.some(m => m.id >= 89 && m.id <= 96))) ? (
             <div className="text-center py-20 bg-cream-50/20 border border-dashed border-cream-300 rounded-3xl p-6 shadow-2xs">
               <Calendar className="w-8 h-8 text-stone-300 mx-auto mb-3" />
               <h4 className="text-xs font-black uppercase text-stone-800 tracking-wider">Próximamente</h4>
               <p className="text-[11px] text-stone-500 mt-1 leading-relaxed max-w-xs mx-auto">
-                Los partidos e información oficial para la {activeDateFilter === 'FECHA_2' ? 'Fecha 2' : activeDateFilter === 'FECHA_3' ? 'Fecha 3' : 'ronda de 16avos'} estarán disponibles próximamente.
+                Los partidos e información oficial para la {activeDateFilter === 'FECHA_2' ? 'Fecha 2' : activeDateFilter === 'FECHA_3' ? 'Fecha 3' : activeDateFilter === '16AVOS' ? 'ronda de 16avos' : 'ronda de 8avos'} estarán disponibles próximamente.
               </p>
             </div>
           ) : filteredMatches.length === 0 ? (
