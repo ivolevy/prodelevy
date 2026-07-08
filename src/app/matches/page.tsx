@@ -291,7 +291,7 @@ function MatchesPageContent() {
   };
 
   const groups = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
-  const [activeDateFilter, setActiveDateFilter] = useState<'ALL' | 'FECHA_1' | 'FECHA_2' | 'FECHA_3' | '16AVOS' | 'OCTAVOS'>('ALL');
+  const [activeDateFilter, setActiveDateFilter] = useState<'ALL' | 'FECHA_1' | 'FECHA_2' | 'FECHA_3' | '16AVOS' | 'OCTAVOS' | 'CUARTOS' | 'SEMIS' | 'FINAL'>('ALL');
   const [isFirstPhaseOpen, setIsFirstPhaseOpen] = useState(false);
 
   useEffect(() => {
@@ -307,7 +307,7 @@ function MatchesPageContent() {
   }, [isFirstPhaseOpen]);
 
   const filteredMatches = matches.filter(match => {
-    const isKnockoutFilter = activeDateFilter === '16AVOS' || activeDateFilter === 'OCTAVOS';
+    const isKnockoutFilter = ['16AVOS', 'OCTAVOS', 'CUARTOS', 'SEMIS', 'FINAL'].includes(activeDateFilter);
 
     // 1. Status Filter (skip status check for knockout stages to ensure they always show when selected)
     if (!isKnockoutFilter) {
@@ -337,6 +337,15 @@ function MatchesPageContent() {
     }
     if (activeDateFilter === 'OCTAVOS') {
       return match.id >= 89 && match.id <= 96;
+    }
+    if (activeDateFilter === 'CUARTOS') {
+      return match.id >= 97 && match.id <= 100;
+    }
+    if (activeDateFilter === 'SEMIS') {
+      return match.id >= 101 && match.id <= 102;
+    }
+    if (activeDateFilter === 'FINAL') {
+      return match.id === 103;
     }
 
     return true;
@@ -522,6 +531,51 @@ function MatchesPageContent() {
                   >
                     8avos
                   </button>
+
+                  {/* Cuartos */}
+                  <button
+                    onClick={() => {
+                      setActiveDateFilter('CUARTOS');
+                      setIsFirstPhaseOpen(false);
+                    }}
+                    className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all shrink-0 border cursor-pointer ${
+                      activeDateFilter === 'CUARTOS'
+                        ? 'bg-gold-500/10 border-gold-500/30 text-gold-650 font-black'
+                        : 'bg-white border-cream-300 text-stone-500 hover:text-stone-800'
+                    }`}
+                  >
+                    Cuartos
+                  </button>
+
+                  {/* Semis */}
+                  <button
+                    onClick={() => {
+                      setActiveDateFilter('SEMIS');
+                      setIsFirstPhaseOpen(false);
+                    }}
+                    className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all shrink-0 border cursor-pointer ${
+                      activeDateFilter === 'SEMIS'
+                        ? 'bg-gold-500/10 border-gold-500/30 text-gold-650 font-black'
+                        : 'bg-white border-cream-300 text-stone-500 hover:text-stone-800'
+                    }`}
+                  >
+                    Semis
+                  </button>
+
+                  {/* Final */}
+                  <button
+                    onClick={() => {
+                      setActiveDateFilter('FINAL');
+                      setIsFirstPhaseOpen(false);
+                    }}
+                    className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all shrink-0 border cursor-pointer ${
+                      activeDateFilter === 'FINAL'
+                        ? 'bg-gold-500/10 border-gold-500/30 text-gold-650 font-black'
+                        : 'bg-white border-cream-300 text-stone-500 hover:text-stone-800'
+                    }`}
+                  >
+                    Final
+                  </button>
                 </div>
               );
             })()}
@@ -530,12 +584,23 @@ function MatchesPageContent() {
           {(((activeFilter === 'ALL' || activeFilter === 'finished') && activeDateFilter === 'FECHA_2' && !matches.some(m => m.id >= 25 && m.id <= 48)) || 
             ((activeFilter === 'ALL' || activeFilter === 'finished') && activeDateFilter === 'FECHA_3' && !matches.some(m => m.id >= 49 && m.id <= 72)) ||
             ((activeFilter === 'ALL' || activeFilter === 'finished') && activeDateFilter === '16AVOS' && !matches.some(m => m.id >= 73 && m.id <= 88)) ||
-            ((activeFilter === 'ALL' || activeFilter === 'finished') && activeDateFilter === 'OCTAVOS' && !matches.some(m => m.id >= 89 && m.id <= 96))) ? (
+            ((activeFilter === 'ALL' || activeFilter === 'finished') && activeDateFilter === 'OCTAVOS' && !matches.some(m => m.id >= 89 && m.id <= 96)) ||
+            ((activeFilter === 'ALL' || activeFilter === 'finished') && activeDateFilter === 'CUARTOS' && !matches.some(m => m.id >= 97 && m.id <= 100)) ||
+            ((activeFilter === 'ALL' || activeFilter === 'finished') && activeDateFilter === 'SEMIS' && !matches.some(m => m.id >= 101 && m.id <= 102)) ||
+            ((activeFilter === 'ALL' || activeFilter === 'finished') && activeDateFilter === 'FINAL' && !matches.some(m => m.id === 103))) ? (
             <div className="text-center py-20 bg-cream-50/20 border border-dashed border-cream-300 rounded-3xl p-6 shadow-2xs">
               <Calendar className="w-8 h-8 text-stone-300 mx-auto mb-3" />
               <h4 className="text-xs font-black uppercase text-stone-800 tracking-wider">Próximamente</h4>
               <p className="text-[11px] text-stone-500 mt-1 leading-relaxed max-w-xs mx-auto">
-                Los partidos e información oficial para la {activeDateFilter === 'FECHA_2' ? 'Fecha 2' : activeDateFilter === 'FECHA_3' ? 'Fecha 3' : activeDateFilter === '16AVOS' ? 'ronda de 16avos' : 'ronda de 8avos'} estarán disponibles próximamente.
+                Los partidos e información oficial para {
+                  activeDateFilter === 'FECHA_2' ? 'la Fecha 2' : 
+                  activeDateFilter === 'FECHA_3' ? 'la Fecha 3' : 
+                  activeDateFilter === '16AVOS' ? 'la ronda de 16avos' : 
+                  activeDateFilter === 'OCTAVOS' ? 'la ronda de 8avos' :
+                  activeDateFilter === 'CUARTOS' ? 'la ronda de cuartos' :
+                  activeDateFilter === 'SEMIS' ? 'la ronda de semifinales' :
+                  'la gran final'
+                } estarán disponibles próximamente.
               </p>
             </div>
           ) : filteredMatches.length === 0 ? (
@@ -558,8 +623,22 @@ function MatchesPageContent() {
                   const actAway = match.away_score;
                   const predHome = prediction.home_score;
                   const predAway = prediction.away_score;
-                  const isElim = match.phase !== 'Fase de Grupos';
-                  const mult = isElim ? 2 : 1;
+                  const phase = match.phase;
+                  let mult = 1;
+                  if (phase === '16avos de Final' || phase === 'Octavos de Final') {
+                    mult = 2;
+                  } else if (
+                    phase === 'Cuartos de Final' ||
+                    phase === 'Semifinales' ||
+                    phase === 'Semifinal' ||
+                    phase === 'Gran Final' ||
+                    phase === 'Final'
+                  ) {
+                    mult = 6;
+                  } else if (phase !== 'Fase de Grupos') {
+                    mult = 2;
+                  }
+                  const isElim = phase !== 'Fase de Grupos';
 
                   let bonusPoints = 0;
                   if (isElim && actHome === actAway && predHome === predAway) {

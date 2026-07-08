@@ -61,7 +61,7 @@ export function updateStandings(
         phase === 'Gran Final' ||
         phase === 'Final'
       ) {
-        pointsMultiplier = 4;
+        pointsMultiplier = 6;
       } else if (phase !== 'Fase de Grupos') {
         pointsMultiplier = 2;
       }
