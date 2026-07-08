@@ -291,7 +291,7 @@ function MatchesPageContent() {
   };
 
   const groups = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
-  const [activeDateFilter, setActiveDateFilter] = useState<'ALL' | 'FECHA_1' | 'FECHA_2' | 'FECHA_3' | '16AVOS' | 'OCTAVOS' | 'CUARTOS' | 'SEMIS' | 'FINAL'>('ALL');
+  const [activeDateFilter, setActiveDateFilter] = useState<'ALL' | 'FECHA_1' | 'FECHA_2' | 'FECHA_3' | '16AVOS' | 'OCTAVOS' | 'CUARTOS' | 'SEMIS' | 'FINAL'>('CUARTOS');
   const [isFirstPhaseOpen, setIsFirstPhaseOpen] = useState(false);
 
   useEffect(() => {
@@ -424,161 +424,54 @@ function MatchesPageContent() {
             </div>
 
             {/* Fecha (Round) filters (Premium text pill rows) */}
-            {(activeFilter === 'ALL' || activeFilter === 'finished') && (() => {
-              const isFirstPhaseActive = ['FECHA_1', 'FECHA_2', 'FECHA_3'].includes(activeDateFilter);
-              const getFirstPhaseLabel = () => {
-                if (activeDateFilter === 'FECHA_1') return '1era Fase (Fecha 1)';
-                if (activeDateFilter === 'FECHA_2') return '1era Fase (Fecha 2)';
-                if (activeDateFilter === 'FECHA_3') return '1era Fase (Fecha 3)';
-                return '1era Fase';
-              };
+            {(activeFilter === 'ALL' || activeFilter === 'finished') && (
+              <div className="flex gap-2 self-center sm:self-auto overflow-visible py-1 items-center">
+                {/* Cuartos */}
+                <button
+                  onClick={() => {
+                    setActiveDateFilter('CUARTOS');
+                    setIsFirstPhaseOpen(false);
+                  }}
+                  className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all shrink-0 border cursor-pointer ${
+                    activeDateFilter === 'CUARTOS'
+                      ? 'bg-gold-500/10 border-gold-500/30 text-gold-650 font-black'
+                      : 'bg-white border-cream-300 text-stone-500 hover:text-stone-800'
+                  }`}
+                >
+                  4tos
+                </button>
 
-              return (
-                <div className="flex gap-2 self-center sm:self-auto overflow-visible py-1 items-center">
-                  {/* Ver Todo */}
-                  <button
-                    onClick={() => {
-                      setActiveDateFilter('ALL');
-                      setIsFirstPhaseOpen(false);
-                    }}
-                    className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all shrink-0 border cursor-pointer ${
-                      activeDateFilter === 'ALL'
-                        ? 'bg-gold-500/10 border-gold-500/30 text-gold-650 font-black'
-                        : 'bg-white border-cream-300 text-stone-500 hover:text-stone-800'
-                    }`}
-                  >
-                    Ver Todo
-                  </button>
+                {/* Semis */}
+                <button
+                  onClick={() => {
+                    setActiveDateFilter('SEMIS');
+                    setIsFirstPhaseOpen(false);
+                  }}
+                  className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all shrink-0 border cursor-pointer ${
+                    activeDateFilter === 'SEMIS'
+                      ? 'bg-gold-500/10 border-gold-500/30 text-gold-650 font-black'
+                      : 'bg-white border-cream-300 text-stone-500 hover:text-stone-800'
+                  }`}
+                >
+                  Semis
+                </button>
 
-                  {/* 1era Fase Dropdown */}
-                  <div className="relative shrink-0 first-phase-dropdown-container">
-                    <button
-                      onClick={() => setIsFirstPhaseOpen(!isFirstPhaseOpen)}
-                      className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all border cursor-pointer flex items-center gap-1 ${
-                        isFirstPhaseActive
-                          ? 'bg-gold-500/10 border-gold-500/30 text-gold-650 font-black'
-                          : 'bg-white border-cream-300 text-stone-500 hover:text-stone-800'
-                      }`}
-                    >
-                      <span>{getFirstPhaseLabel()}</span>
-                      {isFirstPhaseOpen ? (
-                        <ChevronUp className="w-3 h-3 text-current shrink-0" />
-                      ) : (
-                        <ChevronDown className="w-3 h-3 text-current shrink-0" />
-                      )}
-                    </button>
-
-                    <AnimatePresence>
-                      {isFirstPhaseOpen && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 5, scale: 0.95 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: 5, scale: 0.95 }}
-                          transition={{ duration: 0.15 }}
-                          className="absolute left-0 mt-1.5 w-36 bg-white border border-cream-300 rounded-xl shadow-lg z-50 overflow-hidden py-1"
-                        >
-                          {[
-                            { id: 'FECHA_1', label: 'Fecha 1' },
-                            { id: 'FECHA_2', label: 'Fecha 2' },
-                            { id: 'FECHA_3', label: 'Fecha 3' },
-                          ].map(subTab => (
-                            <button
-                              key={subTab.id}
-                              onClick={() => {
-                                setActiveDateFilter(subTab.id as any);
-                                setIsFirstPhaseOpen(false);
-                              }}
-                              className={`w-full text-left px-4 py-2 text-[9px] font-bold uppercase tracking-widest transition-all cursor-pointer ${
-                                activeDateFilter === subTab.id
-                                  ? 'bg-gold-500/10 text-gold-650 font-black'
-                                  : 'text-stone-500 hover:bg-cream-50 hover:text-stone-850'
-                              }`}
-                            >
-                              {subTab.label}
-                            </button>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-
-                  {/* 16avos */}
-                  <button
-                    onClick={() => {
-                      setActiveDateFilter('16AVOS');
-                      setIsFirstPhaseOpen(false);
-                    }}
-                    className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all shrink-0 border cursor-pointer ${
-                      activeDateFilter === '16AVOS'
-                        ? 'bg-gold-500/10 border-gold-500/30 text-gold-650 font-black'
-                        : 'bg-white border-cream-300 text-stone-500 hover:text-stone-800'
-                    }`}
-                  >
-                    16avos
-                  </button>
-
-                  {/* 8avos */}
-                  <button
-                    onClick={() => {
-                      setActiveDateFilter('OCTAVOS');
-                      setIsFirstPhaseOpen(false);
-                    }}
-                    className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all shrink-0 border cursor-pointer ${
-                      activeDateFilter === 'OCTAVOS'
-                        ? 'bg-gold-500/10 border-gold-500/30 text-gold-650 font-black'
-                        : 'bg-white border-cream-300 text-stone-500 hover:text-stone-800'
-                    }`}
-                  >
-                    8avos
-                  </button>
-
-                  {/* Cuartos */}
-                  <button
-                    onClick={() => {
-                      setActiveDateFilter('CUARTOS');
-                      setIsFirstPhaseOpen(false);
-                    }}
-                    className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all shrink-0 border cursor-pointer ${
-                      activeDateFilter === 'CUARTOS'
-                        ? 'bg-gold-500/10 border-gold-500/30 text-gold-650 font-black'
-                        : 'bg-white border-cream-300 text-stone-500 hover:text-stone-800'
-                    }`}
-                  >
-                    Cuartos
-                  </button>
-
-                  {/* Semis */}
-                  <button
-                    onClick={() => {
-                      setActiveDateFilter('SEMIS');
-                      setIsFirstPhaseOpen(false);
-                    }}
-                    className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all shrink-0 border cursor-pointer ${
-                      activeDateFilter === 'SEMIS'
-                        ? 'bg-gold-500/10 border-gold-500/30 text-gold-650 font-black'
-                        : 'bg-white border-cream-300 text-stone-500 hover:text-stone-800'
-                    }`}
-                  >
-                    Semis
-                  </button>
-
-                  {/* Final */}
-                  <button
-                    onClick={() => {
-                      setActiveDateFilter('FINAL');
-                      setIsFirstPhaseOpen(false);
-                    }}
-                    className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all shrink-0 border cursor-pointer ${
-                      activeDateFilter === 'FINAL'
-                        ? 'bg-gold-500/10 border-gold-500/30 text-gold-650 font-black'
-                        : 'bg-white border-cream-300 text-stone-500 hover:text-stone-800'
-                    }`}
-                  >
-                    Final
-                  </button>
-                </div>
-              );
-            })()}
+                {/* Final */}
+                <button
+                  onClick={() => {
+                    setActiveDateFilter('FINAL');
+                    setIsFirstPhaseOpen(false);
+                  }}
+                  className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all shrink-0 border cursor-pointer ${
+                    activeDateFilter === 'FINAL'
+                      ? 'bg-gold-500/10 border-gold-500/30 text-gold-650 font-black'
+                      : 'bg-white border-cream-300 text-stone-500 hover:text-stone-800'
+                  }`}
+                >
+                  Final
+                </button>
+              </div>
+            )}
           </div>
 
           {(((activeFilter === 'ALL' || activeFilter === 'finished') && activeDateFilter === 'FECHA_2' && !matches.some(m => m.id >= 25 && m.id <= 48)) || 
@@ -597,7 +490,7 @@ function MatchesPageContent() {
                   activeDateFilter === 'FECHA_3' ? 'la Fecha 3' : 
                   activeDateFilter === '16AVOS' ? 'la ronda de 16avos' : 
                   activeDateFilter === 'OCTAVOS' ? 'la ronda de 8avos' :
-                  activeDateFilter === 'CUARTOS' ? 'la ronda de cuartos' :
+                  activeDateFilter === 'CUARTOS' ? 'la ronda de 4tos' :
                   activeDateFilter === 'SEMIS' ? 'la ronda de semifinales' :
                   'la gran final'
                 } estarán disponibles próximamente.
