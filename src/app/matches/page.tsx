@@ -634,7 +634,7 @@ function MatchesPageContent() {
                     phase === 'Gran Final' ||
                     phase === 'Final'
                   ) {
-                    mult = 6;
+                    mult = 8;
                   } else if (phase !== 'Fase de Grupos') {
                     mult = 2;
                   }
