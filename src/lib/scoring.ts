@@ -49,8 +49,22 @@ export function updateStandings(
         return;
       }
 
-      const isElimination = match.phase !== 'Fase de Grupos';
-      const pointsMultiplier = isElimination ? 2 : 1;
+      const phase = match.phase;
+      const isElimination = phase !== 'Fase de Grupos';
+      let pointsMultiplier = 1;
+      if (phase === '16avos de Final' || phase === 'Octavos de Final') {
+        pointsMultiplier = 2;
+      } else if (
+        phase === 'Cuartos de Final' ||
+        phase === 'Semifinales' ||
+        phase === 'Semifinal' ||
+        phase === 'Gran Final' ||
+        phase === 'Final'
+      ) {
+        pointsMultiplier = 4;
+      } else if (phase !== 'Fase de Grupos') {
+        pointsMultiplier = 2;
+      }
 
       // 1. Exact Match
       if (predHome === actHome && predAway === actAway) {
