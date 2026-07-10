@@ -453,7 +453,13 @@ INSERT INTO public.matches (id, group_letter, home_team_id, away_team_id, fecha,
 (93, NULL, 'USA', 'BEL', '2026-07-06', '21:00:00-03', 'Estadio A definir', 'A definir', 'USA/CAN/MEX', NULL, NULL, NULL, NULL, NULL, NULL, 'upcoming', 'Octavos de Final'),
 (94, NULL, 'POR', 'ESP', '2026-07-06', '16:00:00-03', 'Estadio A definir', 'A definir', 'USA/CAN/MEX', NULL, NULL, NULL, NULL, NULL, NULL, 'upcoming', 'Octavos de Final'),
 (95, NULL, 'ARG', 'EGY', '2026-07-07', '13:00:00-03', 'Estadio A definir', 'A definir', 'USA/CAN/MEX', NULL, NULL, NULL, NULL, NULL, NULL, 'upcoming', 'Octavos de Final'),
-(96, NULL, 'SUI', 'COL', '2026-07-07', '17:00:00-03', 'Estadio A definir', 'A definir', 'USA/CAN/MEX', NULL, NULL, NULL, NULL, NULL, NULL, 'upcoming', 'Octavos de Final')
+(96, NULL, 'SUI', 'COL', '2026-07-07', '17:00:00-03', 'Estadio A definir', 'A definir', 'USA/CAN/MEX', NULL, NULL, NULL, NULL, NULL, NULL, 'upcoming', 'Octavos de Final'),
+(97, NULL, 'MAR', 'FRA', '2026-07-09', '17:00:00-03', 'Boston Stadium', 'Boston', 'Estados Unidos', 0, 2, NULL, NULL, NULL, NULL, 'finished', 'Cuartos de Final'),
+(98, NULL, 'NOR', 'ENG', '2026-07-11', '17:00:00-03', 'Miami Stadium', 'Miami', 'Estados Unidos', NULL, NULL, NULL, NULL, NULL, NULL, 'upcoming', 'Cuartos de Final'),
+(99, NULL, 'BEL', 'ESP', '2026-07-10', '21:00:00-03', 'Los Angeles Stadium', 'Los Ángeles', 'Estados Unidos', NULL, NULL, NULL, NULL, NULL, NULL, 'upcoming', 'Cuartos de Final'),
+(100, NULL, 'ARG', 'SUI', '2026-07-11', '21:00:00-03', 'Kansas City Stadium', 'Kansas City', 'Estados Unidos', NULL, NULL, NULL, NULL, NULL, NULL, 'upcoming', 'Cuartos de Final'),
+(101, NULL, 'FRA', NULL, '2026-07-14', '21:00:00-03', 'Dallas Stadium', 'Dallas', 'Estados Unidos', NULL, NULL, NULL, NULL, NULL, NULL, 'upcoming', 'Semifinal'),
+(102, NULL, NULL, NULL, '2026-07-15', '21:00:00-03', 'Atlanta Stadium', 'Atlanta', 'Estados Unidos', NULL, NULL, NULL, NULL, NULL, NULL, 'upcoming', 'Semifinal')
 ON CONFLICT (id) DO UPDATE SET
     home_team_id = EXCLUDED.home_team_id,
     away_team_id = EXCLUDED.away_team_id,
