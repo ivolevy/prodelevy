@@ -22,7 +22,7 @@ const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = env.SUPABASE_SERVICE_ROLE_KEY || env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 async function main() {
-  console.log("Starting DB update script...");
+  console.log("Starting DB update script for Semis, 3rd Place, and Final matches...");
 
   const headers = {
     'apikey': supabaseServiceKey,
@@ -31,13 +31,13 @@ async function main() {
     'Prefer': 'resolution=merge-duplicates'
   };
 
-  // 1. Update Semifinal matches
+  // 1. Update Semifinal matches (101: Francia vs España, 102: Argentina vs Inglaterra)
   console.log("Updating Semifinal matches (101, 102)...");
   const semis = [
     {
       id: 101,
       home_team_id: 'FRA',
-      away_team_id: 'ENG',
+      away_team_id: 'ESP',
       fecha: '2026-07-14',
       hora_arg: '21:00:00-03:00',
       estadio: 'Dallas Stadium',
@@ -48,8 +48,8 @@ async function main() {
     },
     {
       id: 102,
-      home_team_id: 'ESP',
-      away_team_id: 'ARG',
+      home_team_id: 'ARG',
+      away_team_id: 'ENG',
       fecha: '2026-07-15',
       hora_arg: '21:00:00-03:00',
       estadio: 'Atlanta Stadium',
@@ -72,9 +72,21 @@ async function main() {
     console.log("Semifinal matches updated successfully!");
   }
 
-  // 2. Insert/Upsert 3rd Place Match (id: 104)
-  console.log("Upserting 3rd Place Match (104)...");
-  const thirdPlaceMatch = [
+  // 2. Insert/Upsert Gran Final (id: 103) and 3rd Place Match (id: 104)
+  console.log("Upserting Final and 3rd Place Matches (103, 104)...");
+  const finalMatches = [
+    {
+      id: 103,
+      home_team_id: null,
+      away_team_id: null,
+      fecha: '2026-07-19',
+      hora_arg: '21:00:00-03:00',
+      estadio: 'MetLife Stadium',
+      ciudad: 'New York / New Jersey',
+      pais: 'Estados Unidos',
+      status: 'upcoming',
+      phase: 'Gran Final'
+    },
     {
       id: 104,
       home_team_id: null,
@@ -89,16 +101,16 @@ async function main() {
     }
   ];
 
-  const insertThirdPlaceRes = await fetch(`${supabaseUrl}/rest/v1/matches`, {
+  const insertFinalsRes = await fetch(`${supabaseUrl}/rest/v1/matches`, {
     method: 'POST',
     headers,
-    body: JSON.stringify(thirdPlaceMatch)
+    body: JSON.stringify(finalMatches)
   });
 
-  if (!insertThirdPlaceRes.ok) {
-    console.error("Failed to insert 3rd place match:", insertThirdPlaceRes.status, await insertThirdPlaceRes.text());
+  if (!insertFinalsRes.ok) {
+    console.error("Failed to insert final/3rd place matches:", insertFinalsRes.status, await insertFinalsRes.text());
   } else {
-    console.log("3rd place match upserted successfully!");
+    console.log("Final and 3rd place matches upserted successfully!");
   }
 
   // 3. Update teams stage_reached to semifinal for FRA, ENG, ESP, ARG

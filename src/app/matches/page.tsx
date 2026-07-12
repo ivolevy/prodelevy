@@ -458,7 +458,7 @@ function MatchesPageContent() {
                       : 'bg-white border-cream-300 text-stone-500 hover:text-stone-800'
                   }`}
                 >
-                  Final
+                  Final / 3er Puesto
                 </button>
               </div>
             )}

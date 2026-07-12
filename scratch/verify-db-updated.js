@@ -24,8 +24,8 @@ const supabaseAnonKey = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 async function main() {
   const headers = { 'apikey': supabaseAnonKey, 'Authorization': `Bearer ${supabaseAnonKey}` };
 
-  console.log("Verifying matches 101, 102, 104 in DB...");
-  const resMatches = await fetch(`${supabaseUrl}/rest/v1/matches?id=in.(101,102,104)&select=*`, { headers });
+  console.log("Verifying matches 101, 102, 103, 104 in DB...");
+  const resMatches = await fetch(`${supabaseUrl}/rest/v1/matches?id=in.(101,102,103,104)&select=*`, { headers });
   const matches = await resMatches.json();
   matches.sort((a, b) => a.id - b.id).forEach(m => {
     console.log(`Match ${m.id} | Phase: ${m.phase} | ${m.home_team_id} vs ${m.away_team_id} | Status: ${m.status}`);
