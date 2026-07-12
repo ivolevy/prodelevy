@@ -291,7 +291,7 @@ function MatchesPageContent() {
   };
 
   const groups = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
-  const [activeDateFilter, setActiveDateFilter] = useState<'ALL' | 'FECHA_1' | 'FECHA_2' | 'FECHA_3' | '16AVOS' | 'OCTAVOS' | 'CUARTOS' | 'SEMIS' | 'FINAL'>('CUARTOS');
+  const [activeDateFilter, setActiveDateFilter] = useState<'ALL' | 'FECHA_1' | 'FECHA_2' | 'FECHA_3' | '16AVOS' | 'OCTAVOS' | 'CUARTOS' | 'SEMIS' | 'FINAL'>('SEMIS');
   const [isFirstPhaseOpen, setIsFirstPhaseOpen] = useState(false);
 
   useEffect(() => {
@@ -307,6 +307,11 @@ function MatchesPageContent() {
   }, [isFirstPhaseOpen]);
 
   const filteredMatches = matches.filter(match => {
+    // Hide Cuartos de final matches from the UI
+    if (match.phase === 'Cuartos de Final' || (match.id >= 97 && match.id <= 100)) {
+      return false;
+    }
+
     const isKnockoutFilter = ['16AVOS', 'OCTAVOS', 'CUARTOS', 'SEMIS', 'FINAL'].includes(activeDateFilter);
 
     // 1. Status Filter (skip status check for knockout stages to ensure they always show when selected)
@@ -345,7 +350,7 @@ function MatchesPageContent() {
       return match.id >= 101 && match.id <= 102;
     }
     if (activeDateFilter === 'FINAL') {
-      return match.id === 103;
+      return match.id === 103 || match.id === 104;
     }
 
     return true;
@@ -426,21 +431,6 @@ function MatchesPageContent() {
             {/* Fecha (Round) filters (Premium text pill rows) */}
             {(activeFilter === 'ALL' || activeFilter === 'finished') && (
               <div className="flex gap-2 self-center sm:self-auto overflow-visible py-1 items-center">
-                {/* Cuartos */}
-                <button
-                  onClick={() => {
-                    setActiveDateFilter('CUARTOS');
-                    setIsFirstPhaseOpen(false);
-                  }}
-                  className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all shrink-0 border cursor-pointer ${
-                    activeDateFilter === 'CUARTOS'
-                      ? 'bg-gold-500/10 border-gold-500/30 text-gold-650 font-black'
-                      : 'bg-white border-cream-300 text-stone-500 hover:text-stone-800'
-                  }`}
-                >
-                  4tos
-                </button>
-
                 {/* Semis */}
                 <button
                   onClick={() => {
@@ -478,9 +468,8 @@ function MatchesPageContent() {
             ((activeFilter === 'ALL' || activeFilter === 'finished') && activeDateFilter === 'FECHA_3' && !matches.some(m => m.id >= 49 && m.id <= 72)) ||
             ((activeFilter === 'ALL' || activeFilter === 'finished') && activeDateFilter === '16AVOS' && !matches.some(m => m.id >= 73 && m.id <= 88)) ||
             ((activeFilter === 'ALL' || activeFilter === 'finished') && activeDateFilter === 'OCTAVOS' && !matches.some(m => m.id >= 89 && m.id <= 96)) ||
-            ((activeFilter === 'ALL' || activeFilter === 'finished') && activeDateFilter === 'CUARTOS' && !matches.some(m => m.id >= 97 && m.id <= 100)) ||
             ((activeFilter === 'ALL' || activeFilter === 'finished') && activeDateFilter === 'SEMIS' && !matches.some(m => m.id >= 101 && m.id <= 102)) ||
-            ((activeFilter === 'ALL' || activeFilter === 'finished') && activeDateFilter === 'FINAL' && !matches.some(m => m.id === 103))) ? (
+            ((activeFilter === 'ALL' || activeFilter === 'finished') && activeDateFilter === 'FINAL' && !matches.some(m => m.id === 103 || m.id === 104))) ? (
             <div className="text-center py-20 bg-cream-50/20 border border-dashed border-cream-300 rounded-3xl p-6 shadow-2xs">
               <Calendar className="w-8 h-8 text-stone-300 mx-auto mb-3" />
               <h4 className="text-xs font-black uppercase text-stone-800 tracking-wider">Próximamente</h4>
@@ -490,9 +479,8 @@ function MatchesPageContent() {
                   activeDateFilter === 'FECHA_3' ? 'la Fecha 3' : 
                   activeDateFilter === '16AVOS' ? 'la ronda de 16avos' : 
                   activeDateFilter === 'OCTAVOS' ? 'la ronda de 8avos' :
-                  activeDateFilter === 'CUARTOS' ? 'la ronda de 4tos' :
                   activeDateFilter === 'SEMIS' ? 'la ronda de semifinales' :
-                  'la gran final'
+                  'la gran final y tercer puesto'
                 } estarán disponibles próximamente.
               </p>
             </div>
@@ -520,12 +508,13 @@ function MatchesPageContent() {
                   let mult = 1;
                   if (phase === '16avos de Final' || phase === 'Octavos de Final') {
                     mult = 2;
+                  } else if (phase === 'Semifinales' || phase === 'Semifinal') {
+                    mult = 10;
                   } else if (
                     phase === 'Cuartos de Final' ||
-                    phase === 'Semifinales' ||
-                    phase === 'Semifinal' ||
                     phase === 'Gran Final' ||
-                    phase === 'Final'
+                    phase === 'Final' ||
+                    phase === 'Tercer Puesto'
                   ) {
                     mult = 8;
                   } else if (phase !== 'Fase de Grupos') {

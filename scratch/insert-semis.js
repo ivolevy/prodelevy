@@ -17,7 +17,7 @@ const matches = [
   {
     id: 101,
     home_team_id: 'FRA',
-    away_team_id: null,
+    away_team_id: 'ESP',
     fecha: '2026-07-14',
     hora_arg: '21:00:00-03:00',
     estadio: 'Dallas Stadium',
@@ -58,6 +58,26 @@ async function insertMatches() {
     console.error("Failed to insert matches:", response.status, await response.text());
   } else {
     console.log("Matches inserted successfully!");
+  }
+
+  console.log("Updating stage_reached to semifinal for FRA and ESP...");
+  const updateTeamsRes = await fetch(`${supabaseUrl}/rest/v1/teams?id=in.("FRA","ESP")`, {
+    method: 'PATCH',
+    headers: {
+      'apikey': supabaseServiceKey,
+      'Authorization': `Bearer ${supabaseServiceKey}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify({
+      stage_reached: 'semifinal'
+    })
+  });
+
+  if (!updateTeamsRes.ok) {
+    console.error("Failed to update teams:", updateTeamsRes.status, await updateTeamsRes.text());
+  } else {
+    console.log("Teams updated successfully!");
   }
 }
 
