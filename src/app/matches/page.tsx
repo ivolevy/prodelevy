@@ -508,14 +508,15 @@ function MatchesPageContent() {
                   let mult = 1;
                   if (phase === '16avos de Final' || phase === 'Octavos de Final') {
                     mult = 2;
-                  } else if (phase === 'Semifinales' || phase === 'Semifinal') {
-                    mult = 10;
                   } else if (
-                    phase === 'Cuartos de Final' ||
+                    phase === 'Semifinales' ||
+                    phase === 'Semifinal' ||
                     phase === 'Gran Final' ||
                     phase === 'Final' ||
                     phase === 'Tercer Puesto'
                   ) {
+                    mult = 10;
+                  } else if (phase === 'Cuartos de Final') {
                     mult = 8;
                   } else if (phase !== 'Fase de Grupos') {
                     mult = 2;
