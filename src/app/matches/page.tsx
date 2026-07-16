@@ -291,7 +291,7 @@ function MatchesPageContent() {
   };
 
   const groups = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
-  const [activeDateFilter, setActiveDateFilter] = useState<'ALL' | 'FECHA_1' | 'FECHA_2' | 'FECHA_3' | '16AVOS' | 'OCTAVOS' | 'CUARTOS' | 'SEMIS' | 'FINAL'>('SEMIS');
+  const [activeDateFilter, setActiveDateFilter] = useState<'ALL' | 'FECHA_1' | 'FECHA_2' | 'FECHA_3' | '16AVOS' | 'OCTAVOS' | 'CUARTOS' | 'SEMIS' | 'FINAL'>('FINAL');
   const [isFirstPhaseOpen, setIsFirstPhaseOpen] = useState(false);
 
   useEffect(() => {
@@ -307,8 +307,11 @@ function MatchesPageContent() {
   }, [isFirstPhaseOpen]);
 
   const filteredMatches = matches.filter(match => {
-    // Hide Cuartos de final matches from the UI
-    if (match.phase === 'Cuartos de Final' || (match.id >= 97 && match.id <= 100)) {
+    // Hide Cuartos de final and Semifinal matches from the UI
+    if (
+      match.phase === 'Cuartos de Final' || (match.id >= 97 && match.id <= 100) ||
+      match.phase === 'Semifinal' || match.phase === 'Semifinales' || (match.id >= 101 && match.id <= 102)
+    ) {
       return false;
     }
 
@@ -431,21 +434,6 @@ function MatchesPageContent() {
             {/* Fecha (Round) filters (Premium text pill rows) */}
             {(activeFilter === 'ALL' || activeFilter === 'finished') && (
               <div className="flex gap-2 self-center sm:self-auto overflow-visible py-1 items-center">
-                {/* Semis */}
-                <button
-                  onClick={() => {
-                    setActiveDateFilter('SEMIS');
-                    setIsFirstPhaseOpen(false);
-                  }}
-                  className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all shrink-0 border cursor-pointer ${
-                    activeDateFilter === 'SEMIS'
-                      ? 'bg-gold-500/10 border-gold-500/30 text-gold-650 font-black'
-                      : 'bg-white border-cream-300 text-stone-500 hover:text-stone-800'
-                  }`}
-                >
-                  Semis
-                </button>
-
                 {/* Final */}
                 <button
                   onClick={() => {
